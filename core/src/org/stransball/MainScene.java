@@ -87,8 +87,6 @@ public class MainScene extends ScreenAdapter {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        shapeRenderer.begin();
-
         batch.begin();
 
         shipStateTime += delta;
@@ -112,14 +110,6 @@ public class MainScene extends ScreenAdapter {
 
         sprite.draw(batch);
 
-        assets.shipAssets.shipPolygon.setRotation(tr.getShipAngle());
-
-        Rectangle rectangle = assets.shipAssets.shipPolygon.getBoundingRectangle();
-        assets.shipAssets.shipPolygon.setPosition(
-        		x - (rectangle.x - assets.shipAssets.shipPolygon.getX() + rectangle.width/2), 
-        		y - (rectangle.y - assets.shipAssets.shipPolygon.getY() + rectangle.height/2));
-        shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
-        
         font.draw(batch, format("TRANSBALL! %s %s %s %.4f", Gdx.graphics.getFramesPerSecond(), x, y, delta), 2,
                 viewport.getWorldHeight() - 2);
 
@@ -133,8 +123,12 @@ public class MainScene extends ScreenAdapter {
 
         
         batch.end();
-        shapeRenderer.end();
         
+        shapeRenderer.begin();
+        assets.shipAssets.shipPolygon.setRotation(tr.getShipAngle());
+        assets.shipAssets.shipPolygon.setPosition(x, y);
+        shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+        shapeRenderer.end();
     }
 
     public void resize(int width, int height) {
