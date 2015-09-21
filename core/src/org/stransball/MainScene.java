@@ -111,12 +111,13 @@ public class MainScene extends ScreenAdapter {
 
 
         sprite.draw(batch);
-        
+
+        assets.shipAssets.shipPolygon.setRotation(tr.getShipAngle());
+
         Rectangle rectangle = assets.shipAssets.shipPolygon.getBoundingRectangle();
         assets.shipAssets.shipPolygon.setPosition(
-        		x-(rectangle.x - assets.shipAssets.shipPolygon.getX() + rectangle.width/2), 
-        		y-(rectangle.y - assets.shipAssets.shipPolygon.getY() + rectangle.height/2));
-        assets.shipAssets.shipPolygon.setRotation(tr.getShipAngle()-180);
+        		x - (rectangle.x - assets.shipAssets.shipPolygon.getX() + rectangle.width/2), 
+        		y - (rectangle.y - assets.shipAssets.shipPolygon.getY() + rectangle.height/2));
         shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
         
         font.draw(batch, format("TRANSBALL! %s %s %s %.4f", Gdx.graphics.getFramesPerSecond(), x, y, delta), 2,
