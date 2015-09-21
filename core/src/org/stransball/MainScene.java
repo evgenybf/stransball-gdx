@@ -9,13 +9,13 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -25,7 +25,6 @@ public class MainScene extends ScreenAdapter {
     private final SuperTransballGame game;
     private final FitViewport viewport;
     private SpriteBatch batch;
-    private float spriteAngle;
     private BitmapFont font;
     private Vector3 tmpPos;
     private Sprite sprite;
@@ -36,6 +35,7 @@ public class MainScene extends ScreenAdapter {
     private float time;
     private Transball tr;
     private boolean playThrustSound;
+	private ShapeRenderer shapeRenderer;
 
     public MainScene(SuperTransballGame game) {
         this.game = game;
@@ -55,7 +55,6 @@ public class MainScene extends ScreenAdapter {
 
         sprite = new Sprite(shipRegion);
         sprite.setScale(0.5f, 0.5f);
-        spriteAngle = 0.0f;
 
         shipThrottleAnimation = assets.shipAssets.shipThrustAnimation;
 
@@ -66,7 +65,10 @@ public class MainScene extends ScreenAdapter {
         tmpPos = new Vector3();
 
         tr = new Transball();
+
+        shapeRenderer = new ShapeRenderer();
         
+        assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
     }
 
     @Override
@@ -84,7 +86,9 @@ public class MainScene extends ScreenAdapter {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        
+
+        shapeRenderer.begin();
+
         batch.begin();
 
         shipStateTime += delta;
@@ -105,12 +109,16 @@ public class MainScene extends ScreenAdapter {
         sprite.setCenterX(x);
         sprite.setCenterY(y);
 
+
         sprite.draw(batch);
-
-        spriteAngle += delta * 100;
-        if (spriteAngle >= 360)
-            spriteAngle = 0;
-
+        
+        Rectangle rectangle = assets.shipAssets.shipPolygon.getBoundingRectangle();
+        assets.shipAssets.shipPolygon.setPosition(
+        		x-(rectangle.x - assets.shipAssets.shipPolygon.getX() + rectangle.width/2), 
+        		y-(rectangle.y - assets.shipAssets.shipPolygon.getY() + rectangle.height/2));
+        assets.shipAssets.shipPolygon.setRotation(tr.getShipAngle()-180);
+        shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+        
         font.draw(batch, format("TRANSBALL! %s %s %s %.4f", Gdx.graphics.getFramesPerSecond(), x, y, delta), 2,
                 viewport.getWorldHeight() - 2);
 
@@ -122,12 +130,17 @@ public class MainScene extends ScreenAdapter {
                     Align.right, true);
         }
 
+        
         batch.end();
+        shapeRenderer.end();
+        
     }
 
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         batch.setProjectionMatrix(viewport.getCamera().combined);
+        shapeRenderer.setAutoShapeType(true);
+        shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
     }
 
     @Override
