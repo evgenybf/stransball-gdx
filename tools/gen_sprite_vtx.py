@@ -3,6 +3,9 @@
 The goal is to avoid pixel matxhing at all.
 
 Note, that concave polyons can be decomposed into convex polygons with 
+EarClippingTriangulator
+https://libgdx.badlogicgames.com/nightlies/docs/api/com/badlogic/gdx/math/EarClippingTriangulator.html
+or
 GeometryUtils.decomposeIntoConvex(vtx)
 See: https://bitbucket.org/dermetfan/libgdx-utils
 
