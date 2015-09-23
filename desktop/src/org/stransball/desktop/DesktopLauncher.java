@@ -1,7 +1,7 @@
 package org.stransball.desktop;
 
-import org.stransball.GameConstants;
-import org.stransball.SuperTransballGame;
+import org.stransball.Constants;
+import org.stransball.TransballMain;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
@@ -12,10 +12,10 @@ public class DesktopLauncher {
         config.title = "Just an experiment";
         config.foregroundFPS = 60;
         config.backgroundFPS = 60;
-        config.width = GameConstants.DEFAULT_SCREEN_WIDTH;
-        config.height = GameConstants.DEFAULT_SCREEN_HEIGHT;
+        config.width = Constants.DEFAULT_SCREEN_WIDTH;
+        config.height = Constants.DEFAULT_SCREEN_HEIGHT;
         config.vSyncEnabled = false;
 
-        new LwjglApplication(new SuperTransballGame(), config);
+        new LwjglApplication(new TransballMain(), config);
     }
 }

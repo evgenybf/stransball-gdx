@@ -12,9 +12,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 
-public class GameAssets {
+public class Assets {
 
-    public static final GameAssets assets = new GameAssets();
+    public static final Assets assets = new Assets();
 
     private final AssetManager assetManager;
 
@@ -23,7 +23,7 @@ public class GameAssets {
     public ShipAssets shipAssets;
 
     // Singleton class
-    private GameAssets() {
+    private Assets() {
         assetManager = new AssetManager();
     }
 

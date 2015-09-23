@@ -1,9 +1,9 @@
 package org.stransball;
 
 import static java.lang.String.format;
-import static org.stransball.GameAssets.assets;
-import static org.stransball.GameConstants.INTERNAL_SCREEN_HEIGHT;
-import static org.stransball.GameConstants.INTERNAL_SCREEN_WIDTH;
+import static org.stransball.Assets.assets;
+import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
+import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class MainScene extends ScreenAdapter {
 
-    private final SuperTransballGame game;
+    private final TransballMain game;
     private final FitViewport viewport;
     private SpriteBatch batch;
     private BitmapFont font;
@@ -37,7 +37,7 @@ public class MainScene extends ScreenAdapter {
     private boolean playThrustSound;
 	private ShapeRenderer shapeRenderer;
 
-    public MainScene(SuperTransballGame game) {
+    public MainScene(TransballMain game) {
         this.game = game;
 
         viewport = new FitViewport(INTERNAL_SCREEN_WIDTH, INTERNAL_SCREEN_HEIGHT);
@@ -82,7 +82,7 @@ public class MainScene extends ScreenAdapter {
         int x = tr.getShipX();
         int y = tr.getShipY();
 
-        boolean bThrust = Gdx.input.isKeyPressed(GameConstants.THRUST_KEY);
+        boolean bThrust = Gdx.input.isKeyPressed(Constants.THRUST_KEY);
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

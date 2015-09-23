@@ -2,7 +2,7 @@ package org.stransball;
 
 import com.badlogic.gdx.Input;
 
-public class GameConstants {
+public class Constants {
 
     public static final int DEFAULT_SCREEN_WIDTH = 960;
     public static final int DEFAULT_SCREEN_HEIGHT = 720;

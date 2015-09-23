@@ -32,9 +32,9 @@ public class Transball {
     }
 
     public void cycle() {
-        boolean bLeft = Gdx.input.isKeyPressed(GameConstants.LEFT_KEY);
-        boolean bRight = Gdx.input.isKeyPressed(GameConstants.RIGHT_KEY);
-        boolean bThrust = Gdx.input.isKeyPressed(GameConstants.THRUST_KEY);
+        boolean bLeft = Gdx.input.isKeyPressed(Constants.LEFT_KEY);
+        boolean bRight = Gdx.input.isKeyPressed(Constants.RIGHT_KEY);
+        boolean bThrust = Gdx.input.isKeyPressed(Constants.THRUST_KEY);
 //        boolean bAntiThrust = Gdx.input.isKeyPressed(GameConstants.ANTITHRUST_KEY);
 //        boolean bAtractor = Gdx.input.isKeyPressed(GameConstants.ATRACTOR_KEY);
 

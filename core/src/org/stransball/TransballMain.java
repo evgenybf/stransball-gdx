@@ -1,18 +1,18 @@
 package org.stransball;
 
-import static org.stransball.GameAssets.assets;
+import static org.stransball.Assets.assets;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.FPSLogger;
 
-public class SuperTransballGame extends Game {
+public class TransballMain extends Game {
 
     private final FPSLogger fpsLogger;
     private MainScene mainScene;
 
-    public SuperTransballGame() {
+    public TransballMain() {
         fpsLogger = new FPSLogger();
     }
 
