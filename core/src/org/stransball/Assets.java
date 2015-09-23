@@ -80,20 +80,25 @@ public class Assets {
         public final Animation shipThrustAnimation;
 		public final Polygon shipPolygon;
 
+		private static void centrializeSpritePolygon(int height, int width, float[] vertices, boolean vflip) {
+            float dx = width/2.0f;
+            float dy = height/2.0f;
+            int vflipSign = vflip ? (-1): 1;
+            for (int i = 0; i < vertices.length; i += 2) {
+                vertices[i] = (vertices[i] - dx);
+            }
+            for (int i = 1; i < vertices.length; i+=2) {
+                vertices[i] = vflipSign * (vertices[i] - dy);
+            }
+		}
+		
         public ShipAssets(TextureAtlas atlas) {
             shipRegion = atlas.findRegion("ship");
             shipPolygon = new Polygon();
             shipPolygon.setVertices(new float[] {
-            	14,3,13,4,12,5,12,6,11,7,11,8,10,9,9,10,8,11,7,12,6,13,6,14,5,15,5,16,4,17,4,18,4,19,5,20,6,20,7,20,8,21,9,21,10,20,11,19,12,18,13,17,14,18,15,18,16,18,17,18,18,17,19,18,20,19,21,20,22,21,23,21,24,20,25,20,26,20,27,19,27,18,27,17,26,16,26,15,25,14,25,13,24,12,23,11,22,10,21,9,20,8,20,7,19,6,19,5,18,4,17,3,16,3,15,3
+                14,3,13,4,12,5,12,6,11,7,11,8,10,9,9,10,8,11,7,12,6,13,6,14,5,15,5,16,4,17,4,18,4,19,5,20,6,20,7,20,8,21,9,21,10,20,11,19,12,18,13,17,14,18,15,18,16,18,17,18,18,17,19,18,20,19,21,20,22,21,23,21,24,20,25,20,26,20,27,19,27,18,27,17,26,16,26,15,25,14,25,13,24,12,23,11,22,10,21,9,20,8,20,7,19,6,19,5,18,4,17,3,16,3,15,3
             });
-            float dx = shipRegion.originalWidth/2.0f;
-            float dy = shipRegion.originalHeight/2.0f;
-            for (int i = 0; i < shipPolygon.getVertices().length; i += 2) {
-            	shipPolygon.getVertices()[i] = (shipPolygon.getVertices()[i] - dx);
-            }
-            for (int i = 1; i < shipPolygon.getVertices().length; i+=2) {
-                shipPolygon.getVertices()[i] = -(shipPolygon.getVertices()[i] - dy);
-            }
+            centrializeSpritePolygon(shipRegion.originalHeight, shipRegion.originalWidth, shipPolygon.getVertices(), true);
             shipThrustAnimation = new Animation(0.1f, atlas.findRegions("shipThrust"), PlayMode.LOOP);
         }
     }

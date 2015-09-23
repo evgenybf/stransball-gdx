@@ -17,7 +17,7 @@ import cv2
 DEBUG_OUT = 1
 
 TILES_PACK = "../core/assets/graphics/tiles.pack"
-TILES_PNG = "../core/assets/graphics/tiles.png"
+TILES_PNG = "../core/assets/graphics/tiles-mask.png"
 VTX_FILE = "tiles.vtx"
 
 # Sample input file:
@@ -102,7 +102,7 @@ def write_vec(out, obj, contours):
     out.write("\n")
     out.write("  index: %d" % (obj.index if obj.index is not None else -1))
     out.write("\n")
-    out.write("  vertexes: %s" %
+    out.write("  vertices: %s" %
               (",".join([str(x) for x in contours.flatten()]),))
     out.write("\n")
 
