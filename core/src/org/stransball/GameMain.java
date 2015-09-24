@@ -7,12 +7,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.FPSLogger;
 
-public class TransballMain extends Game {
+public class GameMain extends Game {
 
     private final FPSLogger fpsLogger;
-    private MainScene mainScene;
+    private GameScreen mainScene;
 
-    public TransballMain() {
+    public GameMain() {
         fpsLogger = new FPSLogger();
     }
 
@@ -20,7 +20,7 @@ public class TransballMain extends Game {
     public void create() {
         assets.init();
         
-        mainScene = new MainScene(this);
+        mainScene = new GameScreen(this);
         setScreen(mainScene);
     }
 

@@ -20,4 +20,7 @@ public class Constants {
     public static int FIRE_KEY = Input.Keys.SPACE;
     public static int ATRACTOR_KEY = Input.Keys.ENTER;
     public static int PAUSE_KEY = Input.Keys.Z;
+    
+	public static final int FACTOR = 512;
+	
 }

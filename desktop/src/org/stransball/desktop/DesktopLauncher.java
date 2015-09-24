@@ -1,7 +1,7 @@
 package org.stransball.desktop;
 
 import org.stransball.Constants;
-import org.stransball.TransballMain;
+import org.stransball.GameMain;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
@@ -16,6 +16,6 @@ public class DesktopLauncher {
         config.height = Constants.DEFAULT_SCREEN_HEIGHT;
         config.vSyncEnabled = false;
 
-        new LwjglApplication(new TransballMain(), config);
+        new LwjglApplication(new GameMain(), config);
     }
 }

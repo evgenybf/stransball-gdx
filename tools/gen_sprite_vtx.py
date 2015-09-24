@@ -49,7 +49,7 @@ class Obj:
         if self.index is None:
             return self.name
         else:
-            return "%s_%s" % (self.name, self.index)
+            return "%s_%03d" % (self.name, self.index)
 
     def is_empty(self):
         return self.x is None and self.y is None and self.size_x is None and self.size_y is None
@@ -123,21 +123,24 @@ def main():
             colors = ((0, 255, 0), (0, 0, 255), (255, 0, 0),
                       (0, 255, 255), (255, 255, 0), (255, 0, 255))
 
-            max_vtx = contours[0]
-            for vtx in contours[1:]:
-                if len(max_vtx) < len(vtx):
-                    max_vtx = vtx
-            epsilon = 0.01 * cv2.arcLength(max_vtx, True)
-            approx = cv2.approxPolyDP(max_vtx, epsilon, True)
-            cv2.drawContours(sim, approx, -1, colors[0], 1)
+            if len(contours) > 0:
+                max_vtx = contours[0]
+                for vtx in contours[1:]:
+                    if len(max_vtx) < len(vtx):
+                        max_vtx = vtx
+                epsilon = 0.01 * cv2.arcLength(max_vtx, True)
+                approx = cv2.approxPolyDP(max_vtx, epsilon, True)
+                cv2.drawContours(sim, approx, -1, colors[0], 1)
 
-            if DEBUG_OUT:
-                import os.path
-                if not os.path.exists("output"):
-                    os.mkdir("output")
-                cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
+                if DEBUG_OUT:
+                    import os.path
+                    if not os.path.exists("output"):
+                        os.mkdir("output")
+                    cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
 
-            write_vec(fo, obj, max_vtx)
+                write_vec(fo, obj, max_vtx)
+            else:
+                print ("...skipped")
 
 
 if __name__ == "__main__":
