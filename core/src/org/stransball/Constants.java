@@ -4,8 +4,8 @@ import com.badlogic.gdx.Input;
 
 public class Constants {
 
-    public static final int DEFAULT_SCREEN_WIDTH = 960;
-    public static final int DEFAULT_SCREEN_HEIGHT = 720;
+    public static final int DEFAULT_SCREEN_WIDTH = 320*3;
+    public static final int DEFAULT_SCREEN_HEIGHT = 240*3;
 
     public static final int INTERNAL_SCREEN_WIDTH = 320;
     public static final int INTERNAL_SCREEN_HEIGHT = 240;

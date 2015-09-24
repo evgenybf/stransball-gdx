@@ -1,7 +1,10 @@
 package org.stransball;
 
+import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
+
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import org.stransball.objects.DOOR;
@@ -54,6 +57,8 @@ public class GameMap {
 
 		map = new int[sx * sy];
 
+		Arrays.fill(map, -1);
+		
 		for (i = sx * EMPTY_ROWS; i < sx * sy; i++) {
 			map[i] = scanner.nextInt();
 			map[i]--;
@@ -269,7 +274,7 @@ public class GameMap {
 									// }
 									// }
 								} else {
-									batch.draw(tiles.get(piece), act_x, act_y);
+									batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y);
 								}
 							}
 						}

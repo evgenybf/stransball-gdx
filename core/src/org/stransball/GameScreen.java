@@ -82,7 +82,7 @@ public class GameScreen extends ScreenAdapter {
 			worldController.update(delta);
 		}
 
-		shapeRenderer.begin();
+//		shapeRenderer.begin();
 		batch.begin();
 		
 		//worldRenderer
@@ -90,7 +90,7 @@ public class GameScreen extends ScreenAdapter {
 		renderGui(delta);
 		
 		batch.end();
-		shapeRenderer.end();
+//		shapeRenderer.end();
 		
 	}
 
@@ -142,7 +142,7 @@ public class GameScreen extends ScreenAdapter {
 		assets.shipAssets.shipPolygon.setRotation(worldController.getShipAngle());
 		assets.shipAssets.shipPolygon.setPosition(x, y);
 		
-		shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+//		shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
 	}
 
 	public void resize(int width, int height) {
