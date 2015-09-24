@@ -21,7 +21,7 @@ public class Assets {
 
 	public FontAssets fontAssets;
 	public SoundAssets soundAssets;
-	public ShipAssets shipAssets;
+	public GraphicAssets shipAssets;
 
 	// Singleton class
 	private Assets() {
@@ -53,7 +53,7 @@ public class Assets {
 
 		TextureAtlas atlas = assetManager.get("graphics/tiles.pack", TextureAtlas.class);
 
-		shipAssets = new ShipAssets(atlas);
+		shipAssets = new GraphicAssets(atlas);
 		fontAssets = new FontAssets(assetManager);
 		soundAssets = new SoundAssets(assetManager);
 	}
@@ -76,7 +76,7 @@ public class Assets {
 		}
 	}
 
-	public static class ShipAssets {
+	public static class GraphicAssets {
 		public final Array<AtlasRegion> tiles;
 		public final AtlasRegion shipRegion;
 		public final Animation shipThrustAnimation;
@@ -94,7 +94,7 @@ public class Assets {
 			}
 		}
 
-		public ShipAssets(TextureAtlas atlas) {
+		public GraphicAssets(TextureAtlas atlas) {
 			tiles = atlas.findRegions("tile");
 			
 			shipRegion = atlas.findRegion("ship");
