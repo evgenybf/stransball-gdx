@@ -209,13 +209,20 @@ public class GameMap {
 	}
 
 	public void update(float delta) {
-		// TODO Auto-generated method stub
+        animtimer++;
+        if (animtimer>24) {
+            animflag++;
+            if (animflag<0 || animflag>7) animflag=0;
+            animtimer=0;
+            }
 
 	}
 
 	// SDL_Surface *surface,TILE **tiles,int x,int y,int ww,int wh
 	public void drawWithoutEnemies(SpriteBatch batch, int x, int y, int ww, int wh) {
 
+
+	    
 		int step_x = 0, step_y = 0;
 		int act_x, act_y;
 		int i, j;
@@ -274,7 +281,7 @@ public class GameMap {
 									// }
 									// }
 								} else {
-									batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y);
+									batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y - /*FIXME: !!!*/ step_y);
 								}
 							}
 						}
@@ -378,5 +385,13 @@ public class GameMap {
 
 		return piece;
 	}
+
+    public int get_sx() {
+        return sx;
+    }
+
+    public int get_sy() {
+        return sy;
+    }
 
 }

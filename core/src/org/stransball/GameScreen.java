@@ -82,20 +82,19 @@ public class GameScreen extends ScreenAdapter {
 			worldController.update(delta);
 		}
 
-//		shapeRenderer.begin();
+		shapeRenderer.begin();
 		batch.begin();
 		
-		//worldRenderer
 		renderWorld(delta);
 		renderGui(delta);
 		
 		batch.end();
-//		shapeRenderer.end();
+		shapeRenderer.end();
 		
 	}
 
 	private void renderGui(float delta) {
-		int x = worldController.getShipX();
+		int x = worldController.getShipXToDraw();
 		int y = worldController.getShipY();
 
 		font.draw(batch, format("TRANSBALL! %s %s %s %.4f", Gdx.graphics.getFramesPerSecond(), x, y, delta), 2,
@@ -114,10 +113,10 @@ public class GameScreen extends ScreenAdapter {
 	private void renderWorld(float delta) {
 		worldController.render(delta, batch);
 		
-		int x = worldController.getShipX();
+		int x = worldController.getShipXToDraw();
 		int y = worldController.getShipY();
 
-		boolean bThrust = Gdx.input.isKeyPressed(Constants.THRUST_KEY);
+		boolean bThrust = GameKeysStatus.bThrust;
 
 		shipStateTime += delta;
 		if (!bThrust) {
@@ -133,16 +132,16 @@ public class GameScreen extends ScreenAdapter {
 			}
 		}
 
-		sprite.setRotation(worldController.getShipAngle());
+		sprite.setRotation(360 - worldController.getShipAngle());
 		sprite.setCenterX(x);
-		sprite.setCenterY(y);
+		sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - y);
 
 		sprite.draw(batch);
 		
-		assets.shipAssets.shipPolygon.setRotation(worldController.getShipAngle());
-		assets.shipAssets.shipPolygon.setPosition(x, y);
+		assets.shipAssets.shipPolygon.setRotation(360 - worldController.getShipAngle());
+		assets.shipAssets.shipPolygon.setPosition(x, Constants.INTERNAL_SCREEN_HEIGHT - y);
 		
-//		shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+		shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
 	}
 
 	public void resize(int width, int height) {
