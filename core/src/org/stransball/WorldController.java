@@ -46,7 +46,6 @@ public class WorldController {
     }
 
     public void update(float delta) {
-
         if (bLeft) {
             ship_angle -= 4;
             if (ship_angle < 0)
@@ -170,11 +169,11 @@ public class WorldController {
     }
 
     public int getShipXToDraw() {
-        return ((ship_x / Constants.FACTOR) - 32) - map_x;
+        return ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
     }
 
-    public int getShipY() {
-        return (((ship_y / Constants.FACTOR) - 32)) - map_y;
+    public int getShipYToDraw() {
+        return (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
     }
 
     public float getShipAngle() {

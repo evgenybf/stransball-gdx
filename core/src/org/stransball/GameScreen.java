@@ -95,7 +95,7 @@ public class GameScreen extends ScreenAdapter {
 
 	private void renderGui(float delta) {
 		int x = worldController.getShipXToDraw();
-		int y = worldController.getShipY();
+		int y = worldController.getShipYToDraw();
 
 		font.draw(batch, format("TRANSBALL! %s %s %s %.4f", Gdx.graphics.getFramesPerSecond(), x, y, delta), 2,
 				viewport.getWorldHeight() - 2);
@@ -114,7 +114,7 @@ public class GameScreen extends ScreenAdapter {
 		worldController.render(delta, batch);
 		
 		int x = worldController.getShipXToDraw();
-		int y = worldController.getShipY();
+		int y = worldController.getShipYToDraw();
 
 		boolean bThrust = GameKeysStatus.bThrust;
 
