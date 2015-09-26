@@ -20,6 +20,13 @@ TILES_PACK = "../core/assets/graphics/tiles.pack"
 TILES_PNG = "../core/assets/graphics/tiles-mask.png"
 VTX_FILE = "tiles.vtx"
 
+VTX_TEMPLATE = """\
+%s
+  vertices: %s
+  size: %d, %d
+  index: %d    	
+"""
+
 # Sample input file:
 # tiles.png
 # format: RGBA8888
@@ -98,13 +105,9 @@ def read_pack(filename):
 
 
 def write_vec(out, obj, contours):
-    out.write(obj.name)
-    out.write("\n")
-    out.write("  index: %d" % (obj.index if obj.index is not None else -1))
-    out.write("\n")
-    out.write("  vertices: %s" %
-              (",".join([str(x) for x in contours.flatten()]),))
-    out.write("\n")
+	index = (obj.index if obj.index is not None else -1)
+	vertices = ",".join([str(x) for x in contours.flatten()])
+	out.write(VTX_TEMPLATE % (obj.name, vertices, obj.size_x, obj.size_y, index))
 
 
 def main():
