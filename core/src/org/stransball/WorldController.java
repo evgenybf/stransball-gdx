@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class WorldController {
 
@@ -32,7 +33,7 @@ public class WorldController {
     public WorldController() {
         map = new GameMap();
         try {
-            map.load(new FileReader("maps/map12.map"));
+            map.load(new FileReader("maps/map10.map"));
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -116,7 +117,7 @@ public class WorldController {
         map.update(delta);
     }
 
-    public void render(float delta, SpriteBatch batch) {
+    public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
         int sx = Constants.INTERNAL_SCREEN_WIDTH;
         int sy = Constants.INTERNAL_SCREEN_HEIGHT;
 
@@ -145,7 +146,7 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawWithoutEnemies(batch, map_x, map_y, sx, sy);
+        map.drawWithoutEnemies(batch, shapeRenderer, map_x, map_y, sx, sy, drawPoly);
     }
 
     public int getFuelUsed() {

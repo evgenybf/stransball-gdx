@@ -100,15 +100,15 @@ public class ContourLoader {
         return null;
     }
 
-    private static void centrializeSpritePolygon(int height, int width, float[] vertices, boolean vflip) {
+    private static void centrializeSpritePolygon(int height, int width, float[] vertices) {
         float dx = width / 2.0f;
         float dy = height / 2.0f;
-        int vflipSign = vflip ? (-1) : 1;
         for (int i = 0; i < vertices.length; i += 2) {
             vertices[i] = (vertices[i] - dx);
         }
         for (int i = 1; i < vertices.length; i += 2) {
-            vertices[i] = vflipSign * (vertices[i] - dy);
+            //FIXME: clumsy flip.. I should something do with the gen_sprite_vtx.py about it
+            vertices[i] = -(-vertices[i] - dy);
         }
     }
 
@@ -118,7 +118,7 @@ public class ContourLoader {
         Polygon shipPolygon = new Polygon();
         shipPolygon.setVertices(contour.vertiies);
         if (centralize) {
-            centrializeSpritePolygon(contour.sizeX, contour.sizeY, shipPolygon.getVertices(), true);
+            centrializeSpritePolygon(contour.sizeX, contour.sizeY, shipPolygon.getVertices());
         }
         return shipPolygon;
     }

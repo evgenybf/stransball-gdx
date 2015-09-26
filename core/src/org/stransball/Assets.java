@@ -80,7 +80,7 @@ public class Assets {
 
     public static class GraphicAssets {
         public final Array<AtlasRegion> tiles;
-        private Polygon[] tilePolygons;
+        public final Polygon[] tilePolygons;
 
         public final AtlasRegion shipRegion;
         public final Animation shipThrustAnimation;
