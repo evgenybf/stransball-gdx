@@ -70,4 +70,5 @@ gradlew
 gradlew.bat
 
 tools/output
+tools/*.vtx
 .ropeproject

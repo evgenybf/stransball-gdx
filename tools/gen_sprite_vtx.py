@@ -18,13 +18,14 @@ DEBUG_OUT = 1
 
 TILES_PACK = "../core/assets/graphics/tiles.pack"
 TILES_PNG = "../core/assets/graphics/tiles-mask.png"
+TILES_PNG_COLOR = "../core/assets/graphics/tiles.png"
 VTX_FILE = "tiles.vtx"
 
 VTX_TEMPLATE = """\
 %s
   vertices: %s
   size: %d, %d
-  index: %d    	
+  index: %d
 """
 
 # Sample input file:
@@ -107,7 +108,7 @@ def read_pack(filename):
 def write_vec(out, obj, contours):
     index = (obj.index if obj.index is not None else -1)
     if contours is not None:
-        vertices = ",".join([str(x) for x in contours.flatten()])
+        vertices = ",".join([str(x if i % 2 == 0 else -x) for i, x in enumerate(contours.flatten())])
     else:
         vertices = ""
     out.write(VTX_TEMPLATE % (obj.name, vertices, obj.size_x, obj.size_y, index))
@@ -115,12 +116,15 @@ def write_vec(out, obj, contours):
 
 def main():
     im = cv2.imread(TILES_PNG)
+    im_color = cv2.imread(TILES_PNG_COLOR)
 
     with file(VTX_FILE, "w") as fo:
         for obj in read_pack(TILES_PACK):
             print (obj)
 
             sim = im[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
+            sim_color = im_color[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
+
             imgray = cv2.cvtColor(sim, cv2.COLOR_BGR2GRAY)
             ret, thresh = cv2.threshold(imgray, 127, 255, 2)
 
@@ -137,12 +141,14 @@ def main():
                 epsilon = 0.01 * cv2.arcLength(max_vtx, True)
                 approx = cv2.approxPolyDP(max_vtx, epsilon, True)
                 cv2.drawContours(sim, approx, -1, colors[0], 1)
+                cv2.drawContours(sim_color, approx, -1, colors[0], 1)
 
                 if DEBUG_OUT:
                     import os.path
                     if not os.path.exists("output"):
                         os.mkdir("output")
                     cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
+                    cv2.imwrite("output/%s_color.png" % (obj.get_full_name(),), sim_color)
 
                 write_vec(fo, obj, max_vtx)
             else:
