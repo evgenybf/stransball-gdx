@@ -105,9 +105,12 @@ def read_pack(filename):
 
 
 def write_vec(out, obj, contours):
-	index = (obj.index if obj.index is not None else -1)
-	vertices = ",".join([str(x) for x in contours.flatten()])
-	out.write(VTX_TEMPLATE % (obj.name, vertices, obj.size_x, obj.size_y, index))
+    index = (obj.index if obj.index is not None else -1)
+    if contours is not None:
+        vertices = ",".join([str(x) for x in contours.flatten()])
+    else:
+        vertices = ""
+    out.write(VTX_TEMPLATE % (obj.name, vertices, obj.size_x, obj.size_y, index))
 
 
 def main():
@@ -144,6 +147,7 @@ def main():
                 write_vec(fo, obj, max_vtx)
             else:
                 print ("...skipped")
+                write_vec(fo, obj, None)
 
 
 if __name__ == "__main__":

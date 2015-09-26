@@ -38,6 +38,9 @@ public class ContourLoader {
                 contour.name = line;
 
                 contour.vertiies = readTuple(reader);
+                if (contour.vertiies.length == 0) {
+                    contour.vertiies = null;
+                }
                 int[] sizeXY = readIntTuple(reader);
                 contour.sizeX = sizeXY[0];
                 contour.sizeY = sizeXY[1];
@@ -110,6 +113,8 @@ public class ContourLoader {
     }
 
     private static Polygon contourToPolygon(Contour contour, boolean centralize) {
+        if (contour.vertiies == null)
+            return null;
         Polygon shipPolygon = new Polygon();
         shipPolygon.setVertices(contour.vertiies);
         if (centralize) {
@@ -154,7 +159,10 @@ public class ContourLoader {
             arr.add(Float.parseFloat(line.substring(lastMatch, comma).trim()));
             lastMatch = comma + 1;
         }
-        arr.add(Float.parseFloat(line.substring(lastMatch).trim()));
+        String lastPiece = line.substring(lastMatch).trim();
+        if (lastPiece.length() > 0) {
+            arr.add(Float.parseFloat(lastPiece));
+        }
         return arr.toArray();
     }
 
