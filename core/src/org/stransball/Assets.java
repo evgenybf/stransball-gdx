@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 public class Assets {
@@ -33,8 +32,6 @@ public class Assets {
     public void init() {
         assetManager.load("graphics/tiles.pack", TextureAtlas.class);
 
-        assetManager.load("verdana39.fnt", BitmapFont.class);
-        // assetManager.load("font3.fnt", BitmapFont.class);
         assetManager.load("graphics/font3.fnt", BitmapFont.class);
 
         assetManager.load("graphics/tittle.png", Texture.class);
@@ -66,12 +63,8 @@ public class Assets {
 
     public static class FontAssets {
         public BitmapFont defaultFont;
-        private BitmapFont verdanaFont;
 
         public FontAssets(AssetManager assetManager) {
-            verdanaFont = assetManager.get("verdana39.fnt", BitmapFont.class);
-            verdanaFont.setColor(Color.WHITE);
-            verdanaFont.getData().setScale(0.5f);
             defaultFont = assetManager.get("graphics/font3.fnt", BitmapFont.class);
             defaultFont.setColor(Color.WHITE);
             // defaultFont.getData().setScale(5f);
