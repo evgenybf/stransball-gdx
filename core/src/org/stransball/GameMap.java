@@ -221,9 +221,8 @@ public class GameMap {
 
     }
 
-    // SDL_Surface *surface,TILE **tiles,int x,int y,int ww,int wh
     public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer shapeRenderer, int x, int y, int ww, int wh,
-            boolean drawPoly) {
+            IPolygonDetector detector) {
 
         int step_x = 0, step_y = 0;
         int act_x, act_y;
@@ -248,47 +247,18 @@ public class GameMap {
                         piece = animpiece(piece);
                         if (piece >= 0) {
                             if (piece == 113 || piece == 114) {
-                                // /* Door: */
-                                // DOOR *d;
-                                // List<DOOR> l;
-                                // int state=0;
-                                //
-                                // l.Instance(doors);
-                                // l.Rewind();
-                                // while(l.Iterate(d)) {
-                                // if ((d.x==i || d.x==i-1) && d.y==j)
-                                // state=d.state;
-                                // }
-                                //
-                                // if (piece==113) {
-                                // tiles[piece].draw_with_offset(act_x,act_y,surface,-state);
-                                // } else {
-                                // tiles[piece].draw_with_offset(act_x,act_y,surface,state);
-                                // }
+                                // TODO: DOOR
                             } else {
                                 if ((piece >= 116 && piece < 120) || (piece >= 136 && piece < 140)
                                         || (piece >= 156 && piece < 160)) {
-                                    // /* Switch: */
-                                    // SWITCH s;
-                                    // List<SWITCH> l;
-                                    //
-                                    // l.Instance(switches);
-                                    // l.Rewind();
-                                    // while(l.Iterate(s)) {
-                                    // if (s.x==i && s.y==j) {
-                                    // if (s.state!=0) {
-                                    // tiles[piece+140].draw(act_x,act_y,surface);
-                                    // } else {
-                                    // tiles[piece].draw(act_x,act_y,surface);
-                                    // }
-                                    // }
-                                    // }
+                                    // TODO: SWITCH
                                 } else {
 
-                                    if (!drawPoly) {
+                                    if (batch != null) {
                                         batch.draw(tiles.get(piece), act_x,
                                                 INTERNAL_SCREEN_HEIGHT - act_y - /*FIXME: !!!*/ step_y);
-                                    } else {
+                                    }
+                                    if (shapeRenderer != null) {
                                         Polygon poly = tilesPolygons[piece];
                                         if (poly != null) {
                                             poly.setPosition(act_x,
@@ -298,6 +268,9 @@ public class GameMap {
                                         }
                                     }
 
+                                    if (detector != null) {
+                                        detector.detect(act_x, act_y, piece);
+                                    }
                                 }
                             }
                         }

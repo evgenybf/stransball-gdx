@@ -14,10 +14,15 @@ import java.io.FileReader;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.EarClippingTriangulator;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.utils.ShortArray;
 
 public class WorldController {
 
@@ -32,7 +37,6 @@ public class WorldController {
     private int ship_speed_y;
 
     private int ship_x;
-
     private int ship_y;
 
     private final GameMap map;
@@ -44,7 +48,6 @@ public class WorldController {
     private Sprite sprite;
     private Animation shipThrottleAnimation;
     private Sound shipSound;
-    private float shipStateTime;
     private boolean playThrustSound;
 
     public WorldController() {
@@ -74,8 +77,6 @@ public class WorldController {
             shipThrottleAnimation = assets.shipAssets.shipThrustAnimation;
 
             shipSound = assets.soundAssets.thrust;
-
-            shipStateTime = 0.0f;
 
             assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
         }
@@ -152,39 +153,73 @@ public class WorldController {
 
         map.update(delta);
 
-        if (ship_state == 0 && ship_map_collision()) {
-            ship_speed_x /= 4;
-            ship_speed_y /= 4;
-            ship_state = 1;
-            ship_anim = 0;
-        } /* if */
+        //        if (ship_state == 0 && ship_map_collision()) {
+        //            ship_speed_x /= 4;
+        //            ship_speed_y /= 4;
+        //            ship_state = 1;
+        //            ship_anim = 0;
+        //        } /* if */
 
     }
 
-    private boolean ship_map_collision() {
-        // TODO Auto-generated method stub
-
-        if (true)
-            return false;
-
+    private boolean ship_map_collision(final ShapeRenderer shapeRenderer) {
         int x = ((ship_x / FACTOR) - 32);
         int y = ((ship_y / FACTOR) - 32);
         int sx = 64;
         int sy = 64;
 
+        final Polygon shipPolygon = assets.shipAssets.shipPolygon;
+        {
+            int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
+            int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
+
+            shipPolygon.setRotation(360 - ship_angle);
+            shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+            shapeRenderer.polygon(shipPolygon.getTransformedVertices());
+        }
+
+        EarClippingTriangulator triangulator = new EarClippingTriangulator();
+        final ShortArray triangles = triangulator.computeTriangles(shipPolygon.getTransformedVertices());
+
         //map->draw_map(map_sfc,tiles_mask,d.x,d.y,64,64);
-        map.drawWithoutEnemies(null, null, x, y, sx, sy, true);
+        map.drawWithoutEnemies(null, null, x, y, sx, sy, new IPolygonDetector() {
+
+            @Override
+            public void detect(int act_x, int act_y, int piece) {
+                Polygon poly = Assets.assets.shipAssets.tilePolygons[piece];
+                if (poly != null) {
+                    poly.setPosition(act_x, Constants.INTERNAL_SCREEN_HEIGHT - act_y);
+                    //                    for(int i = 0; i < triangles.size(); i++){
+                    //                        meshTriangles[i*3] = triangles.get(i);
+                    //                        meshTriangles[i*3+1] = triangles.get(i).y;
+                    //
+                    //                        UniqueBodyVerticesTriangulated.get(i).mul(1/PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT);
+                    //                    }
+                    System.out.println(shipPolygon.getBoundingRectangle() + " + " + poly.getBoundingRectangle());
+                    if (shipPolygon.getBoundingRectangle().overlaps(poly.getBoundingRectangle())) {
+                        //                    if (Intersector.overlapConvexPolygons(shipPolygon, poly)) {
+                        throw new RuntimeException("Booh!");
+                    }
+                    shapeRenderer.polygon(poly.getTransformedVertices());
+                }
+
+            }
+        });
 
         return false;
     }
 
-    public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
-        renderMap(delta, batch, shapeRenderer, drawPoly);
+    public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        if (shapeRenderer == null) {
+            renderMap(delta, batch, shapeRenderer);
 
-        renderShip(delta, batch, shapeRenderer, drawPoly);
+            renderShip(delta, batch, shapeRenderer);
+        } else {
+            ship_map_collision(shapeRenderer);
+        }
     }
 
-    private void renderMap(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
+    private void renderMap(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         int sx = Constants.INTERNAL_SCREEN_WIDTH;
         int sy = Constants.INTERNAL_SCREEN_HEIGHT;
 
@@ -213,23 +248,19 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawWithoutEnemies(batch, shapeRenderer, map_x, map_y, sx, sy, drawPoly);
+        map.drawWithoutEnemies(batch, shapeRenderer, map_x, map_y, sx, sy, null);
     }
 
-    private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
-        int x = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
-        int y = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
-
+    private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         boolean bThrust = GameKeysStatus.bThrust;
 
-        shipStateTime += delta;
         if (!bThrust) {
             sprite.setRegion(shipRegion);
             shipSound.stop();
             playThrustSound = false;
         } else {
             //TODO: my new code: sprite.setRegion(shipThrottleAnimation.getKeyFrame(shipStateTime));
-            sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim-1]);
+            sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim - 1]);
             if (!playThrustSound) {
                 shipSound.play();
                 shipSound.loop();
@@ -237,18 +268,21 @@ public class WorldController {
             }
         }
 
-        sprite.setRotation(360 - ship_angle);
-        sprite.setCenterX(x);
-        sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - y);
+        int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
+        int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
 
-        if (!drawPoly) {
+        if (batch != null) {
+            sprite.setRotation(360 - ship_angle);
+            sprite.setCenterX(ship_x_);
+            sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
             sprite.draw(batch);
+        }
 
-        } else {
-            assets.shipAssets.shipPolygon.setRotation(360 - ship_angle);
-            assets.shipAssets.shipPolygon.setPosition(x, Constants.INTERNAL_SCREEN_HEIGHT - y);
-
-            shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+        if (shapeRenderer != null) {
+            Polygon shipPolygon = assets.shipAssets.shipPolygon;
+            shipPolygon.setRotation(360 - ship_angle);
+            shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+            shapeRenderer.polygon(shipPolygon.getTransformedVertices());
         }
     }
 

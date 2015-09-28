@@ -57,7 +57,7 @@ public class GameScreen extends ScreenAdapter {
         {
             batch.begin();
 
-            worldController.render(delta, batch, null, false);
+            worldController.render(delta, batch, null);
             renderGui(delta);
 
             batch.end();
@@ -66,7 +66,7 @@ public class GameScreen extends ScreenAdapter {
         {
             shapeRenderer.begin();
 
-            worldController.render(delta, null, shapeRenderer, true);
+            worldController.render(delta, null, shapeRenderer);
 
             shapeRenderer.end();
         }
