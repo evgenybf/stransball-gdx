@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -163,46 +164,35 @@ public class WorldController {
     }
 
     private boolean ship_map_collision(final ShapeRenderer shapeRenderer) {
-        int x = ((ship_x / FACTOR) - 32);
-        int y = ((ship_y / FACTOR) - 32);
+        final int x = ((ship_x / FACTOR) - 32);
+        final int y = ((ship_y / FACTOR) - 32);
         int sx = 64;
         int sy = 64;
 
         final Polygon shipPolygon = assets.shipAssets.shipPolygon;
+        final int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
+        final int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
         {
-            int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
-            int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
 
             shipPolygon.setRotation(360 - ship_angle);
             shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
             shapeRenderer.polygon(shipPolygon.getTransformedVertices());
         }
 
-        EarClippingTriangulator triangulator = new EarClippingTriangulator();
-        final ShortArray triangles = triangulator.computeTriangles(shipPolygon.getTransformedVertices());
-
-        //map->draw_map(map_sfc,tiles_mask,d.x,d.y,64,64);
         map.drawWithoutEnemies(null, null, x, y, sx, sy, new IPolygonDetector() {
 
             @Override
             public void detect(int act_x, int act_y, int piece) {
                 Polygon poly = Assets.assets.shipAssets.tilePolygons[piece];
                 if (poly != null) {
-                    poly.setPosition(act_x, Constants.INTERNAL_SCREEN_HEIGHT - act_y);
-                    //                    for(int i = 0; i < triangles.size(); i++){
-                    //                        meshTriangles[i*3] = triangles.get(i);
-                    //                        meshTriangles[i*3+1] = triangles.get(i).y;
-                    //
-                    //                        UniqueBodyVerticesTriangulated.get(i).mul(1/PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT);
-                    //                    }
-                    System.out.println(shipPolygon.getBoundingRectangle() + " + " + poly.getBoundingRectangle());
+                    poly.setPosition(ship_x_+ act_x - 32, Constants.INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
                     if (shipPolygon.getBoundingRectangle().overlaps(poly.getBoundingRectangle())) {
-                        //                    if (Intersector.overlapConvexPolygons(shipPolygon, poly)) {
-                        throw new RuntimeException("Booh!");
+                        shapeRenderer.setColor(Color.RED);
+                    } else {
+                        shapeRenderer.setColor(Color.WHITE);
                     }
                     shapeRenderer.polygon(poly.getTransformedVertices());
                 }
-
             }
         });
 
