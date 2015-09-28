@@ -1,13 +1,22 @@
 package org.stransball;
 
-import static com.badlogic.gdx.math.MathUtils.*;
+import static com.badlogic.gdx.math.MathUtils.cos;
+import static com.badlogic.gdx.math.MathUtils.degreesToRadians;
+import static com.badlogic.gdx.math.MathUtils.sin;
+import static org.stransball.Assets.assets;
 import static org.stransball.Constants.FACTOR;
-import static org.stransball.GameKeysStatus.*;
+import static org.stransball.GameKeysStatus.bLeft;
+import static org.stransball.GameKeysStatus.bRight;
+import static org.stransball.GameKeysStatus.bThrust;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class WorldController {
@@ -29,6 +38,14 @@ public class WorldController {
     private final GameMap map;
     private int map_x;
     private int map_y;
+    private int ship_state;
+    private int ship_anim;
+    private AtlasRegion shipRegion;
+    private Sprite sprite;
+    private Animation shipThrottleAnimation;
+    private Sound shipSound;
+    private float shipStateTime;
+    private boolean playThrustSound;
 
     public WorldController() {
         map = new GameMap();
@@ -44,6 +61,24 @@ public class WorldController {
         ship_speed_x = 0;
         ship_speed_y = 0;
         fuel = 1000;
+
+        ship_state = 0;
+        ship_anim = 0;
+
+        {
+            shipRegion = assets.shipAssets.shipRegion;
+
+            sprite = new Sprite(shipRegion);
+            sprite.setScale(0.5f, 0.5f);
+
+            shipThrottleAnimation = assets.shipAssets.shipThrustAnimation;
+
+            shipSound = assets.soundAssets.thrust;
+
+            shipStateTime = 0.0f;
+
+            assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
+        }
     }
 
     public void update(float delta) {
@@ -71,12 +106,13 @@ public class WorldController {
                 ship_speed_y = 4 * Constants.FACTOR;
             if (ship_speed_y < -4 * Constants.FACTOR)
                 ship_speed_y = -4 * Constants.FACTOR;
-             fuel--;
-             fuel_used++;
-//             shipAnim++;
-//             if (ship_anim>=6) ship_anim=1;
-//             if (thrust_channel==-1 && S_thrust!=0)
-//             thrust_channel=Mix_PlayChannel(-1,S_thrust,-1);
+            fuel--;
+            fuel_used++;
+            ship_anim++;
+            if (ship_anim >= 6)
+                ship_anim = 1;
+            //                         if (thrust_channel==-1 && S_thrust!=0)
+            //thrust_channel=Mix_PlayChannel(-1,S_thrust,-1);
         }
 
         /* Ship cinematics: */
@@ -115,9 +151,40 @@ public class WorldController {
         } /* if */
 
         map.update(delta);
+
+        if (ship_state == 0 && ship_map_collision()) {
+            ship_speed_x /= 4;
+            ship_speed_y /= 4;
+            ship_state = 1;
+            ship_anim = 0;
+        } /* if */
+
+    }
+
+    private boolean ship_map_collision() {
+        // TODO Auto-generated method stub
+
+        if (true)
+            return false;
+
+        int x = ((ship_x / FACTOR) - 32);
+        int y = ((ship_y / FACTOR) - 32);
+        int sx = 64;
+        int sy = 64;
+
+        //map->draw_map(map_sfc,tiles_mask,d.x,d.y,64,64);
+        map.drawWithoutEnemies(null, null, x, y, sx, sy, true);
+
+        return false;
     }
 
     public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
+        renderMap(delta, batch, shapeRenderer, drawPoly);
+
+        renderShip(delta, batch, shapeRenderer, drawPoly);
+    }
+
+    private void renderMap(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
         int sx = Constants.INTERNAL_SCREEN_WIDTH;
         int sy = Constants.INTERNAL_SCREEN_HEIGHT;
 
@@ -149,36 +216,40 @@ public class WorldController {
         map.drawWithoutEnemies(batch, shapeRenderer, map_x, map_y, sx, sy, drawPoly);
     }
 
-    public int getFuelUsed() {
-        return fuel_used;
-    }
+    private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer, boolean drawPoly) {
+        int x = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
+        int y = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
 
-    public int getFuel() {
-        return fuel;
-    }
+        boolean bThrust = GameKeysStatus.bThrust;
 
-    public int getnShots() {
-        return n_shots;
-    }
+        shipStateTime += delta;
+        if (!bThrust) {
+            sprite.setRegion(shipRegion);
+            shipSound.stop();
+            playThrustSound = false;
+        } else {
+            //TODO: my new code: sprite.setRegion(shipThrottleAnimation.getKeyFrame(shipStateTime));
+            sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim-1]);
+            if (!playThrustSound) {
+                shipSound.play();
+                shipSound.loop();
+                playThrustSound = true;
+            }
+        }
 
-    public int getnHits() {
-        return n_hits;
-    }
+        sprite.setRotation(360 - ship_angle);
+        sprite.setCenterX(x);
+        sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - y);
 
-    public int getEnemiesDestroyed() {
-        return enemiesDestroyed;
-    }
+        if (!drawPoly) {
+            sprite.draw(batch);
 
-    public int getShipXToDraw() {
-        return ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
-    }
+        } else {
+            assets.shipAssets.shipPolygon.setRotation(360 - ship_angle);
+            assets.shipAssets.shipPolygon.setPosition(x, Constants.INTERNAL_SCREEN_HEIGHT - y);
 
-    public int getShipYToDraw() {
-        return (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
-    }
-
-    public float getShipAngle() {
-        return ship_angle;
+            shapeRenderer.polygon(assets.shipAssets.shipPolygon.getTransformedVertices());
+        }
     }
 
 }
