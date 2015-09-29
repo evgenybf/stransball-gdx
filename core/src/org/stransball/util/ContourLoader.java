@@ -1,4 +1,4 @@
-package org.stransball;
+package org.stransball.util;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

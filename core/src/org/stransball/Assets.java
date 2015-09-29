@@ -2,6 +2,8 @@ package org.stransball;
 
 import java.io.FileNotFoundException;
 
+import org.stransball.util.ContourLoader;
+
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -78,6 +80,7 @@ public class Assets {
         public final AtlasRegion shipRegion;
         public final Animation shipThrustAnimation;
         public final Polygon shipPolygon;
+        public final Animation shipExplosionAnimation;
 
         public GraphicAssets(TextureAtlas atlas) {
 
@@ -97,6 +100,8 @@ public class Assets {
             shipPolygon = contourLoader.findPolygon("ship", true);
 
             shipThrustAnimation = new Animation(0.1f, atlas.findRegions("shipThrust"), PlayMode.LOOP);
+            
+            shipExplosionAnimation = new Animation(0.1f, atlas.findRegions("shipExplosion"), PlayMode.LOOP);
         }
     }
 

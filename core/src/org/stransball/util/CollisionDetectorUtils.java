@@ -1,4 +1,4 @@
-package org.stransball;
+package org.stransball.util;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.DelaunayTriangulator;
