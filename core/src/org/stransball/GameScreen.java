@@ -78,13 +78,13 @@ public class GameScreen extends ScreenAdapter {
             batch.end();
         }
 
-//        {
-//            shapeRenderer.begin();
-//
-//            worldController.render(delta, null, shapeRenderer);
-//
-//            shapeRenderer.end();
-//        }
+        {
+            shapeRenderer.begin();
+
+            worldController.render(delta, null, shapeRenderer);
+
+            shapeRenderer.end();
+        }
     }
 
     private void renderGui(float delta) {
