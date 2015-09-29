@@ -15,15 +15,11 @@ import java.io.FileReader;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.EarClippingTriangulator;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.utils.ShortArray;
 
 public class WorldController {
 
@@ -138,19 +134,19 @@ public class WorldController {
         if ((ship_x / Constants.FACTOR) < 0) {
             ship_x = 0;
             ship_speed_x = 0;
-        } /* if */
+        }
         if ((ship_y / Constants.FACTOR) < 0) {
             ship_y = 0;
             ship_speed_y = 0;
-        } /* if */
+        }
         if ((ship_x / FACTOR) > (map.get_sx() * 16)) {
             ship_x = (map.get_sx() * 16) * FACTOR;
             ship_speed_x = 0;
-        } /* if */
+        }
         if ((ship_y / FACTOR) > (map.get_sy() * 16)) {
             ship_y = (map.get_sy() * 16) * FACTOR;
             ship_speed_y = 0;
-        } /* if */
+        }
 
         map.update(delta);
 
@@ -159,7 +155,7 @@ public class WorldController {
         //            ship_speed_y /= 4;
         //            ship_state = 1;
         //            ship_anim = 0;
-        //        } /* if */
+        //        } 
 
     }
 
@@ -173,11 +169,15 @@ public class WorldController {
         final int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
         final int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
         {
-
             shipPolygon.setRotation(360 - ship_angle);
             shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
             shapeRenderer.polygon(shipPolygon.getTransformedVertices());
         }
+
+        shapeRenderer.polygon(shipPolygon.getTransformedVertices());
+
+        final Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(shipPolygon);
+        //CollisionDetectorUtils.renderPolygons(shapeRenderer, shipPolygons);
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy, new IPolygonDetector() {
 
@@ -185,15 +185,21 @@ public class WorldController {
             public void detect(int act_x, int act_y, int piece) {
                 Polygon poly = Assets.assets.shipAssets.tilePolygons[piece];
                 if (poly != null) {
-                    poly.setPosition(ship_x_+ act_x - 32, Constants.INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
-                    if (shipPolygon.getBoundingRectangle().overlaps(poly.getBoundingRectangle())) {
+                    poly.setPosition(ship_x_ + act_x - 32, Constants.INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
+
+                    Polygon[] poligons = CollisionDetectorUtils.tiangulate(poly);
+
+                    if (CollisionDetectorUtils.collide(shipPolygons, poligons)) {
                         shapeRenderer.setColor(Color.RED);
                     } else {
                         shapeRenderer.setColor(Color.WHITE);
                     }
+
                     shapeRenderer.polygon(poly.getTransformedVertices());
+                    //CollisionDetectorUtils.renderPolygons(shapeRenderer, poligons);
                 }
             }
+
         });
 
         return false;
