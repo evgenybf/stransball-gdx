@@ -1,6 +1,7 @@
 package org.stransball;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.DelaunayTriangulator;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
@@ -25,13 +26,18 @@ public class CollisionDetectorUtils {
         EarClippingTriangulator triangulator = new EarClippingTriangulator();
 
         ShortArray pointsCoords = triangulator.computeTriangles(vertices);
-        Polygon[] triangles = new Polygon[pointsCoords.size / 6];
+        
+        int step = 2 * 3; // skip some triangles - it should not affect on the result
+        Polygon[] triangles = new Polygon[pointsCoords.size / step];
 
-        for (int i = 0; i < pointsCoords.size / 6; i++) {
-            Polygon newPoly = new Polygon(new float[] { vertices[pointsCoords.get(i * 6) * 2],
-                    vertices[pointsCoords.get(i * 6) * 2 + 1], vertices[pointsCoords.get(i * 6 + 1) * 2],
-                    vertices[pointsCoords.get(i * 6 + 1) * 2 + 1], vertices[pointsCoords.get(i * 6 + 2) * 2],
-                    vertices[pointsCoords.get(i * 6 + 2) * 2 + 1], });
+        for (int i = 0; i < pointsCoords.size / step; i++) {
+            Polygon newPoly = new Polygon(new float[] { 
+                    vertices[pointsCoords.get(i * step) * 2],
+                    vertices[pointsCoords.get(i * step) * 2 + 1], 
+                    vertices[pointsCoords.get(i * step + 1) * 2],
+                    vertices[pointsCoords.get(i * step + 1) * 2 + 1], 
+                    vertices[pointsCoords.get(i * step + 2) * 2],
+                    vertices[pointsCoords.get(i * step + 2) * 2 + 1], });
             triangles[i] = newPoly;
         }
 
