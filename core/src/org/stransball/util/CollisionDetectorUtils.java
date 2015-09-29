@@ -1,7 +1,6 @@
 package org.stransball.util;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.DelaunayTriangulator;
 import com.badlogic.gdx.math.EarClippingTriangulator;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
@@ -9,17 +8,7 @@ import com.badlogic.gdx.utils.ShortArray;
 
 public class CollisionDetectorUtils {
 
-    public static boolean collide(Polygon[] shipPolygons, Polygon[] poligons) {
-        for (Polygon shipPoly0 : shipPolygons) {
-            for (Polygon poly0 : poligons) {
-                if (Intersector.overlapConvexPolygons(shipPoly0, poly0)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    // Split concave polygon into several convex polygons (triangles)
     public static Polygon[] tiangulate(Polygon polygon) {
         float[] vertices = polygon.getTransformedVertices();
 
@@ -44,8 +33,20 @@ public class CollisionDetectorUtils {
         return triangles;
     }
 
+    // Check if groups of polygons are overlapped
+    public static boolean overlapPolygons(Polygon[] shipPolygons, Polygon[] poligons) {
+        for (Polygon shipPoly0 : shipPolygons) {
+            for (Polygon poly0 : poligons) {
+                if (Intersector.overlapConvexPolygons(shipPoly0, poly0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // Draw polygons in array. Use for debug purposes only
-    public static void renderPolygons(ShapeRenderer renderer, Polygon[] polygons) {
+    public static void drawPolygons(ShapeRenderer renderer, Polygon[] polygons) {
         for (Polygon poly0 : polygons) {
             renderer.polygon(poly0.getTransformedVertices());
         }

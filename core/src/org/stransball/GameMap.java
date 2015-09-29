@@ -25,6 +25,7 @@ public class GameMap {
     private int[] map;
     private int sx;
     private int sy;
+    @SuppressWarnings("unused")
     private int background_type;
     private int animtimer;
     private int animflag;
@@ -35,7 +36,6 @@ public class GameMap {
     private int switchnumber;
     private ArrayList<FUELRECHARGE> fuel_recharges;
 
-    // TODO: Move to MapLoader
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
         try {
@@ -47,6 +47,7 @@ public class GameMap {
 
     private void load(Scanner scanner) {
         int i;
+        
         enemies = new ArrayList<ENEMY>();
         doors = new ArrayList<DOOR>();
         switches = new ArrayList<SWITCH>();

@@ -5,16 +5,14 @@ import static com.badlogic.gdx.math.MathUtils.degreesToRadians;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static org.stransball.Assets.assets;
 import static org.stransball.Constants.FACTOR;
+import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
+import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 import static org.stransball.GameKeysStatus.bLeft;
 import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-
 import org.stransball.util.CollisionDetectorUtils;
 
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -25,10 +23,15 @@ import com.badlogic.gdx.math.Polygon;
 
 public class WorldController {
 
+    @SuppressWarnings("unused")
     private int fuel_used;
+    @SuppressWarnings("unused")
     private int fuel;
+    @SuppressWarnings("unused")
     private int n_shots;
+    @SuppressWarnings("unused")
     private int n_hits;
+    @SuppressWarnings("unused")
     private int enemiesDestroyed;
 
     private int ship_angle;
@@ -46,20 +49,15 @@ public class WorldController {
     private AtlasRegion shipRegion;
     private Sprite sprite;
     private Animation shipThrottleAnimation;
-    private Sound shipSound;
     private boolean playThrustSound;
     private boolean collision;
 
-    public WorldController() {
-        map = new GameMap();
-        try {
-            map.load(new FileReader("maps/map10.map"));
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        ship_x = Constants.FACTOR * 124;
-        ship_y = (124) * Constants.FACTOR;
+    public WorldController(GameMap map) {
+
+        this.map = map;
+
+        ship_x = FACTOR * 124;
+        ship_y = (124) * FACTOR;
         ship_angle = 0;
         ship_speed_x = 0;
         ship_speed_y = 0;
@@ -75,8 +73,6 @@ public class WorldController {
             sprite.setScale(0.5f, 0.5f);
 
             shipThrottleAnimation = assets.shipAssets.shipThrustAnimation;
-
-            shipSound = assets.soundAssets.thrust;
 
             assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
         }
@@ -100,52 +96,64 @@ public class WorldController {
                 float radian_angle = (ship_angle - 90.0f) * degreesToRadians;
                 ship_speed_x += (int) (cos(radian_angle) * 18f);
                 ship_speed_y += (int) (sin(radian_angle) * 18f);
-                if (ship_speed_x > 4 * Constants.FACTOR)
-                    ship_speed_x = 4 * Constants.FACTOR;
-                if (ship_speed_x < -4 * Constants.FACTOR)
-                    ship_speed_x = -4 * Constants.FACTOR;
-                if (ship_speed_y > 4 * Constants.FACTOR)
-                    ship_speed_y = 4 * Constants.FACTOR;
-                if (ship_speed_y < -4 * Constants.FACTOR)
-                    ship_speed_y = -4 * Constants.FACTOR;
+                if (ship_speed_x > 4 * FACTOR)
+                    ship_speed_x = 4 * FACTOR;
+                if (ship_speed_x < -4 * FACTOR)
+                    ship_speed_x = -4 * FACTOR;
+                if (ship_speed_y > 4 * FACTOR)
+                    ship_speed_y = 4 * FACTOR;
+                if (ship_speed_y < -4 * FACTOR)
+                    ship_speed_y = -4 * FACTOR;
                 fuel--;
                 fuel_used++;
                 ship_anim++;
                 if (ship_anim >= 6)
                     ship_anim = 1;
-                //                         if (thrust_channel==-1 && S_thrust!=0)
-                //thrust_channel=Mix_PlayChannel(-1,S_thrust,-1);
+
+                if (!playThrustSound) {
+                    assets.soundAssets.thrust.play();
+                    assets.soundAssets.thrust.loop();
+                    playThrustSound = true;
+                }
+            } else {
+                ship_anim = 0;
+
+                assets.soundAssets.thrust.stop();
+                playThrustSound = false;
             }
         } else if (ship_state == 1) {
+            assets.soundAssets.thrust.stop();
+            playThrustSound = false;
+            
             ship_anim++;
             //if (ship_anim>=64) fade_state=2;
             if (ship_anim >= 96)
                 return;
         }
 
-        /* Ship cinematics: */
+        // Ship cinematics:
         if (ship_speed_x > 0)
             ship_speed_x--;
         if (ship_speed_x < 0)
             ship_speed_x++;
         ship_speed_y += 2;
 
-        if (ship_speed_x > 4 * Constants.FACTOR)
-            ship_speed_x = 4 * Constants.FACTOR;
-        if (ship_speed_x < -4 * Constants.FACTOR)
-            ship_speed_x = -4 * Constants.FACTOR;
-        if (ship_speed_y > 4 * Constants.FACTOR)
-            ship_speed_y = 4 * Constants.FACTOR;
-        if (ship_speed_y < -4 * Constants.FACTOR)
-            ship_speed_y = -4 * Constants.FACTOR;
+        if (ship_speed_x > 4 * FACTOR)
+            ship_speed_x = 4 * FACTOR;
+        if (ship_speed_x < -4 * FACTOR)
+            ship_speed_x = -4 * FACTOR;
+        if (ship_speed_y > 4 * FACTOR)
+            ship_speed_y = 4 * FACTOR;
+        if (ship_speed_y < -4 * FACTOR)
+            ship_speed_y = -4 * FACTOR;
         ship_x += ship_speed_x;
         ship_y += ship_speed_y;
 
-        if ((ship_x / Constants.FACTOR) < 0) {
+        if ((ship_x / FACTOR) < 0) {
             ship_x = 0;
             ship_speed_x = 0;
         }
-        if ((ship_y / Constants.FACTOR) < 0) {
+        if ((ship_y / FACTOR) < 0) {
             ship_y = 0;
             ship_speed_y = 0;
         }
@@ -165,8 +173,9 @@ public class WorldController {
             ship_speed_y /= 4;
             ship_state = 1;
             ship_anim = 0;
+            
+            Assets.assets.soundAssets.explosion.play();
         }
-
     }
 
     private boolean ship_map_collision(final ShapeRenderer shapeRenderer) {
@@ -176,18 +185,18 @@ public class WorldController {
         int sy = 64;
 
         final Polygon shipPolygon = assets.shipAssets.shipPolygon;
-        final int ship_x_ = ((ship_x / Constants.FACTOR) /*- 32*/) - map_x;
-        final int ship_y_ = (((ship_y / Constants.FACTOR) /*- 32*/)) - map_y;
+        final int ship_x_ = ((ship_x / FACTOR) /*- 32*/) - map_x;
+        final int ship_y_ = (((ship_y / FACTOR) /*- 32*/)) - map_y;
         {
             shipPolygon.setRotation(360 - ship_angle);
-            shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+            shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
         }
 
         final Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(shipPolygon);
         if (shapeRenderer != null) {
             //shapeRenderer.polygon(shipPolygon.getTransformedVertices());
 
-            CollisionDetectorUtils.renderPolygons(shapeRenderer, shipPolygons);
+            CollisionDetectorUtils.drawPolygons(shapeRenderer, shipPolygons);
         }
 
         collision = false;
@@ -204,11 +213,11 @@ public class WorldController {
     }
 
     private void renderMap(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
-        int sx = Constants.INTERNAL_SCREEN_WIDTH;
-        int sy = Constants.INTERNAL_SCREEN_HEIGHT;
+        int sx = INTERNAL_SCREEN_WIDTH;
+        int sy = INTERNAL_SCREEN_HEIGHT;
 
-        int dx = ((ship_x / FACTOR) - (Constants.INTERNAL_SCREEN_WIDTH / 2)) - map_x;
-        int dy = ((ship_y / FACTOR) - (int) (Constants.INTERNAL_SCREEN_HEIGHT / 2.4)) - map_y;
+        int dx = ((ship_x / FACTOR) - (INTERNAL_SCREEN_WIDTH / 2)) - map_x;
+        int dy = ((ship_y / FACTOR) - (int) (INTERNAL_SCREEN_HEIGHT / 2.4)) - map_y;
 
         if (dx > 8)
             dx = 8;
@@ -238,36 +247,25 @@ public class WorldController {
     private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
 
         if (ship_state == 0) {
-            boolean bThrust = GameKeysStatus.bThrust;
-
-            if (!bThrust) {
-                sprite.setRegion(shipRegion);
-                shipSound.stop();
-                playThrustSound = false;
-            } else {
-                //TODO: my new code: sprite.setRegion(shipThrottleAnimation.getKeyFrame(shipStateTime));
-                sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim - 1]);
-                if (!playThrustSound) {
-                    shipSound.play();
-                    shipSound.loop();
-                    playThrustSound = true;
-                }
-            }
-
-            int ship_x_ = ((ship_x / Constants.FACTOR)) - map_x;
-            int ship_y_ = (((ship_y / Constants.FACTOR))) - map_y;
+            int ship_x_ = ((ship_x / FACTOR)) - map_x;
+            int ship_y_ = (((ship_y / FACTOR))) - map_y;
 
             if (batch != null) {
+                if (ship_anim == 0)
+                    sprite.setRegion(shipRegion);
+                else
+                    sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim - 1]);
+
                 sprite.setRotation(360 - ship_angle);
                 sprite.setCenterX(ship_x_);
-                sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+                sprite.setCenterY(INTERNAL_SCREEN_HEIGHT - ship_y_);
                 sprite.draw(batch);
             }
 
             if (shapeRenderer != null) {
                 Polygon shipPolygon = assets.shipAssets.shipPolygon;
                 shipPolygon.setRotation(360 - ship_angle);
-                shipPolygon.setPosition(ship_x_, Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+                shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
                 shapeRenderer.polygon(shipPolygon.getTransformedVertices());
             }
         } else if (ship_state == 1) {
@@ -280,7 +278,7 @@ public class WorldController {
                 int ship_y_ = ((ship_y / FACTOR)) - map_y;
 
                 sprite.setCenterX(ship_x_);
-                sprite.setCenterY(Constants.INTERNAL_SCREEN_HEIGHT - ship_y_);
+                sprite.setCenterY(INTERNAL_SCREEN_HEIGHT - ship_y_);
 
                 sprite.setRotation(0);
 
@@ -308,11 +306,11 @@ public class WorldController {
         public void detect(int act_x, int act_y, int piece) {
             Polygon poly = Assets.assets.shipAssets.tilePolygons[piece];
             if (poly != null) {
-                poly.setPosition(ship_x_ + act_x - 32, Constants.INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
+                poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
 
                 Polygon[] poligons = CollisionDetectorUtils.tiangulate(poly);
 
-                if (CollisionDetectorUtils.collide(shipPolygons, poligons)) {
+                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, poligons)) {
                     if (shapeRenderer != null) {
                         shapeRenderer.setColor(Color.RED);
                     }
@@ -325,7 +323,7 @@ public class WorldController {
 
                 if (shapeRenderer != null) {
                     //shapeRenderer.polygon(poly.getTransformedVertices());
-                    CollisionDetectorUtils.renderPolygons(shapeRenderer, poligons);
+                    CollisionDetectorUtils.drawPolygons(shapeRenderer, poligons);
                 }
             }
         }

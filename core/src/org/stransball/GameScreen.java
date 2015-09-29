@@ -5,6 +5,9 @@ import static org.stransball.Assets.assets;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.GL20;
@@ -16,7 +19,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class GameScreen extends ScreenAdapter {
 
-    private final GameMain game;
+    @SuppressWarnings("unused")
+    private GameMain game;
     private final FitViewport viewport;
     private SpriteBatch batch;
     private BitmapFont font;
@@ -24,10 +28,10 @@ public class GameScreen extends ScreenAdapter {
     private WorldController worldController;
     private ShapeRenderer shapeRenderer;
     private boolean paused;
-
+    
     public GameScreen(GameMain game) {
         this.game = game;
-
+        
         viewport = new FitViewport(INTERNAL_SCREEN_WIDTH, INTERNAL_SCREEN_HEIGHT);
         create();
     }
@@ -40,7 +44,18 @@ public class GameScreen extends ScreenAdapter {
 
         font = assets.fontAssets.defaultFont;
 
-        worldController = new WorldController();
+        GameMap map = loadMap();
+        worldController = new WorldController(map);
+    }
+
+    private GameMap loadMap() {
+        GameMap map = new GameMap();
+        try {
+            map.load(new FileReader("maps/map10.map"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return map;
     }
 
     @Override
@@ -63,13 +78,13 @@ public class GameScreen extends ScreenAdapter {
             batch.end();
         }
 
-        {
-            shapeRenderer.begin();
-
-            worldController.render(delta, null, shapeRenderer);
-
-            shapeRenderer.end();
-        }
+//        {
+//            shapeRenderer.begin();
+//
+//            worldController.render(delta, null, shapeRenderer);
+//
+//            shapeRenderer.end();
+//        }
     }
 
     private void renderGui(float delta) {
