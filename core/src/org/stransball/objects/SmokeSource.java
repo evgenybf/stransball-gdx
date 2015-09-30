@@ -1,6 +1,6 @@
 package org.stransball.objects;
 
-public class SMOKESOURCE {
+public class SmokeSource {
 
     public int x;
     public int y;

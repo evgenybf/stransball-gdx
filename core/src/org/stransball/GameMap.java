@@ -1,5 +1,6 @@
 package org.stransball;
 
+import static com.badlogic.gdx.math.MathUtils.random;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
@@ -12,12 +13,15 @@ import java.util.Scanner;
 import org.stransball.objects.Door;
 import org.stransball.objects.Enemy;
 import org.stransball.objects.FuelRecharge;
-import org.stransball.objects.SMOKESOURCE;
+import org.stransball.objects.Smoke;
+import org.stransball.objects.SmokeSource;
 import org.stransball.objects.Switch;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
@@ -39,7 +43,8 @@ public class GameMap {
     private int switchnumber;
     private List<FuelRecharge> fuel_recharges;
 
-    private List<SMOKESOURCE> smokesources;
+    private List<SmokeSource> smokesources;
+    private List<Smoke> smokes;
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -58,7 +63,8 @@ public class GameMap {
         switches = new ArrayList<Switch>();
         switchnumber = 0;
         fuel_recharges = new ArrayList<FuelRecharge>();
-        smokesources = new ArrayList<SMOKESOURCE>();
+        smokesources = new ArrayList<SmokeSource>();
+        smokes = new ArrayList<Smoke>();
 
         sx = scanner.nextInt();
         sy = scanner.nextInt();
@@ -218,6 +224,7 @@ public class GameMap {
     }
 
     public void update(float delta) {
+        // Tile animation
         animtimer++;
         if (animtimer > 24) {
             animflag++;
@@ -226,6 +233,65 @@ public class GameMap {
             animtimer = 0;
         }
 
+        // Smoke
+        {
+            List<Smoke> todelete = new ArrayList<Smoke>();
+            List<SmokeSource> todelete2 = new ArrayList<SmokeSource>();
+
+            for (SmokeSource ss : smokesources) {
+                ss.timer++;
+                if (ss.timer > 256) {
+                    todelete2.add(ss);
+                } else {
+                    int chance;
+
+                    chance = ss.timer;
+                    chance = (chance * chance) / 256;
+                    chance /= 16;
+
+                    if (MathUtils.random(chance + 2) == 0) {
+                        Smoke s = new Smoke();
+
+                        s.x = ss.x * FACTOR;
+                        s.y = ss.y * FACTOR;
+
+                        s.speed_x = ((random((1 + FACTOR / 16)) - (FACTOR / 32))) + ss.speed_x;
+                        s.speed_y = ((random((1 + FACTOR / 16)) - (FACTOR / 32))) + ss.speed_y;
+                        s.desired_x = (random((FACTOR / 4))) - FACTOR / 8;
+                        s.desired_y = ((random((1 + FACTOR / 4)) - (FACTOR / 8))) - FACTOR / 4;
+                        s.timer = 0;
+
+                        smokes.add(s);
+                    }
+
+                }
+            }
+
+            for (SmokeSource ss : todelete2) {
+                smokesources.remove(ss);
+            }
+
+            for (Smoke s : smokes) {
+                s.timer++;
+                s.x += s.speed_x;
+                s.y += s.speed_y;
+                if (s.speed_x > s.desired_x)
+                    s.speed_x -= 2;
+                if (s.speed_x < s.desired_x)
+                    s.speed_x += 2;
+                if (s.speed_y > s.desired_y)
+                    s.speed_y -= 1;
+                if (s.speed_y < s.desired_y)
+                    s.speed_y += 1;
+                if (s.timer > 255 || s.y < -8 * FACTOR) {
+                    todelete.add(s);
+                }
+            }
+
+            for (Smoke s : todelete) {
+                smokes.remove(s);
+            }
+        }
     }
 
     public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer shapeRenderer, int x, int y, int ww, int wh,
@@ -282,6 +348,32 @@ public class GameMap {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // Draw smoke
+        if (batch != null) {
+            tiles = Assets.assets.shipAssets.tiles;
+            for (Smoke s : smokes) {
+                int tile = ((s.timer) >> 3) % 3;
+                int rx = (s.x / FACTOR) - x;
+                int ry = (s.y / FACTOR) - y;
+                if (rx > -16 && rx < ww && ry > -16 && ry < wh) {
+                    int alpha = 255 - s.timer;
+                    alpha = (alpha * alpha) / (255);
+                    
+                    if (alpha < 0)
+                        alpha = 0;
+                    if (alpha > 255)
+                        alpha = 255;
+
+                    AtlasRegion image = tiles.get(272 + tile);
+
+                    Sprite sprite = new Sprite(image);
+                    sprite.setPosition(rx, INTERNAL_SCREEN_HEIGHT - ry - 16);
+
+                    sprite.draw(batch, alpha / 255.0f);
                 }
             }
         }
@@ -382,14 +474,6 @@ public class GameMap {
         return piece;
     }
 
-    public int get_sx() {
-        return sx;
-    }
-
-    public int get_sy() {
-        return sy;
-    }
-
     public int shipbullet_collision(int x, int y, int strength) {
         Enemy selected = null;
         int mindistance = -1;
@@ -472,8 +556,8 @@ public class GameMap {
                     map[i] -= 36;
                 }
                 if (generate_smoke == 0) {
-                    SMOKESOURCE ss;
-                    ss = new SMOKESOURCE();
+                    SmokeSource ss;
+                    ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
                     ss.speed_x = 0;
@@ -482,8 +566,8 @@ public class GameMap {
                     smokesources.add(ss);
                 }
                 if (generate_smoke == 1) {
-                    SMOKESOURCE ss;
-                    ss = new SMOKESOURCE();
+                    SmokeSource ss;
+                    ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
                     ss.speed_x = 0;
@@ -492,8 +576,8 @@ public class GameMap {
                     smokesources.add(ss);
                 }
                 if (generate_smoke == 2) {
-                    SMOKESOURCE ss;
-                    ss = new SMOKESOURCE();
+                    SmokeSource ss;
+                    ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
                     ss.speed_x = FACTOR / 4;
@@ -502,8 +586,8 @@ public class GameMap {
                     smokesources.add(ss);
                 }
                 if (generate_smoke == 3) {
-                    SMOKESOURCE ss;
-                    ss = new SMOKESOURCE();
+                    SmokeSource ss;
+                    ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
                     ss.speed_x = -FACTOR / 4;
@@ -528,8 +612,8 @@ public class GameMap {
                     selected.state = 0;
                     generate_smoke = 0;
                     if (generate_smoke == 0) {
-                        SMOKESOURCE ss;
-                        ss = new SMOKESOURCE();
+                        SmokeSource ss;
+                        ss = new SmokeSource();
                         ss.x = selected.x;
                         ss.y = selected.y;
                         ss.speed_x = 0;
@@ -544,4 +628,11 @@ public class GameMap {
         return retval;
     }
 
+    public int get_sx() {
+        return sx;
+    }
+
+    public int get_sy() {
+        return sy;
+    }
 }

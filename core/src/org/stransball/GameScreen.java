@@ -40,6 +40,8 @@ public class GameScreen extends ScreenAdapter {
         time = 0;
 
         batch = new SpriteBatch();
+        batch.enableBlending();
+        
         shapeRenderer = new ShapeRenderer();
 
         font = assets.fontAssets.defaultFont;
@@ -97,7 +99,6 @@ public class GameScreen extends ScreenAdapter {
             font.draw(batch, format("%02d:%02d", min, sec), viewport.getWorldWidth(), viewport.getWorldHeight(), 0,
                     Align.right, true);
         }
-
     }
 
     public void resize(int width, int height) {
