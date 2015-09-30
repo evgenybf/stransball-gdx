@@ -1,6 +1,6 @@
 package org.stransball.objects;
 
-public class DOOR {
+public class Door {
 
 	public int x;
 	public int y;

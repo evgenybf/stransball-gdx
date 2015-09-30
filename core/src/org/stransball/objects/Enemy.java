@@ -1,6 +1,6 @@
 package org.stransball.objects;
 
-public class ENEMY {
+public class Enemy {
 
 	public int type;
 	public int state;
@@ -12,5 +12,10 @@ public class ENEMY {
 	public int tank_angle;
 	public int state2;
 	public int tank_type;
+	
+    public boolean collision(int strength) {
+        // TODO Auto-generated method stub
+        return true;
+    }
 
 }

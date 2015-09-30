@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.stransball.objects.SHIP_BULLET;
+import org.stransball.objects.ShipBullet;
 import org.stransball.util.CollisionDetectorUtils;
 
 import com.badlogic.gdx.graphics.Color;
@@ -57,23 +57,25 @@ public class WorldController {
     private Animation shipThrottleAnimation;
     private boolean playThrustSound;
     private boolean collision;
-    private List<SHIP_BULLET> bullets;
+    private List<ShipBullet> bullets;
+    private int enemies_destroyed;
 
     public WorldController(GameMap map) {
-
         this.map = map;
 
-        bullets = new ArrayList<SHIP_BULLET>();
+        bullets = new ArrayList<ShipBullet>();
 
-        ship_x = FACTOR * 124;
-        ship_y = (124) * FACTOR;
+        ship_x = (map.get_sx() * 8) * FACTOR;
+        ship_y = (32) * FACTOR;
+
         ship_angle = 0;
         ship_speed_x = 0;
         ship_speed_y = 0;
-        fuel = 1000;
 
         ship_state = 0;
         ship_anim = 0;
+
+        fuel = 1000;
 
         {
             shipRegion = assets.shipAssets.shipRegion;
@@ -132,18 +134,20 @@ public class WorldController {
             }
 
             if (GameKeysStatus.bFire && !GameKeysStatus.bFirePrev /* && fuel>=shotfuel[ship_type] */) {
-                float radian_angle = ((ship_angle - 90.0F) * 3.141592F) / 180.0F;
-                SHIP_BULLET b = new SHIP_BULLET();
+                float radian_angle = (ship_angle - 90) * MathUtils.degreesToRadians;
 
                 n_shots++;
-
-                b.x = ship_x - 8 * FACTOR;
-                b.y = ship_y - 8 * FACTOR;
-                b.speed_x = (int) (MathUtils.cos(radian_angle) * 1 * FACTOR); //4
-                b.speed_y = (int) (MathUtils.sin(radian_angle) * 1 * FACTOR); //4
                 //fuel-=shotfuel[ship_type];
                 //fuel_used+=shotfuel[ship_type];
-                b.state = 0;
+
+                ShipBullet b = new ShipBullet();
+                {
+                    b.x = ship_x - 8 * FACTOR;
+                    b.y = ship_y - 8 * FACTOR;
+                    b.speed_x = (int) (MathUtils.cos(radian_angle) * 4 * FACTOR);
+                    b.speed_y = (int) (MathUtils.sin(radian_angle) * 4 * FACTOR);
+                    b.state = 0;
+                }
                 bullets.add(b);
 
                 Assets.assets.soundAssets.shipshot.play();
@@ -196,28 +200,20 @@ public class WorldController {
 
         /* Bullets: */
         {
-            List<SHIP_BULLET> deletelist = new ArrayList<SHIP_BULLET>();
+            List<ShipBullet> deletelist = new ArrayList<ShipBullet>();
 
-            for (SHIP_BULLET b : bullets) {
+            for (ShipBullet b : bullets) {
                 if (b.state == 0) {
                     b.x += b.speed_x;
                     b.y += b.speed_y;
 
                     if (tile_map_collision(null, Assets.assets.shipAssets.tilePolygons[242], b.x, b.y)) {
-                        //b.x / FACTOR,
-                        //b.y / FACTOR)) {
-                        //FIXME: begin
-                        Assets.assets.soundAssets.enemyHit.play();
-                        deletelist.add(b);
-                        //FIXME: end
-
-                        //int ship_strength[] = { 1, 2, 4 };
-                        //int retv;
-
                         b.state++;
-                        //                        retv=map.shipbullet_collision((b.x/FACTOR)+8,(b.y/FACTOR)+8,ship_strength[ship_type]);
-                        //                        if (retv!=0) n_hits++;
-                        //                        if (retv==2) enemies_destroyed++;
+                        int retv = map.shipbullet_collision((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
+                        if (retv != 0)
+                            n_hits++;
+                        if (retv == 2)
+                            enemies_destroyed++;
                     } else {
                         if (b.x < -8 * FACTOR || b.x > (map.get_sx() * 16 * FACTOR) + 8 * FACTOR || b.y < -8 * FACTOR
                                 || b.y > (map.get_sy() * 16 * FACTOR) + 8 * FACTOR)
@@ -230,7 +226,7 @@ public class WorldController {
                 }
 
             }
-            for (SHIP_BULLET b0 : deletelist) {
+            for (ShipBullet b0 : deletelist) {
                 bullets.remove(b0);
             }
         }
@@ -254,9 +250,9 @@ public class WorldController {
         final int y = ((by / FACTOR) - 32);
         int sx = 64;
         int sy = 64;
-        
-        int ship_x_ = bx / FACTOR - map_x; //16
-        int ship_y_ = by / FACTOR - map_y; //16
+
+        int ship_x_ = bx / FACTOR - map_x;
+        int ship_y_ = by / FACTOR - map_y;
 
         polygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
         Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(polygon); //new Polygon[] { polygon }; //
@@ -264,7 +260,7 @@ public class WorldController {
         if (shapeRenderer != null) {
             shapeRenderer.polygon(polygon.getTransformedVertices());
         }
-        
+
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
                 new CollisionDetector(shapeRenderer, ship_x_, ship_y_, shipPolygons));
 
@@ -305,16 +301,16 @@ public class WorldController {
 
             renderShipBullet(batch);
         }
-        
-//        if (shapeRenderer != null) {
-//            for (SHIP_BULLET b : bullets) {
-//                tile_map_collision(shapeRenderer, Assets.assets.shipAssets.tilePolygons[242], b.x, b.y);
-//            }
-//        }
+
+        //        if (shapeRenderer != null) {
+        //            for (SHIP_BULLET b : bullets) {
+        //                tile_map_collision(shapeRenderer, Assets.assets.shipAssets.tilePolygons[242], b.x, b.y);
+        //            }
+        //        }
     }
 
     private void renderShipBullet(SpriteBatch batch) {
-        for (SHIP_BULLET b : bullets) {
+        for (ShipBullet b : bullets) {
             AtlasRegion tile;
             if (b.state < 8)
                 tile = Assets.assets.shipAssets.tiles.get(242);

@@ -1,16 +1,19 @@
 package org.stransball;
 
+import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
-import org.stransball.objects.DOOR;
-import org.stransball.objects.ENEMY;
-import org.stransball.objects.FUELRECHARGE;
-import org.stransball.objects.SWITCH;
+import org.stransball.objects.Door;
+import org.stransball.objects.Enemy;
+import org.stransball.objects.FuelRecharge;
+import org.stransball.objects.SMOKESOURCE;
+import org.stransball.objects.Switch;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -30,11 +33,13 @@ public class GameMap {
     private int animtimer;
     private int animflag;
 
-    private ArrayList<ENEMY> enemies;
-    private ArrayList<DOOR> doors;
-    private ArrayList<SWITCH> switches;
+    private List<Enemy> enemies;
+    private List<Door> doors;
+    private List<Switch> switches;
     private int switchnumber;
-    private ArrayList<FUELRECHARGE> fuel_recharges;
+    private List<FuelRecharge> fuel_recharges;
+
+    private List<SMOKESOURCE> smokesources;
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -47,12 +52,13 @@ public class GameMap {
 
     private void load(Scanner scanner) {
         int i;
-        
-        enemies = new ArrayList<ENEMY>();
-        doors = new ArrayList<DOOR>();
-        switches = new ArrayList<SWITCH>();
+
+        enemies = new ArrayList<Enemy>();
+        doors = new ArrayList<Door>();
+        switches = new ArrayList<Switch>();
         switchnumber = 0;
-        fuel_recharges = new ArrayList<FUELRECHARGE>();
+        fuel_recharges = new ArrayList<FuelRecharge>();
+        smokesources = new ArrayList<SMOKESOURCE>();
 
         sx = scanner.nextInt();
         sy = scanner.nextInt();
@@ -94,7 +100,7 @@ public class GameMap {
                 if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 216 && map[i] < 220)
                         || (map[i] >= 236 && map[i] < 240)) {
                     // CANON:
-                    ENEMY e = new ENEMY();
+                    Enemy e = new Enemy();
                     e.type = 1;
                     e.state = 0;
                     e.life = 4;
@@ -106,7 +112,7 @@ public class GameMap {
 
                 if (map[i] >= 196 && map[i] < 200) {
                     // FAST CANON:
-                    ENEMY e = new ENEMY();
+                    Enemy e = new Enemy();
                     e.type = 2;
                     e.state = 0;
                     e.life = 8;
@@ -118,7 +124,7 @@ public class GameMap {
 
                 if (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175) {
                     // DIRECTIONAL CANON:
-                    ENEMY e = new ENEMY();
+                    Enemy e = new Enemy();
                     e.type = 3;
                     e.state = i % 128;
                     e.life = 12;
@@ -130,7 +136,7 @@ public class GameMap {
                 }
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
                     // DIRECTIONAL CANON 2:
-                    ENEMY e = new ENEMY();
+                    Enemy e = new Enemy();
                     e.type = 7;
                     e.state = i % 128;
                     e.life = 12;
@@ -145,7 +151,7 @@ public class GameMap {
 
             // DOORS:
             if (map[i] == 113) {
-                DOOR d = new DOOR();
+                Door d = new Door();
 
                 d.x = i % sx;
                 d.y = i / sx;
@@ -158,7 +164,7 @@ public class GameMap {
 
             // SWITCHES:
             if ((map[i] >= 116 && map[i] < 120) || (map[i] >= 136 && map[i] < 140) || (map[i] >= 156 && map[i] < 160)) {
-                SWITCH s = new SWITCH();
+                Switch s = new Switch();
                 s.x = i % sx;
                 s.y = i / sx;
                 s.number = switchnumber++;
@@ -168,7 +174,7 @@ public class GameMap {
 
             // FUEL RECHARGES:
             if (map[i] == 132) {
-                FUELRECHARGE f = new FUELRECHARGE();
+                FuelRecharge f = new FuelRecharge();
                 f.x = i % sx;
                 f.y = i / sx;
                 fuel_recharges.add(f);
@@ -181,7 +187,7 @@ public class GameMap {
 
             ntanks = scanner.nextInt();
             for (i = 0; i < ntanks; i++) {
-                ENEMY e = new ENEMY();
+                Enemy e = new Enemy();
 
                 int x, y, type;
 
@@ -382,6 +388,160 @@ public class GameMap {
 
     public int get_sy() {
         return sy;
+    }
+
+    public int shipbullet_collision(int x, int y, int strength) {
+        Enemy selected = null;
+        int mindistance = -1;
+        int tolerance;
+        int retval = 0;
+
+        for (Enemy e : enemies) {
+            int ex, ey, distance;
+            ex = e.x;
+            ey = e.y;
+            if (e.type == 0) {
+                ex /= FACTOR;
+                ey /= FACTOR;
+            }
+            if (e.type == 1 || e.type == 2 || e.type == 3 || e.type == 7) {
+                ex += 8;
+                ey += 8;
+            }
+            distance = (x - ex) * (x - ex) + (y - ey) * (y - ey);
+
+            tolerance = 100;
+            if (e.type == 3 || e.type == 7 || (e.type == 4 && e.tank_type == 3))
+                tolerance = 200;
+
+            if (((mindistance == -1 && distance < tolerance) || distance < mindistance)
+                    && (e.type == 0 || e.type == 1 || e.type == 2 || e.type == 3 || e.type == 4 || e.type == 7)) {
+                selected = e;
+                mindistance = distance;
+            }
+        }
+
+        if (selected != null) {
+            Assets.assets.soundAssets.enemyHit.play();
+            retval = 1;
+        }
+
+        if (selected != null && selected.collision(strength)) {
+            int generate_smoke = -1;
+
+            if (selected.type != 0)
+                retval = 2; /* If it's not a bullet, then you have destroyed an enemy */
+
+            if (selected.type == 1 || selected.type == 2 || selected.type == 3 || selected.type == 7) {
+                int x_, y_, i;
+
+                x_ = selected.x / 16;
+                y_ = selected.y / 16;
+                i = x_ + y_ * sx;
+
+                if (map[i] == 154 || map[i] == 386) {
+                    map[i] = 180;
+                    generate_smoke = 0;
+                }
+                if (map[i] == 155 || map[i] == 387) {
+                    map[i] = 181;
+                    generate_smoke = 1;
+                }
+                if (map[i] == 174 || map[i] == 406) {
+                    map[i] = 182;
+                    generate_smoke = 2;
+                }
+                if (map[i] == 175 || map[i] == 407) {
+                    map[i] = 183;
+                    generate_smoke = 3;
+                }
+                if (map[i] >= 176 && map[i] < 180) {
+                    generate_smoke = map[i] - 176;
+                    map[i] -= 6;
+                }
+                if (map[i] >= 196 && map[i] < 200) {
+                    generate_smoke = map[i] - 196;
+                    map[i] -= 16;
+                }
+                if (map[i] >= 216 && map[i] < 220) {
+                    generate_smoke = map[i] - 216;
+                    map[i] -= 36;
+                }
+                if (map[i] >= 236 && map[i] < 240) {
+                    generate_smoke = map[i] - 236;
+                    map[i] -= 36;
+                }
+                if (generate_smoke == 0) {
+                    SMOKESOURCE ss;
+                    ss = new SMOKESOURCE();
+                    ss.x = selected.x + 6;
+                    ss.y = selected.y + 6;
+                    ss.speed_x = 0;
+                    ss.speed_y = -FACTOR / 4;
+                    ss.timer = 0;
+                    smokesources.add(ss);
+                }
+                if (generate_smoke == 1) {
+                    SMOKESOURCE ss;
+                    ss = new SMOKESOURCE();
+                    ss.x = selected.x + 6;
+                    ss.y = selected.y + 6;
+                    ss.speed_x = 0;
+                    ss.speed_y = FACTOR / 4;
+                    ss.timer = 0;
+                    smokesources.add(ss);
+                }
+                if (generate_smoke == 2) {
+                    SMOKESOURCE ss;
+                    ss = new SMOKESOURCE();
+                    ss.x = selected.x + 6;
+                    ss.y = selected.y + 6;
+                    ss.speed_x = FACTOR / 4;
+                    ss.speed_y = 0;
+                    ss.timer = 0;
+                    smokesources.add(ss);
+                }
+                if (generate_smoke == 3) {
+                    SMOKESOURCE ss;
+                    ss = new SMOKESOURCE();
+                    ss.x = selected.x + 6;
+                    ss.y = selected.y + 6;
+                    ss.speed_x = -FACTOR / 4;
+                    ss.speed_y = 0;
+                    ss.timer = 0;
+                    smokesources.add(ss);
+                }
+                Assets.assets.soundAssets.explosion.play();
+            }
+
+            if (selected.type != 4 && selected.type != 5 && selected.type != 6) {
+                if (selected.type == 0) {
+                    selected.type = 6;
+                    selected.state = 0;
+                } else {
+                    selected.state = -1;
+                }
+            } else {
+                if (selected.type == 4) {
+                    Assets.assets.soundAssets.explosion.play();
+                    selected.type = 5;
+                    selected.state = 0;
+                    generate_smoke = 0;
+                    if (generate_smoke == 0) {
+                        SMOKESOURCE ss;
+                        ss = new SMOKESOURCE();
+                        ss.x = selected.x;
+                        ss.y = selected.y;
+                        ss.speed_x = 0;
+                        ss.speed_y = -FACTOR / 4;
+                        ss.timer = 0;
+                        smokesources.add(ss);
+                    }
+                }
+            }
+        }
+
+        return retval;
     }
 
 }

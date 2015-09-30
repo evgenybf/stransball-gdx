@@ -51,7 +51,7 @@ public class GameScreen extends ScreenAdapter {
     private GameMap loadMap() {
         GameMap map = new GameMap();
         try {
-            map.load(new FileReader("maps/map10.map"));
+            map.load(new FileReader("maps/map7.map"));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
