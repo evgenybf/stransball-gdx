@@ -4,7 +4,9 @@ import java.io.FileNotFoundException;
 
 import org.stransball.util.ContourLoader;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.AssetLoader;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -24,7 +26,7 @@ public class Assets {
 
     public FontAssets fontAssets;
     public SoundAssets soundAssets;
-    public GraphicAssets shipAssets;
+    public GraphicAssets graphicAssets;
 
     // Singleton class
     private Assets() {
@@ -49,12 +51,12 @@ public class Assets {
         assetManager.load("sound/switch.ogg", Sound.class);
         assetManager.load("sound/takeball.ogg", Sound.class);
         assetManager.load("sound/thrust.ogg", Sound.class);
-
+        
         assetManager.finishLoading();
 
         TextureAtlas atlas = assetManager.get("graphics/tiles.pack", TextureAtlas.class);
 
-        shipAssets = new GraphicAssets(atlas);
+        graphicAssets = new GraphicAssets(assetManager, atlas);
         fontAssets = new FontAssets(assetManager);
         soundAssets = new SoundAssets(assetManager);
     }
@@ -82,16 +84,8 @@ public class Assets {
         public final Polygon shipPolygon;
         public final Animation shipExplosionAnimation;
 
-        public GraphicAssets(TextureAtlas atlas) {
-
-            ContourLoader contourLoader = null;
-            try {
-                contourLoader = new ContourLoader("graphics/tiles.vtx");
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            //			tilesCountrous = contourLoader.findContours("tile");
+        public GraphicAssets(AssetManager assetManager, TextureAtlas atlas) {
+            ContourLoader contourLoader = new ContourLoader(Gdx.files.internal("graphics/tiles.vtx"));
 
             tiles = atlas.findRegions("tile");
             tilePolygons = contourLoader.findPolygons("tile");

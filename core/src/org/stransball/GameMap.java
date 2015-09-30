@@ -301,8 +301,8 @@ public class GameMap {
         int act_x, act_y;
         int i, j;
 
-        Array<AtlasRegion> tiles = Assets.assets.shipAssets.tiles;
-        Polygon[] tilesPolygons = Assets.assets.shipAssets.tilePolygons;
+        Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
+        Polygon[] tilesPolygons = Assets.assets.graphicAssets.tilePolygons;
 
         step_x = tiles.get(0).originalWidth;
         step_y = tiles.get(0).originalHeight;
@@ -362,7 +362,7 @@ public class GameMap {
         Array<AtlasRegion> tiles;
         // Draw smoke
 
-        tiles = Assets.assets.shipAssets.tiles;
+        tiles = Assets.assets.graphicAssets.tiles;
         for (Smoke s : smokes) {
             int tile = ((s.timer) >> 3) % 3;
             int rx = (s.x / FACTOR) - x;

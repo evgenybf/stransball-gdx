@@ -92,14 +92,14 @@ public class WorldController {
         fuel = 1000;
 
         {
-            shipRegion = assets.shipAssets.shipRegion;
+            shipRegion = assets.graphicAssets.shipRegion;
 
             sprite = new Sprite(shipRegion);
             sprite.setScale(0.5f, 0.5f);
 
-            shipThrottleAnimation = assets.shipAssets.shipThrustAnimation;
+            shipThrottleAnimation = assets.graphicAssets.shipThrustAnimation;
 
-            assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
+            assets.graphicAssets.shipPolygon.setScale(0.5f, 0.5f);
         }
 
         {
@@ -273,7 +273,7 @@ public class WorldController {
                     b.x += b.speed_x;
                     b.y += b.speed_y;
 
-                    if (tile_map_collision(null, Assets.assets.shipAssets.tilePolygons[242], b.x, b.y)) {
+                    if (tile_map_collision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
                         b.state++;
                         int retv = map.shipbullet_collision((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
                         if (retv != 0)
@@ -339,7 +339,7 @@ public class WorldController {
         int sx = 64;
         int sy = 64;
 
-        final Polygon shipPolygon = assets.shipAssets.shipPolygon;
+        final Polygon shipPolygon = assets.graphicAssets.shipPolygon;
         final int ship_x_ = ((ship_x / FACTOR) /*- 32*/) - map_x;
         final int ship_y_ = (((ship_y / FACTOR) /*- 32*/)) - map_y;
         {
@@ -373,7 +373,7 @@ public class WorldController {
         if (batch == null)
             return;
 
-        AtlasRegion tile = Assets.assets.shipAssets.tiles.get(242);
+        AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(242);
         Sprite sprite = new Sprite(tile);
 
         for (int i = 0; i < atractor_particles; i++) {
@@ -397,7 +397,7 @@ public class WorldController {
         if (batch == null)
             return;
 
-        Array<AtlasRegion> tiles = Assets.assets.shipAssets.tiles;
+        Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
         AtlasRegion tile;
 
@@ -422,9 +422,9 @@ public class WorldController {
         for (ShipBullet b : bullets) {
             AtlasRegion tile;
             if (b.state < 8)
-                tile = Assets.assets.shipAssets.tiles.get(242);
+                tile = Assets.assets.graphicAssets.tiles.get(242);
             else
-                tile = Assets.assets.shipAssets.tiles.get(399 + (b.state / 8));
+                tile = Assets.assets.graphicAssets.tiles.get(399 + (b.state / 8));
 
             int x = b.x / FACTOR - map_x + 8; // FIXME: bullet's coordinates are not correct!
             int y = b.y / FACTOR - map_y + 8;
@@ -484,7 +484,7 @@ public class WorldController {
             }
 
             if (shapeRenderer != null) {
-                Polygon shipPolygon = assets.shipAssets.shipPolygon;
+                Polygon shipPolygon = assets.graphicAssets.shipPolygon;
                 shipPolygon.setRotation(360 - ship_angle);
                 shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
                 shapeRenderer.polygon(shipPolygon.getTransformedVertices());
@@ -493,7 +493,7 @@ public class WorldController {
             int frame = ship_anim / 8;
 
             if (frame < 6) {
-                sprite.setRegion(Assets.assets.shipAssets.shipExplosionAnimation.getKeyFrames()[frame]);
+                sprite.setRegion(Assets.assets.graphicAssets.shipExplosionAnimation.getKeyFrames()[frame]);
 
                 int ship_x_ = ship_x / FACTOR - map_x;
                 int ship_y_ = ship_y / FACTOR - map_y;
@@ -524,7 +524,7 @@ public class WorldController {
 
         @Override
         public void detect(int act_x, int act_y, int piece) {
-            Polygon poly = Assets.assets.shipAssets.tilePolygons[piece];
+            Polygon poly = Assets.assets.graphicAssets.tilePolygons[piece];
             if (poly != null) {
                 poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
 

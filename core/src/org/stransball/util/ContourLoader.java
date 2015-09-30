@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Comparator;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
@@ -27,32 +29,47 @@ public class ContourLoader {
         int index;
     }
 
+    public ContourLoader(FileHandle packFile) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(packFile.read()), 64);
+        try {
+            load(reader);
+        } catch (Exception ex) {
+            throw new GdxRuntimeException("Error reading vtx file: " + packFile.name(), ex);
+        } finally {
+            StreamUtils.closeQuietly(reader);
+        }
+    }
+
     public ContourLoader(String vtxFileName) throws FileNotFoundException {
         BufferedReader reader = new BufferedReader(new FileReader(vtxFileName), 64);
         try {
-            while (true) {
-                String line = reader.readLine();
-                if (line == null)
-                    break;
-                Contour contour = new Contour();
-                contour.name = line;
-
-                contour.vertiies = readTuple(reader);
-                if (contour.vertiies.length == 0) {
-                    contour.vertiies = null;
-                }
-                int[] sizeXY = readIntTuple(reader);
-                contour.sizeX = sizeXY[0];
-                contour.sizeY = sizeXY[1];
-
-                contour.index = Integer.parseInt(readValue(reader));
-
-                contours.add(contour);
-            }
+            load(reader);
         } catch (Exception ex) {
             throw new GdxRuntimeException("Error reading vtx file: " + vtxFileName, ex);
         } finally {
             StreamUtils.closeQuietly(reader);
+        }
+    }
+
+    private void load(BufferedReader reader) throws IOException {
+        while (true) {
+            String line = reader.readLine();
+            if (line == null)
+                break;
+            Contour contour = new Contour();
+            contour.name = line;
+
+            contour.vertiies = readTuple(reader);
+            if (contour.vertiies.length == 0) {
+                contour.vertiies = null;
+            }
+            int[] sizeXY = readIntTuple(reader);
+            contour.sizeX = sizeXY[0];
+            contour.sizeY = sizeXY[1];
+
+            contour.index = Integer.parseInt(readValue(reader));
+
+            contours.add(contour);
         }
 
         contours.sort(indexComparator);
