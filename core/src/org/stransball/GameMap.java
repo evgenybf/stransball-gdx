@@ -307,7 +307,7 @@ public class GameMap {
         step_x = tiles.get(0).originalWidth;
         step_y = tiles.get(0).originalHeight;
 
-        /* Draw map: */
+        // Draw map:
         for (j = 0, act_y = -y; j < sy; j++, act_y += step_y) {
             if (act_y >= -step_y && act_y < wh) {
                 for (i = 0, act_x = -x; i < sx; i++, act_x += step_x) {
@@ -352,29 +352,40 @@ public class GameMap {
             }
         }
 
+        renderSmoke(batch, x, y, ww, wh);
+    }
+
+    private void renderSmoke(SpriteBatch batch, int x, int y, int ww, int wh) {
+        if (batch == null)
+            return;
+
+        Array<AtlasRegion> tiles;
         // Draw smoke
-        if (batch != null) {
-            tiles = Assets.assets.shipAssets.tiles;
-            for (Smoke s : smokes) {
-                int tile = ((s.timer) >> 3) % 3;
-                int rx = (s.x / FACTOR) - x;
-                int ry = (s.y / FACTOR) - y;
-                if (rx > -16 && rx < ww && ry > -16 && ry < wh) {
-                    int alpha = 255 - s.timer;
-                    alpha = (alpha * alpha) / (255);
-                    
-                    if (alpha < 0)
-                        alpha = 0;
-                    if (alpha > 255)
-                        alpha = 255;
 
-                    AtlasRegion image = tiles.get(272 + tile);
+        tiles = Assets.assets.shipAssets.tiles;
+        for (Smoke s : smokes) {
+            int tile = ((s.timer) >> 3) % 3;
+            int rx = (s.x / FACTOR) - x;
+            int ry = (s.y / FACTOR) - y;
+            if (rx > -16 && rx < ww && ry > -16 && ry < wh) {
+                int alpha = 255 - s.timer;
+                alpha = (alpha * alpha) / (255);
 
-                    Sprite sprite = new Sprite(image);
-                    sprite.setPosition(rx, INTERNAL_SCREEN_HEIGHT - ry - 16);
+                if (alpha < 0)
+                    alpha = 0;
+                if (alpha > 255)
+                    alpha = 255;
 
-                    sprite.draw(batch, alpha / 255.0f);
-                }
+                AtlasRegion image = tiles.get(272 + tile);
+
+                Sprite sprite = new Sprite(image);
+
+                int x_ = rx + 8;
+                int y_ = ry + 8;
+
+                sprite.setCenter(x_, INTERNAL_SCREEN_HEIGHT - y_);
+
+                sprite.draw(batch, alpha / 255.0f);
             }
         }
     }
@@ -514,7 +525,7 @@ public class GameMap {
             int generate_smoke = -1;
 
             if (selected.type != 0)
-                retval = 2; /* If it's not a bullet, then you have destroyed an enemy */
+                retval = 2; // If it's not a bullet, then you have destroyed an enemy
 
             if (selected.type == 1 || selected.type == 2 || selected.type == 3 || selected.type == 7) {
                 int x_, y_, i;
@@ -634,5 +645,21 @@ public class GameMap {
 
     public int get_sy() {
         return sy;
+    }
+
+    public int get_ball_position_x() {
+        for (int i = 0; i < sx * sy; i++) {
+            if (map[i] == 110)
+                return i % sx;
+        }
+        return 0;
+    }
+
+    public int get_ball_position_y() {
+        for (int i = 0; i < sx * sy; i++) {
+            if (map[i] == 110)
+                return i / sx;
+        }
+        return 0;
     }
 }

@@ -22,5 +22,6 @@ public class Constants {
     public static int PAUSE_KEY = Input.Keys.Z;
     
 	public static final int FACTOR = 512;
+    public static final int MAX_ATRACTOR_P = 64;
 	
 }

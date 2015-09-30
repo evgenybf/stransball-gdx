@@ -2,17 +2,18 @@ package org.stransball;
 
 import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.degreesToRadians;
+import static com.badlogic.gdx.math.MathUtils.random;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static org.stransball.Assets.assets;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
+import static org.stransball.Constants.MAX_ATRACTOR_P;
 import static org.stransball.GameKeysStatus.bLeft;
 import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
@@ -26,12 +27,12 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.utils.Array;
 
 public class WorldController {
 
     @SuppressWarnings("unused")
     private int fuel_used;
-    @SuppressWarnings("unused")
     private int fuel;
     @SuppressWarnings("unused")
     private int n_shots;
@@ -58,7 +59,20 @@ public class WorldController {
     private boolean playThrustSound;
     private boolean collision;
     private List<ShipBullet> bullets;
+    @SuppressWarnings("unused")
     private int enemies_destroyed;
+    private int ball_state;
+    private int ball_x;
+    private int ball_y;
+    private int ship_atractor;
+    private int atractor_particles;
+    int[] atractor_p_x, atractor_p_y;
+    float[] atractor_p_speed;
+    long[] atractor_p_color;
+    @SuppressWarnings("unused")
+    private int ball_speed_x;
+    @SuppressWarnings("unused")
+    private int ball_speed_y;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -87,6 +101,23 @@ public class WorldController {
 
             assets.shipAssets.shipPolygon.setScale(0.5f, 0.5f);
         }
+
+        {
+            int x = map.get_ball_position_x();
+            int y = map.get_ball_position_y();
+
+            ball_state = -32;
+            ball_x = x * 16 * FACTOR;
+            ball_y = (y * 16 - 6) * FACTOR;
+            ball_speed_x = 0;
+            ball_speed_y = 0;
+        }
+
+        atractor_p_x = new int[MAX_ATRACTOR_P];
+        atractor_p_y = new int[MAX_ATRACTOR_P];
+        atractor_p_speed = new float[MAX_ATRACTOR_P];
+        atractor_p_color = new long[MAX_ATRACTOR_P];
+
     }
 
     public void update(float delta) {
@@ -103,7 +134,7 @@ public class WorldController {
                     ship_angle -= 360;
             }
 
-            if (bThrust /* && fuel > 0 */) {
+            if (bThrust && fuel > 0) {
                 float radian_angle = (ship_angle - 90.0f) * degreesToRadians;
                 ship_speed_x += (int) (cos(radian_angle) * 18f);
                 ship_speed_y += (int) (sin(radian_angle) * 18f);
@@ -131,6 +162,41 @@ public class WorldController {
 
                 assets.soundAssets.thrust.stop();
                 playThrustSound = false;
+            }
+
+            if (GameKeysStatus.bAtractor) {
+                ship_atractor++;
+                if (ship_atractor > 4)
+                    ship_atractor = 1;
+
+                if (atractor_particles < Constants.MAX_ATRACTOR_P) {
+                    atractor_p_x[atractor_particles] = ship_x + (random(16 * FACTOR)) - 8 * FACTOR;
+                    atractor_p_y[atractor_particles] = ship_y + (random(16 * FACTOR)) + 16 * FACTOR;
+                    atractor_p_speed[atractor_particles] = (float) (5 + (random(5))) / 10.0F;
+                    atractor_p_color[atractor_particles] = 0;
+                    atractor_particles++;
+                }
+
+            } else {
+                ship_atractor = 0;
+                if (atractor_particles > 0)
+                    atractor_particles -= 8;
+                if (atractor_particles < 0)
+                    atractor_particles = 0;
+            }
+
+            for (int i = 0; i < atractor_particles; i++) {
+                atractor_p_x[i] += (int) (ship_speed_x * 0.9);
+                atractor_p_y[i] += (int) (ship_speed_y * 0.9);
+                atractor_p_x[i] = (int) (ship_x * (1.0 - atractor_p_speed[i]) + atractor_p_x[i] * atractor_p_speed[i]);
+                atractor_p_y[i] = (int) (ship_y * (1.0 - atractor_p_speed[i]) + atractor_p_y[i] * atractor_p_speed[i]);
+                if (Math.abs(ship_x - atractor_p_x[i]) < 2 * FACTOR
+                        && Math.abs(ship_y - atractor_p_y[i]) < 2 * FACTOR) {
+                    atractor_p_x[i] = ship_x + (random(16 * FACTOR)) - 8 * FACTOR;
+                    atractor_p_y[i] = ship_y + (random(16 * FACTOR)) + 16 * FACTOR;
+                    atractor_p_speed[i] = (float) (5 + (random(5))) / 10.0F;
+                    atractor_p_color[i] = 0;
+                }
             }
 
             if (GameKeysStatus.bFire && !GameKeysStatus.bFirePrev /* && fuel>=shotfuel[ship_type] */) {
@@ -296,20 +362,63 @@ public class WorldController {
     public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (batch != null) {
             renderMap(delta, batch, shapeRenderer);
-
+            renderBall(batch);
+            renderAttractor(batch);
             renderShip(delta, batch, shapeRenderer);
-
             renderShipBullet(batch);
         }
+    }
 
-        //        if (shapeRenderer != null) {
-        //            for (SHIP_BULLET b : bullets) {
-        //                tile_map_collision(shapeRenderer, Assets.assets.shipAssets.tilePolygons[242], b.x, b.y);
-        //            }
-        //        }
+    private void renderAttractor(SpriteBatch batch) {
+        if (batch == null)
+            return;
+
+        AtlasRegion tile = Assets.assets.shipAssets.tiles.get(242);
+        Sprite sprite = new Sprite(tile);
+
+        for (int i = 0; i < atractor_particles; i++) {
+            if (atractor_p_color[i] == 0) {
+                int v = (random(192)) + 64;
+                atractor_p_color[i] = v;
+            }
+
+            sprite.setScale(0.4f, 0.4f);
+            sprite.setAlpha(255.0f / atractor_p_color[i]);
+
+            int x = (atractor_p_x[i] / FACTOR) - map_x;
+            int y = (atractor_p_y[i] / FACTOR) - map_y;
+            sprite.setCenter(x, Constants.INTERNAL_SCREEN_HEIGHT - y);
+
+            sprite.draw(batch);
+        }
+    }
+
+    private void renderBall(SpriteBatch batch) {
+        if (batch == null)
+            return;
+
+        Array<AtlasRegion> tiles = Assets.assets.shipAssets.tiles;
+
+        AtlasRegion tile;
+
+        if (ball_state < 0)
+            tile = tiles.get(320);
+        else
+            tile = tiles.get(321);
+
+        Sprite sprite = new Sprite(tile);
+
+        int x = (ball_x / FACTOR) - map_x + 8; // FIXME: ball's coordinates returned by the Map are not correct!
+        int y = (ball_y / FACTOR) - map_y + 8;
+
+        sprite.setCenter(x, INTERNAL_SCREEN_HEIGHT - y);
+        sprite.draw(batch);
     }
 
     private void renderShipBullet(SpriteBatch batch) {
+        if (batch == null)
+            return;
+
         for (ShipBullet b : bullets) {
             AtlasRegion tile;
             if (b.state < 8)
@@ -317,10 +426,12 @@ public class WorldController {
             else
                 tile = Assets.assets.shipAssets.tiles.get(399 + (b.state / 8));
 
-            if (batch != null) {
-                batch.draw(tile, b.x / FACTOR - map_x,
-                        INTERNAL_SCREEN_HEIGHT - (b.y / FACTOR - map_y /*???*/ + tile.originalHeight));
-            }
+            int x = b.x / FACTOR - map_x + 8; // FIXME: bullet's coordinates are not correct!
+            int y = b.y / FACTOR - map_y + 8;
+
+            Sprite sprite = new Sprite(tile);
+            sprite.setCenter(x, INTERNAL_SCREEN_HEIGHT - y);
+            sprite.draw(batch);
         }
     }
 
@@ -358,8 +469,8 @@ public class WorldController {
 
     private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (ship_state == 0) {
-            int ship_x_ = ((ship_x / FACTOR)) - map_x;
-            int ship_y_ = (((ship_y / FACTOR))) - map_y;
+            int ship_x_ = ship_x / FACTOR - map_x;
+            int ship_y_ = ship_y / FACTOR - map_y;
 
             if (batch != null) {
                 if (ship_anim == 0)
@@ -368,8 +479,7 @@ public class WorldController {
                     sprite.setRegion(shipThrottleAnimation.getKeyFrames()[ship_anim - 1]);
 
                 sprite.setRotation(360 - ship_angle);
-                sprite.setCenterX(ship_x_);
-                sprite.setCenterY(INTERNAL_SCREEN_HEIGHT - ship_y_);
+                sprite.setCenter(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
                 sprite.draw(batch);
             }
 
@@ -385,11 +495,10 @@ public class WorldController {
             if (frame < 6) {
                 sprite.setRegion(Assets.assets.shipAssets.shipExplosionAnimation.getKeyFrames()[frame]);
 
-                int ship_x_ = ((ship_x / FACTOR)) - map_x;
-                int ship_y_ = ((ship_y / FACTOR)) - map_y;
+                int ship_x_ = ship_x / FACTOR - map_x;
+                int ship_y_ = ship_y / FACTOR - map_y;
 
-                sprite.setCenterX(ship_x_);
-                sprite.setCenterY(INTERNAL_SCREEN_HEIGHT - ship_y_);
+                sprite.setCenter(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
 
                 sprite.setRotation(0);
 
