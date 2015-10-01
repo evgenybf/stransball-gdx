@@ -27,7 +27,7 @@ import com.badlogic.gdx.utils.Array;
 
 public class GameMap {
 
-    private static final int EMPTY_ROWS = 4;
+    private static final int EMPTY_ROWS = 8;
 
     private int[] map;
     private int sx;
@@ -249,16 +249,16 @@ public class GameMap {
                     chance = (chance * chance) / 256;
                     chance /= 16;
 
-                    if (MathUtils.random(chance + 2) == 0) {
+                    if (MathUtils.random(chance + 2-1) == 0) {
                         Smoke s = new Smoke();
 
                         s.x = ss.x * FACTOR;
                         s.y = ss.y * FACTOR;
 
-                        s.speed_x = ((random((1 + FACTOR / 16)) - (FACTOR / 32))) + ss.speed_x;
-                        s.speed_y = ((random((1 + FACTOR / 16)) - (FACTOR / 32))) + ss.speed_y;
-                        s.desired_x = (random((FACTOR / 4))) - FACTOR / 8;
-                        s.desired_y = ((random((1 + FACTOR / 4)) - (FACTOR / 8))) - FACTOR / 4;
+                        s.speed_x = ((random(1 + FACTOR / 16-1) - (FACTOR / 32))) + ss.speed_x;
+                        s.speed_y = ((random(1 + FACTOR / 16-1) - (FACTOR / 32))) + ss.speed_y;
+                        s.desired_x = (random(FACTOR / 4 -1)) - FACTOR / 8;
+                        s.desired_y = ((random(1 + FACTOR / 4-1) - (FACTOR / 8))) - FACTOR / 4;
                         s.timer = 0;
 
                         smokes.add(s);

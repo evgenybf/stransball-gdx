@@ -170,13 +170,13 @@ public class WorldController {
                     ship_atractor = 1;
 
                 if (atractor_particles < Constants.MAX_ATRACTOR_P) {
-                    atractor_p_x[atractor_particles] = ship_x + (random(16 * FACTOR)) - 8 * FACTOR;
-                    atractor_p_y[atractor_particles] = ship_y + (random(16 * FACTOR)) + 16 * FACTOR;
-                    atractor_p_speed[atractor_particles] = (float) (5 + (random(5))) / 10.0F;
+                    atractor_p_x[atractor_particles] = ship_x + (random(16 * FACTOR-1)) - 8 * FACTOR;
+                    atractor_p_y[atractor_particles] = ship_y + (random(16 * FACTOR-1)) + 16 * FACTOR;
+                    atractor_p_speed[atractor_particles] = (float) (5 + random(5-1)) / 10.0F;
                     atractor_p_color[atractor_particles] = 0;
                     atractor_particles++;
                 }
-
+                
             } else {
                 ship_atractor = 0;
                 if (atractor_particles > 0)
@@ -186,25 +186,27 @@ public class WorldController {
             }
 
             for (int i = 0; i < atractor_particles; i++) {
-                atractor_p_x[i] += (int) (ship_speed_x * 0.9);
-                atractor_p_y[i] += (int) (ship_speed_y * 0.9);
-                atractor_p_x[i] = (int) (ship_x * (1.0 - atractor_p_speed[i]) + atractor_p_x[i] * atractor_p_speed[i]);
-                atractor_p_y[i] = (int) (ship_y * (1.0 - atractor_p_speed[i]) + atractor_p_y[i] * atractor_p_speed[i]);
-                if (Math.abs(ship_x - atractor_p_x[i]) < 2 * FACTOR
-                        && Math.abs(ship_y - atractor_p_y[i]) < 2 * FACTOR) {
-                    atractor_p_x[i] = ship_x + (random(16 * FACTOR)) - 8 * FACTOR;
-                    atractor_p_y[i] = ship_y + (random(16 * FACTOR)) + 16 * FACTOR;
-                    atractor_p_speed[i] = (float) (5 + (random(5))) / 10.0F;
+                atractor_p_x[i] += (int) (ship_speed_x * 0.9f);
+                atractor_p_y[i] += (int) (ship_speed_y * 0.9f);
+                atractor_p_x[i] = (int) (ship_x * (1.0f - atractor_p_speed[i]) + atractor_p_x[i] * atractor_p_speed[i]);
+                atractor_p_y[i] = (int) (ship_y * (1.0f - atractor_p_speed[i]) + atractor_p_y[i] * atractor_p_speed[i]);
+                if ((Math.abs(ship_x - atractor_p_x[i]) <  2*FACTOR)
+                        && (Math.abs(ship_y - atractor_p_y[i]) < 2* FACTOR)) {
+                    atractor_p_x[i] = ship_x + (random(16 * FACTOR-1)) - 8 * FACTOR;
+                    atractor_p_y[i] = ship_y + (random(16 * FACTOR-1)) + 16 * FACTOR;
+                    atractor_p_speed[i] = (float) (5 + (random(5-1))) / 10.0F;
                     atractor_p_color[i] = 0;
                 }
             }
 
+            System.out.println(atractor_particles);
+            
             if (GameKeysStatus.bFire && !GameKeysStatus.bFirePrev /* && fuel>=shotfuel[ship_type] */) {
                 float radian_angle = (ship_angle - 90) * MathUtils.degreesToRadians;
 
                 n_shots++;
-                //fuel-=shotfuel[ship_type];
-                //fuel_used+=shotfuel[ship_type];
+//                fuel-=shotfuel[ship_type];
+//                fuel_used+=shotfuel[ship_type];
 
                 ShipBullet b = new ShipBullet();
                 {
@@ -378,7 +380,7 @@ public class WorldController {
 
         for (int i = 0; i < atractor_particles; i++) {
             if (atractor_p_color[i] == 0) {
-                int v = (random(192)) + 64;
+                int v = (random(192-1)) + 64;
                 atractor_p_color[i] = v;
             }
 
