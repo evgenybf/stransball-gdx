@@ -71,6 +71,10 @@ public class WorldController {
     long[] atractor_p_color;
     private int ball_speed_x;
     private int ball_speed_y;
+    private int nstars;
+    private int[] star_x;
+    private int[] star_y;
+    private int[] star_color;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -115,6 +119,20 @@ public class WorldController {
         atractor_p_y = new int[MAX_ATRACTOR_P];
         atractor_p_speed = new float[MAX_ATRACTOR_P];
         atractor_p_color = new long[MAX_ATRACTOR_P];
+
+        {
+            nstars = map.get_sx() * 8;
+            star_x = new int[nstars];
+            star_y = new int[nstars];
+            star_color = new int[nstars];
+
+            for (int i = 0; i < nstars; i++) {
+                star_color[i] = random(255 - 1);
+                star_x[i] = random(map.get_sx() * 16 - 1);
+                star_y[i] = random(25600 - 1);
+                star_y[i] = 160 - (int) (Math.sqrt(star_y[i]));
+            }
+        }
     }
 
     public void update(float delta) {
@@ -507,6 +525,25 @@ public class WorldController {
 
     public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
         if (batch != null) {
+            /* Stars: */
+            {
+                int sx = INTERNAL_SCREEN_WIDTH;
+                int sy = INTERNAL_SCREEN_HEIGHT;
+                int i;
+
+                for (i = 0; i < nstars; i++) {
+                    int x, y;
+                    x = star_x[i] - map_x / 2;
+                    y = star_y[i] - map_y / 2;
+                    if (x >= 0 && x < sx && y >= 0 && y < sy) {
+                        Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(243));
+                        sprite.setScale(0.2f);
+                        sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
+                        sprite.draw(batch, star_color[i] + star_color[i] + star_color[i]);
+                    }
+                }
+            }
+
             renderMap(delta, batch, shapeRenderer);
             renderBall(batch);
             renderAttractor(batch);

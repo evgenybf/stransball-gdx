@@ -224,13 +224,42 @@ public class GameMap {
     }
 
     public void update(float delta) {
+
         // Tile animation
-        animtimer++;
-        if (animtimer > 24) {
-            animflag++;
-            if (animflag < 0 || animflag > 7)
-                animflag = 0;
-            animtimer = 0;
+        {
+            animtimer++;
+            if (animtimer > 24) {
+                animflag++;
+                if (animflag < 0 || animflag > 7)
+                    animflag = 0;
+                animtimer = 0;
+            }
+        }
+
+        // Doors:  
+        {
+            for (Door d : doors) {
+                if (d.action == -1) {
+                    if (d.state > 0)
+                        d.state--;
+                    else
+                        d.action = 0;
+                }
+                if (d.action == 1) {
+                    if (d.state < 14)
+                        d.state++;
+                    else
+                        d.action = 0;
+                }
+            }
+        }
+
+        // Switches:  
+        {
+            for (Switch s : switches) {
+                if (s.state > 0)
+                    s.state--;
+            }
         }
 
         // Smoke
@@ -308,7 +337,7 @@ public class GameMap {
         step_y = tiles.get(0).originalHeight;
 
         if (batch != null) {
-            /* Draw Background: */
+            // Draw Background:
             for (j = 0, act_y = -(int) (y * 0.75F); j < sy; j++, act_y += step_y) {
                 if (act_y > -step_y && act_y < wh) {
                     for (i = 0, act_x = -(int) (x * 0.75F); i < sx; i++, act_x += step_x) {
@@ -739,4 +768,13 @@ public class GameMap {
             }
         }
     }
+
+    public boolean ship_in_fuel_recharge(int ship_x, int ship_y) {
+        for (FuelRecharge f : fuel_recharges) {
+            if (ship_x >= f.x * 16 && ship_x < (f.x * 16 + 32) && ship_y >= f.y * 16 && ship_y < (f.y * 16 + 32))
+                return true;
+        }
+        return false;
+    }
+
 }
