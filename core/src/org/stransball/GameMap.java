@@ -249,16 +249,16 @@ public class GameMap {
                     chance = (chance * chance) / 256;
                     chance /= 16;
 
-                    if (MathUtils.random(chance + 2-1) == 0) {
+                    if (MathUtils.random(chance + 2 - 1) == 0) {
                         Smoke s = new Smoke();
 
                         s.x = ss.x * FACTOR;
                         s.y = ss.y * FACTOR;
 
-                        s.speed_x = ((random(1 + FACTOR / 16-1) - (FACTOR / 32))) + ss.speed_x;
-                        s.speed_y = ((random(1 + FACTOR / 16-1) - (FACTOR / 32))) + ss.speed_y;
-                        s.desired_x = (random(FACTOR / 4 -1)) - FACTOR / 8;
-                        s.desired_y = ((random(1 + FACTOR / 4-1) - (FACTOR / 8))) - FACTOR / 4;
+                        s.speed_x = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_x;
+                        s.speed_y = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_y;
+                        s.desired_x = (random(FACTOR / 4 - 1)) - FACTOR / 8;
+                        s.desired_y = ((random(1 + FACTOR / 4 - 1) - (FACTOR / 8))) - FACTOR / 4;
                         s.timer = 0;
 
                         smokes.add(s);
@@ -661,5 +661,35 @@ public class GameMap {
                 return i / sx;
         }
         return 0;
+    }
+
+    public void ball_taken() {
+        for (Door d : doors) {
+            // The doors with event==0 are activated when the ball is taken 
+            if (d.event == 0)
+                d.activate();
+        }
+    }
+
+    public void ball_collision(int x, int y) {
+        Switch selected = null;
+        int mindistance = -1;
+
+        for (Switch s : switches) {
+            int distance = (x - (s.x * 16 + 8)) * (x - (s.x * 16 + 8)) + (y - (s.y * 16 + 8)) * (y - (s.y * 16 + 8));
+            if ((mindistance == -1 && distance < 64) || distance < mindistance) {
+                selected = s;
+                mindistance = distance;
+            }
+        }
+
+        if (selected != null) {
+            selected.state = 16;
+            Assets.assets.soundAssets.switchship.play();
+            for (Door d : doors) {
+                if (d.event == selected.number)
+                    d.activate();
+            }
+        }
     }
 }

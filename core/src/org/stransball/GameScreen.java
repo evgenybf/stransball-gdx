@@ -6,8 +6,6 @@ import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 
 import com.badlogic.gdx.Gdx;
@@ -55,7 +53,7 @@ public class GameScreen extends ScreenAdapter {
 
     private GameMap loadMap() {
         GameMap map = new GameMap();
-        FileHandle fileHandle = Gdx.files.internal("maps/map7.map");
+        FileHandle fileHandle = Gdx.files.internal("maps/map3.map");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fileHandle.read()), 64);
         map.load(reader);
         return map;

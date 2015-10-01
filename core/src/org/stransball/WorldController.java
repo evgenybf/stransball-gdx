@@ -69,9 +69,7 @@ public class WorldController {
     int[] atractor_p_x, atractor_p_y;
     float[] atractor_p_speed;
     long[] atractor_p_color;
-    @SuppressWarnings("unused")
     private int ball_speed_x;
-    @SuppressWarnings("unused")
     private int ball_speed_y;
 
     public WorldController(GameMap map) {
@@ -117,7 +115,6 @@ public class WorldController {
         atractor_p_y = new int[MAX_ATRACTOR_P];
         atractor_p_speed = new float[MAX_ATRACTOR_P];
         atractor_p_color = new long[MAX_ATRACTOR_P];
-
     }
 
     public void update(float delta) {
@@ -170,13 +167,13 @@ public class WorldController {
                     ship_atractor = 1;
 
                 if (atractor_particles < Constants.MAX_ATRACTOR_P) {
-                    atractor_p_x[atractor_particles] = ship_x + (random(16 * FACTOR-1)) - 8 * FACTOR;
-                    atractor_p_y[atractor_particles] = ship_y + (random(16 * FACTOR-1)) + 16 * FACTOR;
-                    atractor_p_speed[atractor_particles] = (float) (5 + random(5-1)) / 10.0F;
+                    atractor_p_x[atractor_particles] = ship_x + (random(16 * FACTOR - 1)) - 8 * FACTOR;
+                    atractor_p_y[atractor_particles] = ship_y + (random(16 * FACTOR - 1)) + 16 * FACTOR;
+                    atractor_p_speed[atractor_particles] = (float) (5 + random(5 - 1)) / 10.0F;
                     atractor_p_color[atractor_particles] = 0;
                     atractor_particles++;
                 }
-                
+
             } else {
                 ship_atractor = 0;
                 if (atractor_particles > 0)
@@ -190,23 +187,21 @@ public class WorldController {
                 atractor_p_y[i] += (int) (ship_speed_y * 0.9f);
                 atractor_p_x[i] = (int) (ship_x * (1.0f - atractor_p_speed[i]) + atractor_p_x[i] * atractor_p_speed[i]);
                 atractor_p_y[i] = (int) (ship_y * (1.0f - atractor_p_speed[i]) + atractor_p_y[i] * atractor_p_speed[i]);
-                if ((Math.abs(ship_x - atractor_p_x[i]) <  2*FACTOR)
-                        && (Math.abs(ship_y - atractor_p_y[i]) < 2* FACTOR)) {
-                    atractor_p_x[i] = ship_x + (random(16 * FACTOR-1)) - 8 * FACTOR;
-                    atractor_p_y[i] = ship_y + (random(16 * FACTOR-1)) + 16 * FACTOR;
-                    atractor_p_speed[i] = (float) (5 + (random(5-1))) / 10.0F;
+                if ((Math.abs(ship_x - atractor_p_x[i]) < 2 * FACTOR)
+                        && (Math.abs(ship_y - atractor_p_y[i]) < 2 * FACTOR)) {
+                    atractor_p_x[i] = ship_x + (random(16 * FACTOR - 1)) - 8 * FACTOR;
+                    atractor_p_y[i] = ship_y + (random(16 * FACTOR - 1)) + 16 * FACTOR;
+                    atractor_p_speed[i] = (float) (5 + (random(5 - 1))) / 10.0F;
                     atractor_p_color[i] = 0;
                 }
             }
 
-            System.out.println(atractor_particles);
-            
             if (GameKeysStatus.bFire && !GameKeysStatus.bFirePrev /* && fuel>=shotfuel[ship_type] */) {
                 float radian_angle = (ship_angle - 90) * MathUtils.degreesToRadians;
 
                 n_shots++;
-//                fuel-=shotfuel[ship_type];
-//                fuel_used+=shotfuel[ship_type];
+                //                fuel-=shotfuel[ship_type];
+                //                fuel_used+=shotfuel[ship_type];
 
                 ShipBullet b = new ShipBullet();
                 {
@@ -266,7 +261,155 @@ public class WorldController {
             ship_speed_y = 0;
         }
 
-        /* Bullets: */
+        // Ball cinematics: 
+        if (ball_speed_x > 0)
+            ball_speed_x--;
+        if (ball_speed_x < 0)
+            ball_speed_x++;
+        {
+            int bx = (ball_x / FACTOR) + 8;
+            int by = (ball_y / FACTOR) + 8;
+            int sx = ship_x / FACTOR;
+            int sy = (ship_y / FACTOR) + 8;
+
+            if (ship_atractor != 0 && bx > sx - 8 && bx < sx + 8 && by > sy && by < sy + 32 && ball_state < 0) {
+                ball_state++;
+                if (ball_state == 0) {
+                    Assets.assets.soundAssets.takeball.play();
+                    map.ball_taken();
+                }
+            } else {
+                if (ball_state < 0)
+                    ball_state = -32;
+            }
+
+            if (ball_state == 0) {
+                int xdif = (ball_x / FACTOR) - (ship_x / FACTOR);
+                int ydif = (ball_y / FACTOR) - (ship_y / FACTOR);
+                int totdif;
+                xdif *= xdif;
+                ydif *= ydif;
+                totdif = xdif + ydif;
+                if (totdif < 10000) {
+                    if ((ship_x - 8 * FACTOR) < ball_x)
+                        ball_speed_x -= 2;
+                    if ((ship_x - 8 * FACTOR) > ball_x)
+                        ball_speed_x += 2;
+                    if ((ship_y - 8 * FACTOR) < ball_y)
+                        ball_speed_y -= 2;
+                    if ((ship_y - 8 * FACTOR) > ball_y)
+                        ball_speed_y += 2;
+                }
+                if (totdif < 4000) {
+                    if ((ship_x - 8 * FACTOR) < ball_x)
+                        ball_speed_x -= 2;
+                    if ((ship_x - 8 * FACTOR) > ball_x)
+                        ball_speed_x += 2;
+                    if ((ship_y - 8 * FACTOR) < ball_y)
+                        ball_speed_y -= 2;
+                    if ((ship_y - 8 * FACTOR) > ball_y)
+                        ball_speed_y += 2;
+                }
+                if (totdif < 1000) {
+                    if ((ship_x - 8 * FACTOR) < ball_x)
+                        ball_speed_x -= 2;
+                    if ((ship_x - 8 * FACTOR) > ball_x)
+                        ball_speed_x += 2;
+                    if ((ship_y - 8 * FACTOR) < ball_y)
+                        ball_speed_y -= 2;
+                    if ((ship_y - 8 * FACTOR) > ball_y)
+                        ball_speed_y += 2;
+                }
+                if (totdif < 100) {
+                    System.out.println("before: " + ball_speed_x + ", " + ball_speed_y);
+                    if ((ship_x - 8 * FACTOR) < ball_x)
+                        ball_speed_x -= 2;
+                    if ((ship_x - 8 * FACTOR) > ball_x)
+                        ball_speed_x += 2;
+                    if ((ship_y - 8 * FACTOR) < ball_y)
+                        ball_speed_y -= 2;
+                    if ((ship_y - 8 * FACTOR) > ball_y)
+                        ball_speed_y += 2;
+                    System.out.println("after: " + ball_speed_x + ", " + ball_speed_y);
+                }
+            }
+
+            bx = ball_x; //(ball_x / FACTOR);
+            by = ball_y; //(ball_y / FACTOR);
+
+            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
+            if (tile_map_collision(null, tilePolygons[360], bx, by)) {
+                if (ball_speed_y > 0) {
+                    ball_speed_y = (int) (-0.75 * ball_speed_y);
+                    map.ball_collision(bx + 8, by + 12);
+                } else {
+                    if (tile_map_collision(null, Assets.assets.graphicAssets.tilePolygons[360], bx, by - 1))
+                        ball_speed_y -= 2;
+                    ;
+                }
+            } else {
+                ball_speed_y += 2;
+            }
+
+            if (tile_map_collision(null, tilePolygons[340], bx, by)) {
+                if (ball_speed_y < 0) {
+                    ball_speed_y = (int) (-0.75 * ball_speed_y);
+                    map.ball_collision(bx + 8, by + 4);
+                } else {
+                    ball_speed_y += 2;
+                }
+            }
+
+            if (tile_map_collision(null, tilePolygons[342], bx, by)) {
+                if (ball_speed_x > 0) {
+                    ball_speed_x = (int) (-0.75 * ball_speed_x);
+                    map.ball_collision(bx + 12, by + 8);
+                } else {
+                    ball_speed_x -= 2;
+                }
+            }
+
+            if (tile_map_collision(null, tilePolygons[362], bx, by)) {
+                if (ball_speed_x < 0) {
+                    ball_speed_x = (int) (-0.75 * ball_speed_x);
+                    map.ball_collision(bx + 4, by + 8);
+                } else {
+                    ball_speed_x += 2;
+                }
+            }
+        }
+        if (ball_speed_x > 4 * FACTOR)
+            ball_speed_x = 4 * FACTOR;
+        if (ball_speed_x < -4 * FACTOR)
+            ball_speed_x = -4 * FACTOR;
+        if (ball_speed_y > 4 * FACTOR)
+            ball_speed_y = 4 * FACTOR;
+        if (ball_speed_y < -4 * FACTOR)
+            ball_speed_y = -4 * FACTOR;
+        ball_x += ball_speed_x;
+        ball_y += ball_speed_y;
+
+        if ((ball_x / FACTOR) < 0) {
+            ball_x = 0;
+            ball_speed_x = 0;
+        }
+        if ((ball_y / FACTOR) < 0 && ball_state >= 0) {
+            //            fade_state=2;
+            ball_speed_y = -FACTOR;
+            ball_state++;
+            if (ball_state >= 32)
+                return; // 2;
+        }
+        if ((ball_x / FACTOR) > ((map.get_sx() - 1) * 16)) {
+            ball_x = ((map.get_sx() - 1) * 16) * FACTOR;
+            ball_speed_x = 0;
+        }
+        if ((ball_y / FACTOR) > ((map.get_sy() - 1) * 16)) {
+            ball_y = ((map.get_sy() - 1) * 16) * FACTOR;
+            ball_speed_y = 0;
+        }
+
+        // Bullets:
         {
             List<ShipBullet> deletelist = new ArrayList<ShipBullet>();
 
@@ -301,6 +444,7 @@ public class WorldController {
 
         map.update(delta);
 
+        // Ship collision detection 
         if (ship_state == 0 && ship_map_collision(null)) {
             ship_speed_x /= 4;
             ship_speed_y /= 4;
@@ -380,7 +524,7 @@ public class WorldController {
 
         for (int i = 0; i < atractor_particles; i++) {
             if (atractor_p_color[i] == 0) {
-                int v = (random(192-1)) + 64;
+                int v = (random(192 - 1)) + 64;
                 atractor_p_color[i] = v;
             }
 

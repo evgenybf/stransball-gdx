@@ -7,5 +7,10 @@ public class Door {
 	public int action;
 	public int state;
 	public int event;
+	
+    public void activate() {
+        // TODO Auto-generated method stub
+        
+    }
 
 }
