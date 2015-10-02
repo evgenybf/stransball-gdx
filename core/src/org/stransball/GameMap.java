@@ -395,16 +395,46 @@ public class GameMap {
                         piece = animpiece(piece);
                         if (piece >= 0) {
                             if (piece == 113 || piece == 114) {
-                                // TODO: DOOR
+                                // DOOR
+                                int state = 0;
+
+                                for (Door d : doors) {
+                                    if ((d.x == i || d.x == i - 1) && d.y == j)
+                                        state = d.state;
+                                }
+
+                                if (batch != null) {
+                                    if (piece == 113) {
+                                        draw_with_offset(act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y, -state, batch,
+                                                tiles.get(piece));
+                                    } else {
+                                        draw_with_offset(act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y, state, batch,
+                                                tiles.get(piece));
+                                    }
+                                    //TODO: collision detection
+                                }
                             } else {
                                 if ((piece >= 116 && piece < 120) || (piece >= 136 && piece < 140)
                                         || (piece >= 156 && piece < 160)) {
-                                    // TODO: SWITCH
-                                } else {
+                                    // SWITCH
+                                    for (Switch s : switches) {
+                                        if (s.x == i && s.y == j) {
+                                            AtlasRegion tile;
+                                            if (s.state != 0) {
+                                                tile = tiles.get(piece + 140);
+                                            } else {
+                                                tile = tiles.get(piece);
+                                            }
+                                            if (batch != null) {
+                                                batch.draw(tile, act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                            }
+                                        }
+                                    }
 
+                                    //TODO: colission detection
+                                } else {
                                     if (batch != null) {
-                                        batch.draw(tiles.get(piece), act_x,
-                                                INTERNAL_SCREEN_HEIGHT - act_y - /*FIXME: !!!*/ step_y);
+                                        batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                     }
                                     if (renderer != null) {
                                         Polygon poly = tilesPolygons[piece];
@@ -428,6 +458,24 @@ public class GameMap {
         }
 
         renderSmoke(batch, x, y, ww, wh);
+    }
+
+    private void draw_with_offset(int x, int y, int offset, SpriteBatch batch, AtlasRegion region) {
+        if (offset > 0 && offset < region.getRegionWidth()) {
+            Sprite sprite = new Sprite(region);
+            sprite.setX(x + offset);
+            sprite.setY(y);
+            sprite.setRegionWidth(sprite.getRegionWidth() - offset);
+            sprite.draw(batch);
+        } else if (offset == 0) {
+            batch.draw(region, x, y);
+        } else if (offset < 0) {
+            Sprite sprite = new Sprite(region);
+            sprite.setX(x + offset);
+            sprite.setY(y);
+            sprite.setRegionWidth(sprite.getRegionWidth() + offset);
+            sprite.draw(batch);
+        }
     }
 
     private void renderSmoke(SpriteBatch batch, int x, int y, int ww, int wh) {
