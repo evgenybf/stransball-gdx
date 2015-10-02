@@ -14,6 +14,7 @@ import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
@@ -135,7 +136,7 @@ public class WorldController {
         }
     }
 
-    public void update(float delta) {
+    public void update(float delta, ShapeRenderer debugRenderer) {
         if (ship_state == 0) {
             if (bLeft) {
                 ship_angle -= 4;
@@ -240,8 +241,9 @@ public class WorldController {
 
             ship_anim++;
             //if (ship_anim>=64) fade_state=2;
-            if (ship_anim >= 96)
-                return;
+            if (ship_anim >= 96) {
+                throw new RuntimeException("You failed");
+            }
         }
 
         // Ship cinematics:
@@ -339,7 +341,6 @@ public class WorldController {
                         ball_speed_y += 2;
                 }
                 if (totdif < 100) {
-                    System.out.println("before: " + ball_speed_x + ", " + ball_speed_y);
                     if ((ship_x - 8 * FACTOR) < ball_x)
                         ball_speed_x -= 2;
                     if ((ship_x - 8 * FACTOR) > ball_x)
@@ -348,28 +349,26 @@ public class WorldController {
                         ball_speed_y -= 2;
                     if ((ship_y - 8 * FACTOR) > ball_y)
                         ball_speed_y += 2;
-                    System.out.println("after: " + ball_speed_x + ", " + ball_speed_y);
                 }
             }
 
-            bx = ball_x; //(ball_x / FACTOR);
-            by = ball_y; //(ball_y / FACTOR);
+            bx = ball_x; // ??? (ball_x / FACTOR);
+            by = ball_y; // ??? (ball_y / FACTOR);
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-            if (tile_map_collision(null, tilePolygons[360], bx, by)) {
+            if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by)) {
                 if (ball_speed_y > 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx + 8, by + 12);
                 } else {
-                    if (tile_map_collision(null, Assets.assets.graphicAssets.tilePolygons[360], bx, by - 1))
+                    if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by - 1))
                         ball_speed_y -= 2;
-                    ;
                 }
             } else {
                 ball_speed_y += 2;
             }
 
-            if (tile_map_collision(null, tilePolygons[340], bx, by)) {
+            if (tile_map_collision(debugRenderer, tilePolygons[340], bx, by)) {
                 if (ball_speed_y < 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx + 8, by + 4);
@@ -378,7 +377,7 @@ public class WorldController {
                 }
             }
 
-            if (tile_map_collision(null, tilePolygons[342], bx, by)) {
+            if (tile_map_collision(debugRenderer, tilePolygons[342], bx, by)) {
                 if (ball_speed_x > 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx + 12, by + 8);
@@ -387,7 +386,7 @@ public class WorldController {
                 }
             }
 
-            if (tile_map_collision(null, tilePolygons[362], bx, by)) {
+            if (tile_map_collision(debugRenderer, tilePolygons[362], bx, by)) {
                 if (ball_speed_x < 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx + 4, by + 8);
@@ -415,8 +414,9 @@ public class WorldController {
             //            fade_state=2;
             ball_speed_y = -FACTOR;
             ball_state++;
-            if (ball_state >= 32)
-                return; // 2;
+            if (ball_state >= 32) {
+                throw new RuntimeException("You win!");
+            }
         }
         if ((ball_x / FACTOR) > ((map.get_sx() - 1) * 16)) {
             ball_x = ((map.get_sx() - 1) * 16) * FACTOR;
@@ -473,82 +473,97 @@ public class WorldController {
         }
     }
 
-    private boolean tile_map_collision(final ShapeRenderer shapeRenderer, Polygon polygon, int bx, int by) {
+    private boolean tile_map_collision(final ShapeRenderer renderer, Polygon polygon, int bx, int by) {
         collision = false;
 
-        final int x = ((bx / FACTOR) - 32);
-        final int y = ((by / FACTOR) - 32);
+        int x = bx / FACTOR - 32;
+        int y = by / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        int ship_x_ = bx / FACTOR - map_x;
-        int ship_y_ = by / FACTOR - map_y;
+        int object_x_ = bx / FACTOR - map_x;
+        int object_y_ = by / FACTOR - map_y;
 
-        polygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
-        Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(polygon); //new Polygon[] { polygon }; //
+        polygon.setPosition(object_x_, INTERNAL_SCREEN_HEIGHT - object_y_);
+        Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(polygon);
 
-        if (shapeRenderer != null) {
-            shapeRenderer.polygon(polygon.getTransformedVertices());
+        if (renderer != null) {
+            renderer.polygon(polygon.getTransformedVertices());
+//            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
         }
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
-                new CollisionDetector(shapeRenderer, ship_x_, ship_y_, shipPolygons));
+                new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
 
         return collision;
     }
 
-    private boolean ship_map_collision(final ShapeRenderer shapeRenderer) {
-        final int x = ((ship_x / FACTOR) - 32);
-        final int y = ((ship_y / FACTOR) - 32);
+    private boolean ship_map_collision(final ShapeRenderer renderer) {
+        collision = false;
+
+        int x = ship_x / FACTOR - 32;
+        int y = ship_y / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        final Polygon shipPolygon = assets.graphicAssets.shipPolygon;
-        final int ship_x_ = ((ship_x / FACTOR) /*- 32*/) - map_x;
-        final int ship_y_ = (((ship_y / FACTOR) /*- 32*/)) - map_y;
-        {
-            shipPolygon.setRotation(360 - ship_angle);
-            shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
+        Polygon shipPolygon = assets.graphicAssets.shipPolygon;
+
+        int ship_x_ = ship_x / FACTOR - map_x;
+        int ship_y_ = ship_y / FACTOR - map_y;
+        shipPolygon.setRotation(360 - ship_angle);
+        shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
+
+        Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(shipPolygon);
+        if (renderer != null) {
+            renderer.polygon(shipPolygon.getTransformedVertices());
         }
 
-        final Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(shipPolygon);
-        if (shapeRenderer != null) {
-            shapeRenderer.polygon(shipPolygon.getTransformedVertices());
-        }
-
-        collision = false;
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
-                new CollisionDetector(shapeRenderer, ship_x_, ship_y_, shipPolygons));
+                new CollisionDetector(renderer, ship_x_, ship_y_, shipPolygons));
 
         return collision;
     }
 
-    public void render(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    public void render(SpriteBatch batch, ShapeRenderer renderer) {
         if (batch != null) {
-            /* Stars: */
-            {
-                int sx = INTERNAL_SCREEN_WIDTH;
-                int sy = INTERNAL_SCREEN_HEIGHT;
-                int i;
-
-                for (i = 0; i < nstars; i++) {
-                    int x, y;
-                    x = star_x[i] - map_x / 2;
-                    y = star_y[i] - map_y / 2;
-                    if (x >= 0 && x < sx && y >= 0 && y < sy) {
-                        Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(243));
-                        sprite.setScale(0.2f);
-                        sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
-                        sprite.draw(batch, star_color[i] + star_color[i] + star_color[i]);
-                    }
-                }
-            }
-
-            renderMap(delta, batch, shapeRenderer);
+            renerStars(batch);
+            renderMap(batch, renderer);
             renderBall(batch);
             renderAttractor(batch);
-            renderShip(delta, batch, shapeRenderer);
+            renderShip(batch, renderer);
             renderShipBullet(batch);
+        }
+
+//        if (renderer != null) {
+//            int bx = ball_x; // ??? (ball_x / FACTOR);
+//            int by = ball_y; // ??? (ball_y / FACTOR);
+//
+//            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
+//            
+//            tile_map_collision(renderer, tilePolygons[360], bx, by);
+////            tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
+//            tile_map_collision(renderer, tilePolygons[340], bx, by);
+//            tile_map_collision(renderer, tilePolygons[342], bx, by);
+//            tile_map_collision(renderer, tilePolygons[362], bx, by);
+//        }
+
+    }
+
+    private void renerStars(SpriteBatch batch) {
+        int sx = INTERNAL_SCREEN_WIDTH;
+        int sy = INTERNAL_SCREEN_HEIGHT;
+        int i;
+
+        for (i = 0; i < nstars; i++) {
+            int x, y;
+            x = star_x[i] - map_x / 2;
+            y = star_y[i] - map_y / 2;
+            if (x >= 0 && x < sx && y >= 0 && y < sy) {
+                Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(243));
+                sprite.setScale(0.2f);
+                sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
+                sprite.draw(batch, star_color[i] + star_color[i] + star_color[i]);
+            }
         }
     }
 
@@ -618,7 +633,10 @@ public class WorldController {
         }
     }
 
-    private void renderMap(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    private void renderMap(SpriteBatch batch, ShapeRenderer renderer) {
+        if (batch == null)
+            return;
+
         int sx = INTERNAL_SCREEN_WIDTH;
         int sy = INTERNAL_SCREEN_HEIGHT;
 
@@ -647,10 +665,10 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawWithoutEnemies(batch, shapeRenderer, map_x, map_y, sx, sy, null);
+        map.drawWithoutEnemies(batch, renderer, map_x, map_y, sx, sy, null);
     }
 
-    private void renderShip(float delta, SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {
         if (ship_state == 0) {
             int ship_x_ = ship_x / FACTOR - map_x;
             int ship_y_ = ship_y / FACTOR - map_y;
@@ -666,11 +684,11 @@ public class WorldController {
                 sprite.draw(batch);
             }
 
-            if (shapeRenderer != null) {
+            if (renderer != null) {
                 Polygon shipPolygon = assets.graphicAssets.shipPolygon;
                 shipPolygon.setRotation(360 - ship_angle);
                 shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
-                shapeRenderer.polygon(shipPolygon.getTransformedVertices());
+                renderer.polygon(shipPolygon.getTransformedVertices());
             }
         } else if (ship_state == 1) {
             int frame = ship_anim / 8;
@@ -693,13 +711,13 @@ public class WorldController {
     }
 
     private final class CollisionDetector implements IPolygonDetector {
-        private final ShapeRenderer shapeRenderer;
+        private final ShapeRenderer renderer;
         private final int ship_x_;
         private final int ship_y_;
         private final Polygon[] shipPolygons;
 
-        private CollisionDetector(ShapeRenderer shapeRenderer, int ship_x_, int ship_y_, Polygon[] shipPolygons) {
-            this.shapeRenderer = shapeRenderer;
+        private CollisionDetector(ShapeRenderer renderer, int ship_x_, int ship_y_, Polygon[] shipPolygons) {
+            this.renderer = renderer;
             this.ship_x_ = ship_x_;
             this.ship_y_ = ship_y_;
             this.shipPolygons = shipPolygons;
@@ -711,21 +729,22 @@ public class WorldController {
             if (poly != null) {
                 poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
 
-                Polygon[] poligons = CollisionDetectorUtils.tiangulate(poly);
+                Polygon[] polygons = CollisionDetectorUtils.tiangulate(poly);
 
-                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, poligons)) {
-                    if (shapeRenderer != null) {
-                        shapeRenderer.setColor(Color.RED);
+                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, polygons)) {
+                    if (renderer != null) {
+                        renderer.setColor(Color.RED);
                     }
                     collision = true;
                 } else {
-                    if (shapeRenderer != null) {
-                        shapeRenderer.setColor(Color.WHITE);
+                    if (renderer != null) {
+                        renderer.setColor(Color.WHITE);
                     }
                 }
 
-                if (shapeRenderer != null) {
-                    shapeRenderer.polygon(poly.getTransformedVertices());
+                if (renderer != null) {
+                    renderer.polygon(poly.getTransformedVertices());
+//                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
                 }
             }
         }

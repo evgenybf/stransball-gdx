@@ -27,7 +27,7 @@ public class GameScreen extends ScreenAdapter {
     private BitmapFont font;
     private float time;
     private WorldController worldController;
-    private ShapeRenderer shapeRenderer;
+    private ShapeRenderer renderer;
     private boolean paused;
 
     public GameScreen(GameMain game) {
@@ -43,7 +43,7 @@ public class GameScreen extends ScreenAdapter {
         batch = new SpriteBatch();
         batch.enableBlending();
 
-        shapeRenderer = new ShapeRenderer();
+        renderer = new ShapeRenderer();
 
         font = assets.fontAssets.defaultFont;
 
@@ -53,7 +53,7 @@ public class GameScreen extends ScreenAdapter {
 
     private GameMap loadMap() {
         GameMap map = new GameMap();
-        FileHandle fileHandle = Gdx.files.internal("maps/map3.map");
+        FileHandle fileHandle = Gdx.files.internal("maps/map1.map");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fileHandle.read()), 64);
         map.load(reader);
         return map;
@@ -67,24 +67,21 @@ public class GameScreen extends ScreenAdapter {
         GameKeysStatus.scan();
 
         if (!paused) {
-            worldController.update(delta);
+            worldController.update(delta, null);
         }
 
         {
             batch.begin();
-
-            worldController.render(delta, batch, null);
+            worldController.render(batch, null);
             renderGui(delta);
-
             batch.end();
         }
 
-        {
-            shapeRenderer.begin();
+        { // Debug rendering: show contours of the game objects
+            renderer.begin();
 
-            worldController.render(delta, null, shapeRenderer);
-
-            shapeRenderer.end();
+            worldController.render(null, renderer);
+            renderer.end();
         }
     }
 
@@ -103,8 +100,8 @@ public class GameScreen extends ScreenAdapter {
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         batch.setProjectionMatrix(viewport.getCamera().combined);
-        shapeRenderer.setAutoShapeType(true);
-        shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+        renderer.setAutoShapeType(true);
+        renderer.setProjectionMatrix(viewport.getCamera().combined);
     }
 
     @Override

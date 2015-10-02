@@ -128,7 +128,7 @@ def main():
             imgray = cv2.cvtColor(sim, cv2.COLOR_BGR2GRAY)
             ret, thresh = cv2.threshold(imgray, 127, 255, 2)
 
-            contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+            contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             colors = ((0, 255, 0), (0, 0, 255), (255, 0, 0),
                       (0, 255, 255), (255, 255, 0), (255, 0, 255))
 

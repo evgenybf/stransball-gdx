@@ -32,7 +32,6 @@ public class GameMap {
     private int[] map;
     private int sx;
     private int sy;
-    @SuppressWarnings("unused")
     private int background_type;
     private int animtimer;
     private int animflag;
@@ -323,7 +322,7 @@ public class GameMap {
         }
     }
 
-    public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer shapeRenderer, int x, int y, int ww, int wh,
+    public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
             IPolygonDetector detector) {
 
         int step_x = 0, step_y = 0;
@@ -407,13 +406,13 @@ public class GameMap {
                                         batch.draw(tiles.get(piece), act_x,
                                                 INTERNAL_SCREEN_HEIGHT - act_y - /*FIXME: !!!*/ step_y);
                                     }
-                                    if (shapeRenderer != null) {
+                                    if (renderer != null) {
                                         Polygon poly = tilesPolygons[piece];
                                         if (poly != null) {
                                             poly.setPosition(act_x,
                                                     Constants.INTERNAL_SCREEN_HEIGHT - act_y /*- step_y*/);
 
-                                            shapeRenderer.polygon(poly.getTransformedVertices());
+                                            renderer.polygon(poly.getTransformedVertices());
                                         }
                                     }
 
