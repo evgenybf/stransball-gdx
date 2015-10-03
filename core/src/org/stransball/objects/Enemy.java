@@ -239,11 +239,36 @@ public class Enemy {
             int i;
             i = (-state) / 8;
             tiler = tiles.get(243 + i);
-        } /* if */
+        }
         if (batch != null) {
             batch.draw(tiler, (x / FACTOR) - map_x - 8,
                     Constants.INTERNAL_SCREEN_HEIGHT - ((y / FACTOR) - map_y /*???- 8*/) - 8);
         }
+    }
+
+    public void draw_directionalcanon(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void draw_tank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void draw_destroyedtank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void draw_explosion(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void draw_directionalcanon2(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

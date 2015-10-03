@@ -246,18 +246,11 @@ public class GameMap {
             for (Enemy e : enemies) {
                 switch (e.type) {
                 case BULLET:
-                    //                                        e.draw_bullet(enemy_sfc,masks,(e.x/FACTOR)-32,(e.y/FACTOR)-32);
-                    //                                        draw_map_enemy(back_sfc,masks,(e.x/FACTOR)-32,(e.y/FACTOR)-32,64,64,e);
-                    //                                        /* Collision detection: */ 
-                    //                                        {
-                    //                                            sge_cdata *enemy_c=sge_make_cmap(enemy_sfc);
-                    //                                            sge_cdata *back_c=sge_make_cmap(back_sfc);
-                    //                    
-                    //                                            collision=(sge_cmcheck(enemy_c,0,0,back_c,0,0) ? true:false);
-                    //                    
-                    //                                            sge_destroy_cmap(enemy_c);
-                    //                                            sge_destroy_cmap(back_c);
-                    //                                        }
+                    //TODO: collision detection
+
+                    e.draw_bullet(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32);
+                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e);
+
                     boolean collision = false;
                     if (!e.cycle_bullet(sx * 16, sy * 16, collision)) {
                         enemiestodelete.add(e);
@@ -522,8 +515,6 @@ public class GameMap {
     }
 
     void draw_map_enemy(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy) {
-        int map_x = x;
-        int map_y = y;
         for (Enemy e : enemies) {
             if (e != enemy) {
                 switch (e.type) {
@@ -533,39 +524,39 @@ public class GameMap {
                         e.draw_bullet(batch, renderer, x, y);
                     break;
                 case DIRECTIONAL_CANON:
-                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
-                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_directionalcanon(surface,tiles,map[(e.x)/16+(e.y/16)*sx],x,y);
+                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
+                        e.draw_directionalcanon(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y);
                     break;
                 case TANK:
-                    //                    if (e.x>(-32+x) && e.x<(ww+x+32) &&
-                    //                        e.y>(-32+y) && e.y<(wh+y+32)) e.draw_tank(surface,tiles,x,y);
+                    if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
+                        e.draw_tank(batch, renderer, x, y);
                     break;
                 case DESTOYED_TANK:
-                    //                    if (e.x>(-32+x) && e.x<(ww+x+32) &&
-                    //                        e.y>(-32+y) && e.y<(wh+y+32)) e.draw_destroyedtank(surface,tiles,x,y);
+                    if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
+                        e.draw_destroyedtank(batch, renderer, x, y);
                     break;
                 case EXPLOSION:
-                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
-                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_explosion(surface,tiles,x,y);
+                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
+                        e.draw_explosion(batch, renderer, x, y);
                     break;
                 case DIRECTIONAL_CANON_2:
-                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
-                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_directionalcanon2(surface,tiles,map[(e.x)/16+(e.y/16)*sx],x,y);
+                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
+                        e.draw_directionalcanon2(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y);
+                    break;
+                default:
                     break;
                 }
             }
         }
 
-    } /* draw_map_enemy */
+    }
 
     private void renderSmoke(SpriteBatch batch, int x, int y, int ww, int wh) {
         if (batch == null)
             return;
 
-        Array<AtlasRegion> tiles;
-        // Draw smoke
+        Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
-        tiles = Assets.assets.graphicAssets.tiles;
         for (Smoke s : smokes) {
             int tile = ((s.timer) >> 3) % 3;
             int rx = (s.x / FACTOR) - x;
