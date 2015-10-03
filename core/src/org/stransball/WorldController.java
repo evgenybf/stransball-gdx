@@ -14,7 +14,6 @@ import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
@@ -455,12 +454,11 @@ public class WorldController {
                 }
 
             }
-            for (ShipBullet b0 : deletelist) {
-                bullets.remove(b0);
-            }
+
+            bullets.removeAll(deletelist);
         }
 
-        map.update(delta);
+        map.update(ship_x, ship_y);
 
         // Ship collision detection 
         if (ship_state == 0 && ship_map_collision(null)) {
@@ -489,7 +487,7 @@ public class WorldController {
 
         if (renderer != null) {
             renderer.polygon(polygon.getTransformedVertices());
-//            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
+            //            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
         }
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
@@ -534,18 +532,18 @@ public class WorldController {
             renderShipBullet(batch);
         }
 
-//        if (renderer != null) {
-//            int bx = ball_x; // ??? (ball_x / FACTOR);
-//            int by = ball_y; // ??? (ball_y / FACTOR);
-//
-//            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-//            
-//            tile_map_collision(renderer, tilePolygons[360], bx, by);
-////            tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
-//            tile_map_collision(renderer, tilePolygons[340], bx, by);
-//            tile_map_collision(renderer, tilePolygons[342], bx, by);
-//            tile_map_collision(renderer, tilePolygons[362], bx, by);
-//        }
+        //        if (renderer != null) {
+        //            int bx = ball_x; // ??? (ball_x / FACTOR);
+        //            int by = ball_y; // ??? (ball_y / FACTOR);
+        //
+        //            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
+        //            
+        //            tile_map_collision(renderer, tilePolygons[360], bx, by);
+        ////            tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
+        //            tile_map_collision(renderer, tilePolygons[340], bx, by);
+        //            tile_map_collision(renderer, tilePolygons[342], bx, by);
+        //            tile_map_collision(renderer, tilePolygons[362], bx, by);
+        //        }
 
     }
 
@@ -666,6 +664,7 @@ public class WorldController {
             map_y = 0;
 
         map.drawWithoutEnemies(batch, renderer, map_x, map_y, sx, sy, null);
+        map.draw_map_enemy(batch, renderer, map_x, map_y, sx, sy, null);
     }
 
     private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {
@@ -744,7 +743,7 @@ public class WorldController {
 
                 if (renderer != null) {
                     renderer.polygon(poly.getTransformedVertices());
-//                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
+                    //                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
                 }
             }
         }

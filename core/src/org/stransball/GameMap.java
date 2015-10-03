@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import org.stransball.objects.Door;
 import org.stransball.objects.Enemy;
+import org.stransball.objects.Enemy.EnemyType;
 import org.stransball.objects.FuelRecharge;
 import org.stransball.objects.Smoke;
 import org.stransball.objects.SmokeSource;
@@ -106,7 +107,7 @@ public class GameMap {
                         || (map[i] >= 236 && map[i] < 240)) {
                     // CANON:
                     Enemy e = new Enemy();
-                    e.type = 1;
+                    e.type = EnemyType.CANON;
                     e.state = 0;
                     e.life = 4;
                     e.x = x;
@@ -118,7 +119,7 @@ public class GameMap {
                 if (map[i] >= 196 && map[i] < 200) {
                     // FAST CANON:
                     Enemy e = new Enemy();
-                    e.type = 2;
+                    e.type = EnemyType.FAST_CANON;
                     e.state = 0;
                     e.life = 8;
                     e.x = x;
@@ -130,7 +131,7 @@ public class GameMap {
                 if (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175) {
                     // DIRECTIONAL CANON:
                     Enemy e = new Enemy();
-                    e.type = 3;
+                    e.type = EnemyType.DIRECTIONAL_CANON;
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -142,7 +143,7 @@ public class GameMap {
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
                     // DIRECTIONAL CANON 2:
                     Enemy e = new Enemy();
-                    e.type = 7;
+                    e.type = EnemyType.DIRECTIONAL_CANON_2;
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -203,7 +204,7 @@ public class GameMap {
                 x *= 16;
                 y *= 16;
 
-                e.type = 4;
+                e.type = EnemyType.TANK;
                 e.state = 1;
                 e.state2 = 0;
                 e.x = x;
@@ -222,7 +223,9 @@ public class GameMap {
         animflag = 0;
     }
 
-    public void update(float delta) {
+    public void update(int ship_x, int ship_y) {
+        ship_x /= FACTOR;
+        ship_y /= FACTOR;
 
         // Tile animation
         {
@@ -233,6 +236,51 @@ public class GameMap {
                     animflag = 0;
                 animtimer = 0;
             }
+        }
+
+        // Enemies
+        {
+            ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
+            ArrayList<Enemy> newenemies = new ArrayList<Enemy>();
+
+            for (Enemy e : enemies) {
+                switch (e.type) {
+                case BULLET:
+                    //                                        e.draw_bullet(enemy_sfc,masks,(e.x/FACTOR)-32,(e.y/FACTOR)-32);
+                    //                                        draw_map_enemy(back_sfc,masks,(e.x/FACTOR)-32,(e.y/FACTOR)-32,64,64,e);
+                    //                                        /* Collision detection: */ 
+                    //                                        {
+                    //                                            sge_cdata *enemy_c=sge_make_cmap(enemy_sfc);
+                    //                                            sge_cdata *back_c=sge_make_cmap(back_sfc);
+                    //                    
+                    //                                            collision=(sge_cmcheck(enemy_c,0,0,back_c,0,0) ? true:false);
+                    //                    
+                    //                                            sge_destroy_cmap(enemy_c);
+                    //                                            sge_destroy_cmap(back_c);
+                    //                                        }
+                    boolean collision = false;
+                    if (!e.cycle_bullet(sx * 16, sy * 16, collision)) {
+                        enemiestodelete.add(e);
+                    }
+                    break;
+                case CANON:
+                    if (!e.cycle_canon(ship_x, ship_y, newenemies)) {
+                        enemiestodelete.add(e);
+                    }
+                    break;
+                case FAST_CANON:
+                    if (!e.cycle_fastcanon(ship_x, ship_y, newenemies)) {
+                        enemiestodelete.add(e);
+                    }
+                    break;
+                default:
+                    //TODO: tank, directional canons and so on
+                    break;
+                }
+            }
+
+            enemies.removeAll(enemiestodelete);
+            enemies.addAll(newenemies);
         }
 
         // Doors:  
@@ -291,13 +339,10 @@ public class GameMap {
 
                         smokes.add(s);
                     }
-
                 }
             }
 
-            for (SmokeSource ss : todelete2) {
-                smokesources.remove(ss);
-            }
+            smokesources.removeAll(todelete2);
 
             for (Smoke s : smokes) {
                 s.timer++;
@@ -316,9 +361,7 @@ public class GameMap {
                 }
             }
 
-            for (Smoke s : todelete) {
-                smokes.remove(s);
-            }
+            smokes.removeAll(todelete);
         }
     }
 
@@ -478,6 +521,43 @@ public class GameMap {
         }
     }
 
+    void draw_map_enemy(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy) {
+        int map_x = x;
+        int map_y = y;
+        for (Enemy e : enemies) {
+            if (e != enemy) {
+                switch (e.type) {
+                case BULLET:
+                    if (e.x > (-16 + x) * FACTOR && e.x < (ww + x) * FACTOR && e.y > (-16 + y) * FACTOR
+                            && e.y < (wh + y) * FACTOR)
+                        e.draw_bullet(batch, renderer, x, y);
+                    break;
+                case DIRECTIONAL_CANON:
+                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
+                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_directionalcanon(surface,tiles,map[(e.x)/16+(e.y/16)*sx],x,y);
+                    break;
+                case TANK:
+                    //                    if (e.x>(-32+x) && e.x<(ww+x+32) &&
+                    //                        e.y>(-32+y) && e.y<(wh+y+32)) e.draw_tank(surface,tiles,x,y);
+                    break;
+                case DESTOYED_TANK:
+                    //                    if (e.x>(-32+x) && e.x<(ww+x+32) &&
+                    //                        e.y>(-32+y) && e.y<(wh+y+32)) e.draw_destroyedtank(surface,tiles,x,y);
+                    break;
+                case EXPLOSION:
+                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
+                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_explosion(surface,tiles,x,y);
+                    break;
+                case DIRECTIONAL_CANON_2:
+                    //                    if (e.x>(-16+x) && e.x<(ww+x) &&
+                    //                        e.y>(-16+y) && e.y<(wh+y)) e.draw_directionalcanon2(surface,tiles,map[(e.x)/16+(e.y/16)*sx],x,y);
+                    break;
+                }
+            }
+        }
+
+    } /* draw_map_enemy */
+
     private void renderSmoke(SpriteBatch batch, int x, int y, int ww, int wh) {
         if (batch == null)
             return;
@@ -618,22 +698,26 @@ public class GameMap {
             int ex, ey, distance;
             ex = e.x;
             ey = e.y;
-            if (e.type == 0) {
+            if (e.type == EnemyType.BULLET) {
                 ex /= FACTOR;
                 ey /= FACTOR;
             }
-            if (e.type == 1 || e.type == 2 || e.type == 3 || e.type == 7) {
+            if (e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON || e.type == EnemyType.DIRECTIONAL_CANON
+                    || e.type == EnemyType.DIRECTIONAL_CANON_2) {
                 ex += 8;
                 ey += 8;
             }
             distance = (x - ex) * (x - ex) + (y - ey) * (y - ey);
 
             tolerance = 100;
-            if (e.type == 3 || e.type == 7 || (e.type == 4 && e.tank_type == 3))
+            if (e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.DIRECTIONAL_CANON_2
+                    || (e.type == EnemyType.TANK && e.tank_type == 3))
                 tolerance = 200;
 
             if (((mindistance == -1 && distance < tolerance) || distance < mindistance)
-                    && (e.type == 0 || e.type == 1 || e.type == 2 || e.type == 3 || e.type == 4 || e.type == 7)) {
+                    && (e.type == EnemyType.BULLET || e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON
+                            || e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.TANK
+                            || e.type == EnemyType.DIRECTIONAL_CANON_2)) {
                 selected = e;
                 mindistance = distance;
             }
@@ -647,10 +731,11 @@ public class GameMap {
         if (selected != null && selected.collision(strength)) {
             int generate_smoke = -1;
 
-            if (selected.type != 0)
+            if (selected.type != EnemyType.BULLET)
                 retval = 2; // If it's not a bullet, then you have destroyed an enemy
 
-            if (selected.type == 1 || selected.type == 2 || selected.type == 3 || selected.type == 7) {
+            if (selected.type == EnemyType.CANON || selected.type == EnemyType.FAST_CANON
+                    || selected.type == EnemyType.DIRECTIONAL_CANON || selected.type == EnemyType.DIRECTIONAL_CANON_2) {
                 int x_, y_, i;
 
                 x_ = selected.x / 16;
@@ -732,17 +817,18 @@ public class GameMap {
                 Assets.assets.soundAssets.explosion.play();
             }
 
-            if (selected.type != 4 && selected.type != 5 && selected.type != 6) {
-                if (selected.type == 0) {
-                    selected.type = 6;
+            if (selected.type != EnemyType.TANK && selected.type != EnemyType.DESTOYED_TANK
+                    && selected.type != EnemyType.EXPLOSION) {
+                if (selected.type == EnemyType.BULLET) {
+                    selected.type = EnemyType.EXPLOSION;
                     selected.state = 0;
                 } else {
                     selected.state = -1;
                 }
             } else {
-                if (selected.type == 4) {
+                if (selected.type == EnemyType.TANK) {
                     Assets.assets.soundAssets.explosion.play();
-                    selected.type = 5;
+                    selected.type = EnemyType.DESTOYED_TANK;
                     selected.state = 0;
                     generate_smoke = 0;
                     if (generate_smoke == 0) {
