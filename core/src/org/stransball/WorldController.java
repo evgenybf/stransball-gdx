@@ -161,7 +161,9 @@ public class WorldController {
                     ship_speed_y = 4 * FACTOR;
                 if (ship_speed_y < -4 * FACTOR)
                     ship_speed_y = -4 * FACTOR;
-                fuel--;
+                if (!Constants.GOD_MODE) {
+                    fuel--;
+                }
                 fuel_used++;
                 ship_anim++;
                 if (ship_anim >= 6)
@@ -218,8 +220,10 @@ public class WorldController {
                 float radian_angle = (ship_angle - 90) * MathUtils.degreesToRadians;
 
                 n_shots++;
-                //                fuel-=shotfuel[ship_type];
-                //                fuel_used+=shotfuel[ship_type];
+                if (!Constants.GOD_MODE) {
+                    //                fuel-=shotfuel[ship_type];
+                }
+                //                                fuel_used+=shotfuel[ship_type];
 
                 ShipBullet b = new ShipBullet();
                 {
@@ -460,14 +464,16 @@ public class WorldController {
 
         map.update(ship_x, ship_y);
 
-        // Ship collision detection 
-        if (ship_state == 0 && ship_map_collision(null)) {
-            ship_speed_x /= 4;
-            ship_speed_y /= 4;
-            ship_state = 1;
-            ship_anim = 0;
+        if (!Constants.GOD_MODE) {
+            // Ship collision detection 
+            if (ship_state == 0 && ship_map_collision(null)) {
+                ship_speed_x /= 4;
+                ship_speed_y /= 4;
+                ship_state = 1;
+                ship_anim = 0;
 
-            Assets.assets.soundAssets.explosion.play();
+                Assets.assets.soundAssets.explosion.play();
+            }
         }
     }
 

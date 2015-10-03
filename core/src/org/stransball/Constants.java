@@ -4,6 +4,8 @@ import com.badlogic.gdx.Input;
 
 public class Constants {
 
+    public static final boolean GOD_MODE = true;
+    
     public static final int DEFAULT_SCREEN_WIDTH = 320*3;
     public static final int DEFAULT_SCREEN_HEIGHT = 240*3;
 
