@@ -358,11 +358,15 @@ public class WorldController {
             bx = ball_x; // ??? (ball_x / FACTOR);
             by = ball_y; // ??? (ball_y / FACTOR);
 
+            int bx_ = ball_x/FACTOR; // ??? (ball_x / FACTOR);
+            int by_ = ball_y/FACTOR; // ??? (ball_y / FACTOR);
+
+
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
             if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by)) {
                 if (ball_speed_y > 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
-                    map.ball_collision(bx + 8, by + 12);
+                    map.ball_collision(bx_ + 8, by_ + 12);
                 } else {
                     if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by - 1))
                         ball_speed_y -= 2;
@@ -374,7 +378,7 @@ public class WorldController {
             if (tile_map_collision(debugRenderer, tilePolygons[340], bx, by)) {
                 if (ball_speed_y < 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
-                    map.ball_collision(bx + 8, by + 4);
+                    map.ball_collision(bx_ + 8, by_ + 4);
                 } else {
                     ball_speed_y += 2;
                 }
@@ -383,7 +387,7 @@ public class WorldController {
             if (tile_map_collision(debugRenderer, tilePolygons[342], bx, by)) {
                 if (ball_speed_x > 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
-                    map.ball_collision(bx + 12, by + 8);
+                    map.ball_collision(bx_ + 12, by_ + 8);
                 } else {
                     ball_speed_x -= 2;
                 }
@@ -392,7 +396,7 @@ public class WorldController {
             if (tile_map_collision(debugRenderer, tilePolygons[362], bx, by)) {
                 if (ball_speed_x < 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
-                    map.ball_collision(bx + 4, by + 8);
+                    map.ball_collision(bx_ + 4, by_ + 8);
                 } else {
                     ball_speed_x += 2;
                 }

@@ -61,7 +61,7 @@ public class GameMap {
         enemies = new ArrayList<Enemy>();
         doors = new ArrayList<Door>();
         switches = new ArrayList<Switch>();
-        switchnumber = 0;
+        switchnumber = 1;
         fuel_recharges = new ArrayList<FuelRecharge>();
         smokesources = new ArrayList<SmokeSource>();
         smokes = new ArrayList<Smoke>();
