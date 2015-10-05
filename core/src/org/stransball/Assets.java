@@ -6,7 +6,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -48,7 +50,7 @@ public class Assets {
         assetManager.load("sound/switch.ogg", Sound.class);
         assetManager.load("sound/takeball.ogg", Sound.class);
         assetManager.load("sound/thrust.ogg", Sound.class);
-        
+
         assetManager.finishLoading();
 
         TextureAtlas atlas = assetManager.get("graphics/tiles.pack", TextureAtlas.class);
@@ -59,6 +61,7 @@ public class Assets {
     }
 
     public void dispose() {
+        graphicAssets.dispose();
         assetManager.dispose();
     }
 
@@ -80,6 +83,8 @@ public class Assets {
         public final Animation shipThrustAnimation;
         public final Polygon shipPolygon;
         public final Animation shipExplosionAnimation;
+        private final Pixmap whiteSpotPixmap;
+        public final Texture whiteSpot;
 
         public GraphicAssets(AssetManager assetManager, TextureAtlas atlas) {
             ContourLoader contourLoader = new ContourLoader(Gdx.files.internal("graphics/tiles.vtx"));
@@ -91,8 +96,19 @@ public class Assets {
             shipPolygon = contourLoader.findPolygon("ship", true);
 
             shipThrustAnimation = new Animation(0.1f, atlas.findRegions("shipThrust"), PlayMode.LOOP);
-            
+
             shipExplosionAnimation = new Animation(0.1f, atlas.findRegions("shipExplosion"), PlayMode.LOOP);
+
+            whiteSpotPixmap = new Pixmap(1, 1, Format.RGB888);
+            whiteSpotPixmap.setColor(Color.WHITE);
+            whiteSpotPixmap.fill();
+
+            whiteSpot = new Texture(whiteSpotPixmap);
+        }
+
+        public void dispose() {
+            whiteSpot.dispose();
+            whiteSpotPixmap.dispose();
         }
     }
 

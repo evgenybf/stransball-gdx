@@ -358,9 +358,8 @@ public class WorldController {
             bx = ball_x; // ??? (ball_x / FACTOR);
             by = ball_y; // ??? (ball_y / FACTOR);
 
-            int bx_ = ball_x/FACTOR; // ??? (ball_x / FACTOR);
-            int by_ = ball_y/FACTOR; // ??? (ball_y / FACTOR);
-
+            int bx_ = ball_x / FACTOR; // ??? (ball_x / FACTOR);
+            int by_ = ball_y / FACTOR; // ??? (ball_y / FACTOR);
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
             if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by)) {
@@ -540,6 +539,35 @@ public class WorldController {
             renderAttractor(batch);
             renderShip(batch, renderer);
             renderShipBullet(batch);
+
+            // FUEL STATUS:
+            {
+                float f;
+
+                Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); //Assets.assets.graphicAssets.tiles.get(498));
+                sprite.setPosition(2, INTERNAL_SCREEN_HEIGHT - 2);
+                sprite.setSize(52, 1);
+                sprite.setColor(Color.WHITE);
+                sprite.draw(batch);
+
+                sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
+                sprite.draw(batch);
+
+                sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
+                sprite.setSize(1, 8);
+                sprite.draw(batch);
+
+                sprite.setX(53);
+                sprite.draw(batch);
+
+                sprite.setPosition(3, INTERNAL_SCREEN_HEIGHT - 8);
+                sprite.setSize(fuel / 64.0f, 6);
+                f = (float) (fuel) / (64.0f * 30.0F);
+                if (f >= 1.0F)
+                    f = 1.0F;
+                sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * Math.sqrt(f)), 0, 1));
+                sprite.draw(batch);
+            }
         }
 
         //        if (renderer != null) {
@@ -567,8 +595,7 @@ public class WorldController {
             x = star_x[i] - map_x / 2;
             y = star_y[i] - map_y / 2;
             if (x >= 0 && x < sx && y >= 0 && y < sy) {
-                Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(243));
-                sprite.setScale(0.2f);
+                Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot);
                 sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
                 sprite.draw(batch, star_color[i] + star_color[i] + star_color[i]);
             }

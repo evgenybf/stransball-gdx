@@ -86,7 +86,7 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void renderGui(float delta) {
-        font.draw(batch, format("TRANSBALL! %s", Gdx.graphics.getFramesPerSecond()), 2, viewport.getWorldHeight() - 2);
+        font.draw(batch, format("FPS: %s", Gdx.graphics.getFramesPerSecond()), 2, /*viewport.getWorldHeight() -*/ 8);
 
         {
             time += delta;
