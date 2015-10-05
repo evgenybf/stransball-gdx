@@ -14,7 +14,6 @@ import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
@@ -515,6 +514,9 @@ public class WorldController {
         }
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
+                new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+
+        map.draw_map_enemy(null, null, x, y, sx, sy, null,
                 new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
 
         return collision;

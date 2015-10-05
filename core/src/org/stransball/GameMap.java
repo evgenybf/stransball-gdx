@@ -246,10 +246,21 @@ public class GameMap {
             for (Enemy e : enemies) {
                 switch (e.type) {
                 case BULLET:
-                    //TODO: collision detection
-
+                //TODO: collision detection
+                {
                     e.draw_bullet(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, null);
-                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e, null);
+
+                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e,
+                            new IPolygonDetector() {
+
+                                @Override
+                                public void detect(int act_x, int act_y, int piece) {
+                                    // TODO Auto-generated method stub
+
+                                }
+                            });
+
+                }
 
                     boolean collision = false;
                     if (!e.cycle_bullet(sx * 16, sy * 16, collision)) {
@@ -456,14 +467,15 @@ public class GameMap {
                                     for (Switch s : switches) {
                                         if (s.x == i && s.y == j) {
                                             AtlasRegion tile;
-                                            int tileIndex; 
+                                            int tileIndex;
                                             if (s.state != 0) {
                                                 tileIndex = piece + 140;
                                             } else {
                                                 tileIndex = piece;
                                             }
                                             if (batch != null) {
-                                                batch.draw(tile = tiles.get(tileIndex), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                                batch.draw(tile = tiles.get(tileIndex), act_x,
+                                                        INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                             }
                                             if (detector != null) {
                                                 detector.detect(act_x, act_y, tileIndex);
