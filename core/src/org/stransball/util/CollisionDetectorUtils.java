@@ -16,7 +16,7 @@ public class CollisionDetectorUtils {
 
         ShortArray pointsCoords = triangulator.computeTriangles(vertices);
         
-        int step = 2 * 3; // skip some triangles - it should not affect on the result
+        int step = 1 * 3; // skip some triangles - it should not affect on the result
         Polygon[] triangles = new Polygon[pointsCoords.size / step];
 
         for (int i = 0; i < pointsCoords.size / step; i++) {

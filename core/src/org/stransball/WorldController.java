@@ -588,7 +588,7 @@ public class WorldController {
             }
         }
 
-        if (renderer != null) {
+        if (false && renderer != null) {
             int bx = ball_x; // ??? (ball_x / FACTOR);
             int by = ball_y; // ??? (ball_y / FACTOR);
 
@@ -596,7 +596,6 @@ public class WorldController {
 
             //                    tile_map_collision(renderer, tilePolygons[360], bx, by);
             //                    tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
-            System.out.println(Arrays.toString(tilePolygons[340].getTransformedVertices()));
             tile_map_collision(renderer, tilePolygons[340], bx, by);
             //                    tile_map_collision(renderer, tilePolygons[342], bx, by);
             //                    tile_map_collision(renderer, tilePolygons[362], bx, by);
