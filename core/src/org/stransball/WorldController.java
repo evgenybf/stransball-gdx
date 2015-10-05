@@ -14,6 +14,7 @@ import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
@@ -75,6 +76,8 @@ public class WorldController {
     private int[] star_x;
     private int[] star_y;
     private int[] star_color;
+    @SuppressWarnings("unused")
+    private int fade_state;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -91,7 +94,7 @@ public class WorldController {
         ship_state = 0;
         ship_anim = 0;
 
-        fuel = 1000;
+        fuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: have to depend on the map settings
 
         {
             shipRegion = assets.graphicAssets.shipRegion;
@@ -135,7 +138,7 @@ public class WorldController {
         }
     }
 
-    public void update(float delta, ShapeRenderer debugRenderer) {
+    public void update(float delta, ShapeRenderer renderer) {
         if (ship_state == 0) {
             if (bLeft) {
                 ship_angle -= 4;
@@ -161,7 +164,7 @@ public class WorldController {
                     ship_speed_y = 4 * FACTOR;
                 if (ship_speed_y < -4 * FACTOR)
                     ship_speed_y = -4 * FACTOR;
-                if (!Constants.GOD_MODE) {
+                if (!Constants.DEBUG_GOD_MODE) {
                     fuel--;
                 }
                 fuel_used++;
@@ -216,14 +219,14 @@ public class WorldController {
                 }
             }
 
-            if (GameKeysStatus.bFire && !GameKeysStatus.bFirePrev /* && fuel>=shotfuel[ship_type] */) {
+            if (GameKeysStatus.isFire()) {
                 float radian_angle = (ship_angle - 90) * MathUtils.degreesToRadians;
 
                 n_shots++;
-                if (!Constants.GOD_MODE) {
-                    //                fuel-=shotfuel[ship_type];
+                if (!Constants.DEBUG_GOD_MODE) {
+                    fuel -= Constants.shotfuel[0];
                 }
-                //                                fuel_used+=shotfuel[ship_type];
+                fuel_used += Constants.shotfuel[0];
 
                 ShipBullet b = new ShipBullet();
                 {
@@ -243,7 +246,8 @@ public class WorldController {
             playThrustSound = false;
 
             ship_anim++;
-            //if (ship_anim>=64) fade_state=2;
+            if (ship_anim >= 64)
+                fade_state = 2;
             if (ship_anim >= 96) {
                 throw new RuntimeException("You failed");
             }
@@ -362,19 +366,19 @@ public class WorldController {
             int by_ = ball_y / FACTOR; // ??? (ball_y / FACTOR);
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-            if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by)) {
+            if (tile_map_collision(renderer, tilePolygons[360], bx, by)) {
                 if (ball_speed_y > 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx_ + 8, by_ + 12);
                 } else {
-                    if (tile_map_collision(debugRenderer, tilePolygons[360], bx, by - 1))
+                    if (tile_map_collision(renderer, tilePolygons[360], bx, by - 1))
                         ball_speed_y -= 2;
                 }
             } else {
                 ball_speed_y += 2;
             }
 
-            if (tile_map_collision(debugRenderer, tilePolygons[340], bx, by)) {
+            if (tile_map_collision(renderer, tilePolygons[340], bx, by)) {
                 if (ball_speed_y < 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx_ + 8, by_ + 4);
@@ -383,7 +387,7 @@ public class WorldController {
                 }
             }
 
-            if (tile_map_collision(debugRenderer, tilePolygons[342], bx, by)) {
+            if (tile_map_collision(renderer, tilePolygons[342], bx, by)) {
                 if (ball_speed_x > 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx_ + 12, by_ + 8);
@@ -392,7 +396,7 @@ public class WorldController {
                 }
             }
 
-            if (tile_map_collision(debugRenderer, tilePolygons[362], bx, by)) {
+            if (tile_map_collision(renderer, tilePolygons[362], bx, by)) {
                 if (ball_speed_x < 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx_ + 4, by_ + 8);
@@ -417,7 +421,7 @@ public class WorldController {
             ball_speed_x = 0;
         }
         if ((ball_y / FACTOR) < 0 && ball_state >= 0) {
-            //            fade_state=2;
+            fade_state = 2;
             ball_speed_y = -FACTOR;
             ball_state++;
             if (ball_state >= 32) {
@@ -443,6 +447,7 @@ public class WorldController {
                     b.y += b.speed_y;
 
                     if (tile_map_collision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
+                        // int ship_strength[]={1,2,4};
                         b.state++;
                         int retv = map.shipbullet_collision((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
                         if (retv != 0)
@@ -467,9 +472,9 @@ public class WorldController {
 
         map.update(ship_x, ship_y);
 
-        if (!Constants.GOD_MODE) {
+        if (!Constants.DEBUG_GOD_MODE) {
             // Ship collision detection 
-            if (ship_state == 0 && ship_map_collision(null)) {
+            if (ship_state == 0 && ship_map_collision(renderer)) {
                 ship_speed_x /= 4;
                 ship_speed_y /= 4;
                 ship_state = 1;
@@ -477,6 +482,16 @@ public class WorldController {
 
                 Assets.assets.soundAssets.explosion.play();
             }
+        }
+
+        // Fuel recharge: 
+        if (map.ship_in_fuel_recharge(ship_x / FACTOR, ship_y / FACTOR)) {
+            int old_fuel = fuel;
+            fuel += 8;
+            if (fuel > 50 * Constants.fuelfactor[0])
+                fuel = 50 * Constants.fuelfactor[0];
+            if ((old_fuel / Constants.fuelfactor[0]) < ((fuel - 1) / Constants.fuelfactor[0]))
+                Assets.assets.soundAssets.fuel.play();
         }
     }
 
@@ -496,7 +511,7 @@ public class WorldController {
 
         if (renderer != null) {
             renderer.polygon(polygon.getTransformedVertices());
-            //            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
+            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
         }
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
@@ -505,7 +520,7 @@ public class WorldController {
         return collision;
     }
 
-    private boolean ship_map_collision(final ShapeRenderer renderer) {
+    private boolean ship_map_collision(ShapeRenderer renderer) {
         collision = false;
 
         int x = ship_x / FACTOR - 32;
@@ -526,6 +541,9 @@ public class WorldController {
         }
 
         map.drawWithoutEnemies(null, null, x, y, sx, sy,
+                new CollisionDetector(renderer, ship_x_, ship_y_, shipPolygons));
+
+        map.draw_map_enemy(null, null, x, y, sx, sy, null,
                 new CollisionDetector(renderer, ship_x_, ship_y_, shipPolygons));
 
         return collision;
@@ -570,18 +588,19 @@ public class WorldController {
             }
         }
 
-        //        if (renderer != null) {
-        //            int bx = ball_x; // ??? (ball_x / FACTOR);
-        //            int by = ball_y; // ??? (ball_y / FACTOR);
-        //
-        //            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-        //            
-        //            tile_map_collision(renderer, tilePolygons[360], bx, by);
-        ////            tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
-        //            tile_map_collision(renderer, tilePolygons[340], bx, by);
-        //            tile_map_collision(renderer, tilePolygons[342], bx, by);
-        //            tile_map_collision(renderer, tilePolygons[362], bx, by);
-        //        }
+        if (renderer != null) {
+            int bx = ball_x; // ??? (ball_x / FACTOR);
+            int by = ball_y; // ??? (ball_y / FACTOR);
+
+            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
+
+            //                    tile_map_collision(renderer, tilePolygons[360], bx, by);
+            //                    tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
+            System.out.println(Arrays.toString(tilePolygons[340].getTransformedVertices()));
+            tile_map_collision(renderer, tilePolygons[340], bx, by);
+            //                    tile_map_collision(renderer, tilePolygons[342], bx, by);
+            //                    tile_map_collision(renderer, tilePolygons[362], bx, by);
+        }
 
     }
 
@@ -701,7 +720,7 @@ public class WorldController {
             map_y = 0;
 
         map.drawWithoutEnemies(batch, renderer, map_x, map_y, sx, sy, null);
-        map.draw_map_enemy(batch, renderer, map_x, map_y, sx, sy, null);
+        map.draw_map_enemy(batch, renderer, map_x, map_y, sx, sy, null, null);
     }
 
     private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {
@@ -779,8 +798,10 @@ public class WorldController {
                 }
 
                 if (renderer != null) {
+                    CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
+
                     renderer.polygon(poly.getTransformedVertices());
-                    //                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
+                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
                 }
             }
         }

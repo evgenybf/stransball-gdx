@@ -4,10 +4,11 @@ import com.badlogic.gdx.Input;
 
 public class Constants {
 
-    public static final boolean GOD_MODE = true;
-    
-    public static final int DEFAULT_SCREEN_WIDTH = 320*3;
-    public static final int DEFAULT_SCREEN_HEIGHT = 240*3;
+    public static final boolean DEBUG_GOD_MODE = true;
+    public static final boolean DEBUG_SHOW_COLLISION = false;
+
+    public static final int DEFAULT_SCREEN_WIDTH = 320 * 3;
+    public static final int DEFAULT_SCREEN_HEIGHT = 240 * 3;
 
     public static final int INTERNAL_SCREEN_WIDTH = 320;
     public static final int INTERNAL_SCREEN_HEIGHT = 240;
@@ -22,8 +23,10 @@ public class Constants {
     public static int FIRE_KEY = Input.Keys.SPACE;
     public static int ATRACTOR_KEY = Input.Keys.ENTER;
     public static int PAUSE_KEY = Input.Keys.Z;
-    
-	public static final int FACTOR = 512;
+
+    public static final int FACTOR = 512;
     public static final int MAX_ATRACTOR_P = 64;
-	
+
+    public static final int fuelfactor[] = { 64, 64, 96 };
+    public static final int shotfuel[] = { 40, 64, 96 };
 }

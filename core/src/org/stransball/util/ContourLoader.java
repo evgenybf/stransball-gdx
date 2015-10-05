@@ -137,13 +137,16 @@ public class ContourLoader {
         float[] vertiies = contour.vertiies;
         if (vertiies.length == 4) {
             int d = -1;
-            if (vertiies[0] == vertiies[2]) {
-                shipPolygon.setVertices(new float[] { vertiies[0] - d, vertiies[1], vertiies[0], vertiies[1],
-                        vertiies[2] + d, vertiies[3], vertiies[2], vertiies[3] });
-            } else {
+//            if (vertiies[0] == vertiies[2]) {
+//                shipPolygon.setVertices(new float[] { 
+//                        vertiies[0] - d, vertiies[1], 
+//                        vertiies[0], vertiies[1],
+//                        vertiies[2] - d, vertiies[3], 
+//                        vertiies[2], vertiies[3] });
+//            } else {
                 shipPolygon.setVertices(new float[] { vertiies[0], vertiies[1] - d, vertiies[0], vertiies[1],
                         vertiies[2], vertiies[3], vertiies[2], vertiies[3] - d });
-            }
+//            }
         } else {
             shipPolygon.setVertices(contour.vertiies);
             if (centralize) {

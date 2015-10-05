@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import org.stransball.Assets;
 import org.stransball.Constants;
+import org.stransball.IPolygonDetector;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -230,45 +231,69 @@ public class Enemy {
         return true;
     }
 
-    public void draw_bullet(SpriteBatch batch, ShapeRenderer renderer, int map_x, int map_y) {
+    public void draw_bullet(SpriteBatch batch, ShapeRenderer renderer, int map_x, int map_y,
+            IPolygonDetector collisionDetector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
-        AtlasRegion tiler;
+        int tile0;
         if (state >= 0) {
-            tiler = tiles.get(tile);
+            tile0 = tile;
         } else {
             int i;
             i = (-state) / 8;
-            tiler = tiles.get(243 + i);
+            tile0 = 243 + i;
         }
         if (batch != null) {
-            batch.draw(tiler, (x / FACTOR) - map_x - 8,
+            batch.draw(tiles.get(tile0), (x / FACTOR) - map_x - 8,
                     Constants.INTERNAL_SCREEN_HEIGHT - ((y / FACTOR) - map_y /*???- 8*/) - 8);
+        }
+        if (collisionDetector != null) {
+            collisionDetector.detect(x / FACTOR - map_x - 8, y / FACTOR - map_y - 8, tile0);
         }
     }
 
-    public void draw_directionalcanon(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2) {
+    public void draw_directionalcanon(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
+            IPolygonDetector collisionDetector) {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public void draw_tank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+    public void draw_tank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
+            IPolygonDetector collisionDetector) {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public void draw_destroyedtank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+    public void draw_destroyedtank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
+            IPolygonDetector collisionDetector) {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public void draw_explosion(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2) {
+    public void draw_explosion(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
+            IPolygonDetector collisionDetector) {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public void draw_directionalcanon2(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2) {
+    public void draw_directionalcanon2(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
+            IPolygonDetector collisionDetector) {
         // TODO Auto-generated method stub
-        
+
     }
 
+    public void draw_explosion(SpriteBatch batch, int map_x, int map_y) {
+        int frames[] = { 240, 241, 260, 261, 280, 281 };
+
+        if (state <= 47) {
+            batch.draw(Assets.assets.graphicAssets.tiles.get(frames[state / 8]), x - map_x,
+                    Constants.INTERNAL_SCREEN_HEIGHT - (y - map_y));
+        }
+    }
+
+    public boolean cycle_explosion() {
+        state++;
+        if (state >= 48)
+            return false;
+        return true;
+    }
 }

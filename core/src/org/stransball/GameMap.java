@@ -248,8 +248,8 @@ public class GameMap {
                 case BULLET:
                     //TODO: collision detection
 
-                    e.draw_bullet(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32);
-                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e);
+                    e.draw_bullet(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, null);
+                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e, null);
 
                     boolean collision = false;
                     if (!e.cycle_bullet(sx * 16, sy * 16, collision)) {
@@ -456,18 +456,20 @@ public class GameMap {
                                     for (Switch s : switches) {
                                         if (s.x == i && s.y == j) {
                                             AtlasRegion tile;
+                                            int tileIndex; 
                                             if (s.state != 0) {
-                                                tile = tiles.get(piece + 140);
+                                                tileIndex = piece + 140;
                                             } else {
-                                                tile = tiles.get(piece);
+                                                tileIndex = piece;
                                             }
                                             if (batch != null) {
-                                                batch.draw(tile, act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                                batch.draw(tile = tiles.get(tileIndex), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                            }
+                                            if (detector != null) {
+                                                detector.detect(act_x, act_y, tileIndex);
                                             }
                                         }
                                     }
-
-                                    //TODO: colission detection
                                 } else {
                                     if (batch != null) {
                                         batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
@@ -514,34 +516,37 @@ public class GameMap {
         }
     }
 
-    void draw_map_enemy(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy) {
+    void draw_map_enemy(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy,
+            IPolygonDetector collisionDetector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
                 switch (e.type) {
                 case BULLET:
                     if (e.x > (-16 + x) * FACTOR && e.x < (ww + x) * FACTOR && e.y > (-16 + y) * FACTOR
                             && e.y < (wh + y) * FACTOR)
-                        e.draw_bullet(batch, renderer, x, y);
+                        e.draw_bullet(batch, renderer, x, y, collisionDetector);
                     break;
                 case DIRECTIONAL_CANON:
                     if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.draw_directionalcanon(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y);
+                        e.draw_directionalcanon(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y,
+                                collisionDetector);
                     break;
                 case TANK:
                     if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
-                        e.draw_tank(batch, renderer, x, y);
+                        e.draw_tank(batch, renderer, x, y, collisionDetector);
                     break;
                 case DESTOYED_TANK:
                     if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
-                        e.draw_destroyedtank(batch, renderer, x, y);
+                        e.draw_destroyedtank(batch, renderer, x, y, collisionDetector);
                     break;
                 case EXPLOSION:
                     if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.draw_explosion(batch, renderer, x, y);
+                        e.draw_explosion(batch, renderer, x, y, collisionDetector);
                     break;
                 case DIRECTIONAL_CANON_2:
                     if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.draw_directionalcanon2(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y);
+                        e.draw_directionalcanon2(batch, renderer, map[(e.x) / 16 + (e.y / 16) * sx], x, y,
+                                collisionDetector);
                     break;
                 default:
                     break;
