@@ -71,7 +71,7 @@ public class WorldController {
     private int ball_speed_y;
     @SuppressWarnings("unused")
     private int fade_state;
-    private Stars stars;
+    private StarsLayer stars;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -117,7 +117,7 @@ public class WorldController {
         atractor_p_speed = new float[MAX_ATRACTOR_P];
         atractor_p_color = new long[MAX_ATRACTOR_P];
 
-        stars = new Stars(map.get_sx());
+        stars = new StarsLayer(map.get_sx());
     }
 
     public void update(ShapeRenderer renderer) {
@@ -518,34 +518,37 @@ public class WorldController {
             renderShip(batch, renderer);
             renderShipBullet(batch);
 
-            // FUEL STATUS:
-            {
-                float f;
+            drawFuelStatus(batch);
+        }
+    }
 
-                Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); //Assets.assets.graphicAssets.tiles.get(498));
-                sprite.setPosition(2, INTERNAL_SCREEN_HEIGHT - 2);
-                sprite.setSize(52, 1);
-                sprite.setColor(Color.WHITE);
-                sprite.draw(batch);
+    private void drawFuelStatus(SpriteBatch batch) {
+        {
+            Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); //Assets.assets.graphicAssets.tiles.get(498));
+            sprite.setPosition(2, INTERNAL_SCREEN_HEIGHT - 2);
+            sprite.setSize(52, 1);
+            sprite.setColor(Color.WHITE);
+            sprite.draw(batch);
 
-                sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
-                sprite.draw(batch);
+            sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
+            sprite.draw(batch);
 
-                sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
-                sprite.setSize(1, 8);
-                sprite.draw(batch);
+            sprite.setY(INTERNAL_SCREEN_HEIGHT - 9);
+            sprite.setSize(1, 8);
+            sprite.draw(batch);
 
-                sprite.setX(53);
-                sprite.draw(batch);
+            sprite.setX(53);
+            sprite.draw(batch);
 
-                sprite.setPosition(3, INTERNAL_SCREEN_HEIGHT - 8);
-                sprite.setSize(fuel / 64.0f, 6);
-                f = (float) (fuel) / (64.0f * 30.0F);
-                if (f >= 1.0F)
-                    f = 1.0F;
-                sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * Math.sqrt(f)), 0, 1));
-                sprite.draw(batch);
-            }
+            sprite.setPosition(3, INTERNAL_SCREEN_HEIGHT - 8);
+            sprite.setSize(fuel / 64.0f, 6);
+
+            float f = (float) (fuel) / (64.0f * 30.0F);
+            if (f >= 1.0F)
+                f = 1.0F;
+
+            sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * Math.sqrt(f)), 0, 1));
+            sprite.draw(batch);
         }
     }
 

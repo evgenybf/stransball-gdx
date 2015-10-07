@@ -357,8 +357,8 @@ public class GameMap {
     private boolean checkEnemyWithMapCollision(Enemy enemy, int map_x, int map_y, ShapeRenderer renderer) {
         int x = (enemy.x / FACTOR) - 32;
         int y = (enemy.y / FACTOR) - 32;
-        int sx = 32;
-        int sy = 32;
+        int sx = 64;
+        int sy = 64;
 
         int objectX = enemy.x / FACTOR - map_x;
         int objectY = enemy.y / FACTOR - map_y;
@@ -377,74 +377,34 @@ public class GameMap {
     public void drawMap(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
             ICollisionChecker checker) {
 
-        int step_x = 0, step_y = 0;
-        int act_x, act_y;
-        int i, j;
+        drawBackground(batch, x, y, ww, wh);
+
+        drawWalls(batch, renderer, x, y, ww, wh, checker);
+
+        renderSmoke(batch, x, y, ww, wh);
+    }
+
+    private void drawWalls(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
+            ICollisionChecker checker) {
 
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
         Polygon[] tilesPolygons = Assets.assets.graphicAssets.tilePolygons;
 
-        step_x = tiles.get(0).originalWidth;
-        step_y = tiles.get(0).originalHeight;
+        int step_x = tiles.get(0).originalWidth;
+        int step_y = tiles.get(0).originalHeight;
 
-        if (batch != null) {
-            // Draw Background:
-            for (j = 0, act_y = -(int) (y * 0.75F); j < sy; j++, act_y += step_y) {
-                if (act_y > -step_y && act_y < wh) {
-                    for (i = 0, act_x = -(int) (x * 0.75F); i < sx; i++, act_x += step_x) {
-                        if (act_x > -step_x && act_x < ww) {
-                            switch (background_type) {
-                            case 0:
-                                if (j == 10)
-                                    batch.draw(tiles.get(294), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                if (j > 10)
-                                    batch.draw(tiles.get(314), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                break;
-                            case 1:
-                                if (j == 10)
-                                    batch.draw(tiles.get(295), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                if (j > 10)
-                                    batch.draw(tiles.get(315), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                break;
-                            case 2:
-                                if (j == 10)
-                                    batch.draw(tiles.get(335), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                if (j > 10) {
-                                    if (((j >> 1) & 0x03) == 0) {
-                                        if (animflag < 2) {
-                                            int t[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
-                                            int step;
-                                            step = (animtimer + animflag * 24) / 4;
-                                            if (step > 11)
-                                                step = 11;
-                                            batch.draw(tiles.get(t[step]), act_x,
-                                                    INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                        } else {
-                                            batch.draw(tiles.get(316), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                        }
-                                    } else {
-                                        batch.draw(tiles.get(275), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Draw map:
-        for (j = 0, act_y = -y; j < sy; j++, act_y += step_y) {
+        for (int j = 0, act_y = -y; j < sy; j++, act_y += step_y) {
             if (act_y >= -step_y && act_y < wh) {
-                for (i = 0, act_x = -x; i < sx; i++, act_x += step_x) {
+                for (int i = 0, act_x = -x; i < sx; i++, act_x += step_x) {
                     if (act_x >= -step_x && act_x < ww) {
                         int piece = -1;
 
-                        if (j >= 0)
+                        if (j >= 0) {
                             piece = map[i + j * sx];
+                        }
 
                         piece = animpiece(piece);
+                        
                         if (piece >= 0) {
                             if (piece == 113 || piece == 114) {
                                 // DOOR
@@ -455,11 +415,8 @@ public class GameMap {
                                         state = d.state;
                                 }
 
-                                if (piece == 113) {
-                                    draw_with_offset(act_x, act_y, -state, batch, piece, checker, step_y);
-                                } else {
-                                    draw_with_offset(act_x, act_y, state, batch, piece, checker, step_y);
-                                }
+                                int offset = (piece == 113) ? -state : state;
+                                drawWithOffset(act_x, act_y, offset, batch, piece, checker, step_y);
                             } else {
                                 if ((piece >= 116 && piece < 120) || (piece >= 136 && piece < 140)
                                         || (piece >= 156 && piece < 160)) {
@@ -505,11 +462,63 @@ public class GameMap {
                 }
             }
         }
-
-        renderSmoke(batch, x, y, ww, wh);
     }
 
-    private void draw_with_offset(int act_x, int act_y, int offset, SpriteBatch batch, int piece,
+    private void drawBackground(SpriteBatch batch, int x, int y, int ww, int wh) {
+        if (batch == null)
+            return;
+
+        Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
+
+        int step_x = tiles.get(0).originalWidth;
+        int step_y = tiles.get(0).originalHeight;
+
+        // Draw Background:
+        for (int j = 0, act_y = -(int) (y * 0.75F); j < sy; j++, act_y += step_y) {
+            if (act_y > -step_y && act_y < wh) {
+                for (int i = 0, act_x = -(int) (x * 0.75F); i < sx; i++, act_x += step_x) {
+                    if (act_x > -step_x && act_x < ww) {
+                        switch (background_type) {
+                        case 0:
+                            if (j == 10)
+                                batch.draw(tiles.get(294), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            if (j > 10)
+                                batch.draw(tiles.get(314), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            break;
+                        case 1:
+                            if (j == 10)
+                                batch.draw(tiles.get(295), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            if (j > 10)
+                                batch.draw(tiles.get(315), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            break;
+                        case 2:
+                            if (j == 10)
+                                batch.draw(tiles.get(335), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            if (j > 10) {
+                                if (((j >> 1) & 0x03) == 0) {
+                                    if (animflag < 2) {
+                                        int t[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
+                                        int step;
+                                        step = (animtimer + animflag * 24) / 4;
+                                        if (step > 11)
+                                            step = 11;
+                                        batch.draw(tiles.get(t[step]), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                    } else {
+                                        batch.draw(tiles.get(316), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                    }
+                                } else {
+                                    batch.draw(tiles.get(275), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void drawWithOffset(int act_x, int act_y, int offset, SpriteBatch batch, int piece,
             ICollisionChecker detector, int step_y) {
         int x = act_x;
         int y = INTERNAL_SCREEN_HEIGHT - act_y - step_y;
@@ -621,7 +630,7 @@ public class GameMap {
         }
     }
 
-    int animpiece(int piece) {
+    private int animpiece(int piece) {
         if (piece < 0)
             return piece;
 

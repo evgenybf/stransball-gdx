@@ -7,7 +7,7 @@ import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-public class Stars {
+public class StarsLayer {
 
     private static final int STAR_FACTOR = 8;
 
@@ -16,7 +16,7 @@ public class Stars {
     private int[] star_y;
     private int[] star_color;
 
-    public Stars(int mapWidth) {
+    public StarsLayer(int mapWidth) {
         nstars = mapWidth * STAR_FACTOR;
 
         star_x = new int[nstars];
@@ -24,7 +24,7 @@ public class Stars {
         star_color = new int[nstars];
 
         for (int i = 0; i < nstars; i++) {
-            star_color[i] = random(255 - 1);
+            star_color[i] = 3 * random(255 - 1);
             star_x[i] = random(mapWidth * 16 - 1);
             star_y[i] = 160 - (int) (Math.sqrt(random(25600 - 1)));
         }
@@ -41,10 +41,8 @@ public class Stars {
             int y = star_y[i] - map_y / 2;
 
             if (x >= 0 && x < sx && y >= 0 && y < sy) {
-                int color = star_color[i] + star_color[i] + star_color[i];
-
                 sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
-                sprite.draw(batch, color);
+                sprite.draw(batch, star_color[i]);
             }
         }
     }
