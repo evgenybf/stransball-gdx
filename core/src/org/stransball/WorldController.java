@@ -29,7 +29,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
-public class WorldController {
+public class WorldController implements ICollisionHandler {
 
     @SuppressWarnings("unused")
     private int fuel_used;
@@ -513,11 +513,11 @@ public class WorldController {
             CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
         }
 
-        map.drawWithoutEnemies(null, null, x, y, sx, sy,
-                new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+        map.drawMap(null, null, x, y, sx, sy,
+                new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
 
         map.drawEnemies(null, null, x, y, sx, sy, null,
-                new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+                new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
 
         return collision;
     }
@@ -542,14 +542,14 @@ public class WorldController {
             renderer.polygon(shipPolygon.getTransformedVertices());
         }
 
-        map.drawWithoutEnemies(null, null, x, y, sx, sy,
-                new CollisionDetector(renderer, ship_x_, ship_y_, shipPolygons));
+        map.drawMap(null, null, x, y, sx, sy,
+                new CollisionChecker(renderer, ship_x_, ship_y_, shipPolygons, this));
 
         if (collision)
             return collision;
 
         map.drawEnemies(null, null, x, y, sx, sy, null,
-                new CollisionDetector(renderer, ship_x_, ship_y_, shipPolygons));
+                new CollisionChecker(renderer, ship_x_, ship_y_, shipPolygons, this));
 
         return collision;
     }
@@ -709,7 +709,7 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawWithoutEnemies(batch, renderer, map_x, map_y, sx, sy, null);
+        map.drawMap(batch, renderer, map_x, map_y, sx, sy, null);
         map.drawEnemies(batch, renderer, map_x, map_y, sx, sy, null, null);
     }
 
@@ -755,43 +755,9 @@ public class WorldController {
         }
     }
 
-    private final class CollisionDetector implements IPolygonDetector {
-        private final ShapeRenderer renderer;
-        private final int ship_x_;
-        private final int ship_y_;
-        private final Polygon[] shipPolygons;
-
-        private CollisionDetector(ShapeRenderer renderer, int ship_x_, int ship_y_, Polygon[] shipPolygons) {
-            this.renderer = renderer;
-            this.ship_x_ = ship_x_;
-            this.ship_y_ = ship_y_;
-            this.shipPolygons = shipPolygons;
-        }
-
-        @Override
-        public void detect(int act_x, int act_y, int piece) {
-            Polygon poly = Assets.assets.graphicAssets.tilePolygons[piece];
-            if (poly != null) {
-                poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
-
-                Polygon[] polygons = CollisionDetectorUtils.tiangulate(poly);
-
-                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, polygons)) {
-                    if (renderer != null) {
-                        renderer.setColor(Color.RED);
-                    }
-                    collision = true;
-                } else {
-                    if (renderer != null) {
-                        renderer.setColor(Color.WHITE);
-                    }
-                }
-
-                if (renderer != null) {
-                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
-                }
-            }
-        }
+    @Override
+    public void handleCollision() {
+        collision = true;
     }
 
 }

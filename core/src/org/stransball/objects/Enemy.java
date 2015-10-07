@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import org.stransball.Assets;
 import org.stransball.Constants;
-import org.stransball.IPolygonDetector;
+import org.stransball.ICollisionChecker;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -232,7 +232,7 @@ public class Enemy {
     }
 
     public void draw_bullet(SpriteBatch batch, ShapeRenderer renderer, int map_x, int map_y,
-            IPolygonDetector detector) {
+            ICollisionChecker detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
         int tile0 = getBulletTile();
         if (batch != null) {
@@ -240,7 +240,7 @@ public class Enemy {
                     Constants.INTERNAL_SCREEN_HEIGHT - ((y / FACTOR) - map_y /*???- 8*/) - 8);
         }
         if (detector != null) {
-            detector.detect(x / FACTOR - map_x - 8, y / FACTOR - map_y - 8, tile0);
+            detector.checkCollision(x / FACTOR - map_x - 8, y / FACTOR - map_y - 8, tile0);
         }
     }
 
@@ -253,31 +253,31 @@ public class Enemy {
     }
 
     public void draw_directionalcanon(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
-            IPolygonDetector collisionDetector) {
+            ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
     public void draw_tank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            IPolygonDetector collisionDetector) {
+            ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
     public void draw_destroyedtank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            IPolygonDetector collisionDetector) {
+            ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
     public void draw_explosion(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            IPolygonDetector collisionDetector) {
+            ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
     public void draw_directionalcanon2(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
-            IPolygonDetector collisionDetector) {
+            ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }

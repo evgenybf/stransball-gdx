@@ -19,7 +19,6 @@ import org.stransball.objects.SmokeSource;
 import org.stransball.objects.Switch;
 import org.stransball.util.CollisionDetectorUtils;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -28,7 +27,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
-public class GameMap {
+public class GameMap implements ICollisionHandler {
 
     private static final int EMPTY_ROWS = 8;
 
@@ -379,21 +378,21 @@ public class GameMap {
                 CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
             }
 
-            drawWithoutEnemies(null, null, x, y, sx, sy,
-                    new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+            drawMap(null, null, x, y, sx, sy,
+                    new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
 
             if (collision)
                 return collision;
 
             drawEnemies(null, null, x, y, sx, sy, e,
-                    new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+                    new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
         }
 
         return collision;
     }
 
-    public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
-            IPolygonDetector detector) {
+    public void drawMap(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
+            ICollisionChecker detector) {
 
         int step_x = 0, step_y = 0;
         int act_x, act_y;
@@ -495,7 +494,7 @@ public class GameMap {
                                                         INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                             }
                                             if (detector != null) {
-                                                detector.detect(act_x, act_y, tileIndex);
+                                                detector.checkCollision(act_x, act_y, tileIndex);
                                             }
                                         }
                                     }
@@ -514,7 +513,7 @@ public class GameMap {
                                     }
 
                                     if (detector != null) {
-                                        detector.detect(act_x, act_y, piece);
+                                        detector.checkCollision(act_x, act_y, piece);
                                     }
                                 }
                             }
@@ -528,7 +527,7 @@ public class GameMap {
     }
 
     private void draw_with_offset(int act_x, int act_y, int offset, SpriteBatch batch, int piece,
-            IPolygonDetector detector, int step_y) {
+            ICollisionChecker detector, int step_y) {
         int x = act_x;
         int y = INTERNAL_SCREEN_HEIGHT - act_y - step_y;
 
@@ -542,7 +541,7 @@ public class GameMap {
                 sprite.draw(batch);
             }
             if (detector != null) {
-                detector.detect(act_x + offset, act_y, piece);
+                detector.checkCollision(act_x + offset, act_y, piece);
             }
         } else if (offset == 0) {
             if (batch != null) {
@@ -550,7 +549,7 @@ public class GameMap {
             }
 
             if (detector != null) {
-                detector.detect(act_x, act_y, piece);
+                detector.checkCollision(act_x, act_y, piece);
             }
         } else if (offset < 0) {
             Sprite sprite = new Sprite(tile);
@@ -563,13 +562,13 @@ public class GameMap {
             }
 
             if (detector != null) {
-                detector.detect(act_x + offset, act_y, piece);
+                detector.checkCollision(act_x + offset, act_y, piece);
             }
         }
     }
 
     void drawEnemies(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy,
-            IPolygonDetector detector) {
+            ICollisionChecker detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
                 switch (e.type) {
@@ -956,43 +955,9 @@ public class GameMap {
         return false;
     }
 
-    private final class CollisionDetector implements IPolygonDetector {
-        private final ShapeRenderer renderer;
-        private final int ship_x_;
-        private final int ship_y_;
-        private final Polygon[] shipPolygons;
-
-        private CollisionDetector(ShapeRenderer renderer, int ship_x_, int ship_y_, Polygon[] shipPolygons) {
-            this.renderer = renderer;
-            this.ship_x_ = ship_x_;
-            this.ship_y_ = ship_y_;
-            this.shipPolygons = shipPolygons;
-        }
-
-        @Override
-        public void detect(int act_x, int act_y, int piece) {
-            Polygon poly = Assets.assets.graphicAssets.tilePolygons[piece];
-            if (poly != null) {
-                poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
-
-                Polygon[] polygons = CollisionDetectorUtils.tiangulate(poly);
-
-                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, polygons)) {
-                    if (renderer != null) {
-                        renderer.setColor(Color.RED);
-                    }
-                    collision = true;
-                } else {
-                    if (renderer != null) {
-                        renderer.setColor(Color.WHITE);
-                    }
-                }
-
-                if (renderer != null) {
-                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
-                }
-            }
-        }
+    @Override
+    public void handleCollision() {
+        collision = true;
     }
 
 }
