@@ -66,8 +66,10 @@ public class GameScreen extends ScreenAdapter {
 
         GameKeysStatus.scan();
 
-        if (!paused) {
-            worldController.update(delta, null);
+        if (!Constants.DEBUG_SHOW_COLLISION_DETECTION) {
+            if (!paused) {
+                worldController.update(null);
+            }
         }
 
         {
@@ -79,6 +81,13 @@ public class GameScreen extends ScreenAdapter {
 
         { // Debug rendering: show contours of the game objects
             renderer.begin();
+
+            if (Constants.DEBUG_SHOW_COLLISION_DETECTION) {
+                // Warning! World info can differ here!
+                if (!paused) {
+                    worldController.update(renderer);
+                }
+            }
 
             worldController.render(null, renderer);
 

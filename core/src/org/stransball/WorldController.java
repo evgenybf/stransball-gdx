@@ -69,12 +69,9 @@ public class WorldController {
     long[] atractor_p_color;
     private int ball_speed_x;
     private int ball_speed_y;
-    private int nstars;
-    private int[] star_x;
-    private int[] star_y;
-    private int[] star_color;
     @SuppressWarnings("unused")
     private int fade_state;
+    private Stars stars;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -120,22 +117,10 @@ public class WorldController {
         atractor_p_speed = new float[MAX_ATRACTOR_P];
         atractor_p_color = new long[MAX_ATRACTOR_P];
 
-        {
-            nstars = map.get_sx() * 8;
-            star_x = new int[nstars];
-            star_y = new int[nstars];
-            star_color = new int[nstars];
-
-            for (int i = 0; i < nstars; i++) {
-                star_color[i] = random(255 - 1);
-                star_x[i] = random(map.get_sx() * 16 - 1);
-                star_y[i] = random(25600 - 1);
-                star_y[i] = 160 - (int) (Math.sqrt(star_y[i]));
-            }
-        }
+        stars = new Stars(map.get_sx());
     }
 
-    public void update(float delta, ShapeRenderer renderer_) {
+    public void update(ShapeRenderer renderer) {
         if (ship_state == 0) {
             if (bLeft) {
                 ship_angle -= 4;
@@ -467,7 +452,7 @@ public class WorldController {
             bullets.removeAll(deletelist);
         }
 
-        map.update(ship_x, ship_y, null, map_x, map_y);
+        map.update(ship_x, ship_y, map_x, map_y, renderer);
 
         if (!Constants.DEBUG_GOD_MODE) {
             // Ship collision detection 
@@ -525,7 +510,8 @@ public class WorldController {
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {
         if (batch != null) {
-            renerStars(batch);
+            stars.render(batch, map_x, map_y);
+
             renderMap(batch, renderer);
             renderBall(batch);
             renderAttractor(batch);
@@ -559,23 +545,6 @@ public class WorldController {
                     f = 1.0F;
                 sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * Math.sqrt(f)), 0, 1));
                 sprite.draw(batch);
-            }
-        }
-    }
-
-    private void renerStars(SpriteBatch batch) {
-        int sx = INTERNAL_SCREEN_WIDTH;
-        int sy = INTERNAL_SCREEN_HEIGHT;
-        int i;
-
-        for (i = 0; i < nstars; i++) {
-            int x, y;
-            x = star_x[i] - map_x / 2;
-            y = star_y[i] - map_y / 2;
-            if (x >= 0 && x < sx && y >= 0 && y < sy) {
-                Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot);
-                sprite.setPosition(x, INTERNAL_SCREEN_HEIGHT - y);
-                sprite.draw(batch, star_color[i] + star_color[i] + star_color[i]);
             }
         }
     }

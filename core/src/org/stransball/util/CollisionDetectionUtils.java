@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.ShortArray;
 
-public class CollisionDetectorUtils {
+public class CollisionDetectionUtils {
 
     // Split concave polygon into several convex polygons (triangles)
     public static Polygon[] tiangulate(Polygon polygon) {
