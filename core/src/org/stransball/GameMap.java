@@ -27,7 +27,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
-public class GameMap implements ICollisionHandler {
+public class GameMap {
 
     private static final int EMPTY_ROWS = 8;
 
@@ -46,7 +46,6 @@ public class GameMap implements ICollisionHandler {
 
     private List<SmokeSource> smokesources;
     private List<Smoke> smokes;
-    private boolean collision;
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -355,40 +354,26 @@ public class GameMap implements ICollisionHandler {
         }
     }
 
-    private boolean collidedWithEnemy(Enemy e, ShapeRenderer renderer, int map_x, int map_y) {
-        collision = false;
-
-        int x = (e.x / FACTOR) - 32;
-        int y = (e.y / FACTOR) - 32;
+    private boolean collidedWithEnemy(Enemy enemy, ShapeRenderer renderer, int map_x, int map_y) {
+        int x = (enemy.x / FACTOR) - 32;
+        int y = (enemy.y / FACTOR) - 32;
         int sx = 64;
         int sy = 64;
 
-        int object_x_ = e.x / FACTOR - map_x;
-        int object_y_ = e.y / FACTOR - map_y;
+        int objectX = enemy.x / FACTOR - map_x;
+        int objectY = enemy.y / FACTOR - map_y;
 
-        int piece = e.getBulletTile();
+        int piece = enemy.getBulletTile();
 
-        Polygon bulletTile = Assets.assets.graphicAssets.tilePolygons[piece];
-        if (bulletTile != null) {// && e.x >= 0 && e.y >= 0) {
+        Polygon objectTile = Assets.assets.graphicAssets.tilePolygons[piece];
 
-            bulletTile.setPosition(object_x_ - 8, INTERNAL_SCREEN_HEIGHT - object_y_ + 8);
+        if (objectTile != null) {
+            objectTile.setPosition(objectX - 8, INTERNAL_SCREEN_HEIGHT - objectY + 8);
 
-            Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(bulletTile);
-            if (renderer != null) {
-                CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
-            }
-
-            drawMap(null, null, x, y, sx, sy,
-                    new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
-
-            if (collision)
-                return collision;
-
-            drawEnemies(null, null, x, y, sx, sy, e,
-                    new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
+            return checkCollision(objectX, objectY, x, y, sx, sy, objectTile, enemy, renderer);
         }
 
-        return collision;
+        return false;
     }
 
     public void drawMap(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
@@ -947,7 +932,7 @@ public class GameMap implements ICollisionHandler {
         }
     }
 
-    public boolean ship_in_fuel_recharge(int ship_x, int ship_y) {
+    public boolean isShipInFuelRecharge(int ship_x, int ship_y) {
         for (FuelRecharge f : fuel_recharges) {
             if (ship_x >= f.x * 16 && ship_x < (f.x * 16 + 32) && ship_y >= f.y * 16 && ship_y < (f.y * 16 + 32))
                 return true;
@@ -955,9 +940,24 @@ public class GameMap implements ICollisionHandler {
         return false;
     }
 
-    @Override
-    public void handleCollision() {
-        collision = true;
+    public boolean checkCollision(int objectX, int objectY, int x, int y, int sx, int sy, Polygon objectPolygon,
+            Enemy enemy, ShapeRenderer renderer) {
+        Polygon[] objectPolygons = CollisionDetectorUtils.tiangulate(objectPolygon);
+
+        ICollisionChecker checker = new CollisionChecker(renderer, objectX, objectY, objectPolygons);
+
+        if (renderer != null) {
+            CollisionDetectorUtils.drawPolygons(renderer, objectPolygons);
+        }
+
+        drawMap(null, null, x, y, sx, sy, checker);
+
+        if (checker.wasCollision())
+            return true;
+
+        drawEnemies(null, null, x, y, sx, sy, enemy, checker);
+
+        return checker.wasCollision();
     }
 
 }

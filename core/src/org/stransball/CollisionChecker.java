@@ -8,21 +8,19 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
 
-public final class CollisionChecker implements ICollisionChecker {
+public final class CollisionChecker implements ICollisionChecker, ICollisionHandler {
 
     private final ShapeRenderer renderer;
     private final int objectX;
     private final int objectY;
     private final Polygon[] objectPolygons;
-    private final ICollisionHandler handler;
+    private boolean collision;
 
-    public CollisionChecker(ShapeRenderer renderer, int objectX, int objectY, Polygon[] shipPolygons,
-            ICollisionHandler handler) {
+    public CollisionChecker(ShapeRenderer renderer, int objectX, int objectY, Polygon[] shipPolygons) {
         this.renderer = renderer;
         this.objectX = objectX;
         this.objectY = objectY;
         this.objectPolygons = shipPolygons;
-        this.handler = handler;
     }
 
     @Override
@@ -38,7 +36,7 @@ public final class CollisionChecker implements ICollisionChecker {
                     renderer.setColor(Color.RED);
                 }
 
-                handler.handleCollision();
+                handleCollision();
             } else {
                 if (renderer != null) {
                     renderer.setColor(Color.WHITE);
@@ -49,5 +47,20 @@ public final class CollisionChecker implements ICollisionChecker {
                 CollisionDetectorUtils.drawPolygons(renderer, polygons);
             }
         }
+    }
+
+    @Override
+    public void handleCollision() {
+        collision = true;
+    }
+
+    @Override
+    public void reset() {
+        collision = false;
+    }
+
+    @Override
+    public boolean wasCollision() {
+        return collision;
     }
 }

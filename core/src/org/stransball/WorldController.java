@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.stransball.objects.ShipBullet;
-import org.stransball.util.CollisionDetectorUtils;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -29,7 +28,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
-public class WorldController implements ICollisionHandler {
+public class WorldController {
 
     @SuppressWarnings("unused")
     private int fuel_used;
@@ -57,7 +56,6 @@ public class WorldController implements ICollisionHandler {
     private Sprite sprite;
     private Animation shipThrottleAnimation;
     private boolean playThrustSound;
-    private boolean collision;
     private List<ShipBullet> bullets;
     @SuppressWarnings("unused")
     private int enemies_destroyed;
@@ -365,19 +363,19 @@ public class WorldController implements ICollisionHandler {
             int by_ = ball_y / FACTOR; // ??? (ball_y / FACTOR);
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-            if (tile_map_collision(null, tilePolygons[360], bx, by)) {
+            if (checkPolygonWithMapCollision(null, tilePolygons[360], bx, by)) {
                 if (ball_speed_y > 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx_ + 8, by_ + 12);
                 } else {
-                    if (tile_map_collision(null, tilePolygons[360], bx, by - 1))
+                    if (checkPolygonWithMapCollision(null, tilePolygons[360], bx, by - 1))
                         ball_speed_y -= 2;
                 }
             } else {
                 ball_speed_y += 2;
             }
 
-            if (tile_map_collision(null, tilePolygons[340], bx, by)) {
+            if (checkPolygonWithMapCollision(null, tilePolygons[340], bx, by)) {
                 if (ball_speed_y < 0) {
                     ball_speed_y = (int) (-0.75 * ball_speed_y);
                     map.ball_collision(bx_ + 8, by_ + 4);
@@ -386,7 +384,7 @@ public class WorldController implements ICollisionHandler {
                 }
             }
 
-            if (tile_map_collision(null, tilePolygons[342], bx, by)) {
+            if (checkPolygonWithMapCollision(null, tilePolygons[342], bx, by)) {
                 if (ball_speed_x > 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx_ + 12, by_ + 8);
@@ -395,7 +393,7 @@ public class WorldController implements ICollisionHandler {
                 }
             }
 
-            if (tile_map_collision(null, tilePolygons[362], bx, by)) {
+            if (checkPolygonWithMapCollision(null, tilePolygons[362], bx, by)) {
                 if (ball_speed_x < 0) {
                     ball_speed_x = (int) (-0.75 * ball_speed_x);
                     map.ball_collision(bx_ + 4, by_ + 8);
@@ -445,7 +443,7 @@ public class WorldController implements ICollisionHandler {
                     b.x += b.speed_x;
                     b.y += b.speed_y;
 
-                    if (tile_map_collision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
+                    if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
                         // int ship_strength[]={1,2,4};
                         b.state++;
                         int retv = map.shipbullet_collision((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
@@ -473,7 +471,7 @@ public class WorldController implements ICollisionHandler {
 
         if (!Constants.DEBUG_GOD_MODE) {
             // Ship collision detection 
-            if (ship_state == 0 && ship_map_collision(null)) {
+            if (ship_state == 0 && checkShipWithMapCollision(null)) {
                 ship_speed_x /= 4;
                 ship_speed_y /= 4;
                 ship_state = 1;
@@ -484,7 +482,7 @@ public class WorldController implements ICollisionHandler {
         }
 
         // Fuel recharge: 
-        if (map.ship_in_fuel_recharge(ship_x / FACTOR, ship_y / FACTOR)) {
+        if (map.isShipInFuelRecharge(ship_x / FACTOR, ship_y / FACTOR)) {
             int old_fuel = fuel;
             fuel += 8;
             if (fuel > 50 * Constants.fuelfactor[0])
@@ -494,64 +492,35 @@ public class WorldController implements ICollisionHandler {
         }
     }
 
-    private boolean tile_map_collision(final ShapeRenderer renderer, Polygon polygon, int bx, int by) {
-        collision = false;
-
+    private boolean checkPolygonWithMapCollision(final ShapeRenderer renderer, Polygon objectPolygon, int bx, int by) {
         int x = bx / FACTOR - 32;
         int y = by / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        int object_x_ = bx / FACTOR - map_x;
-        int object_y_ = by / FACTOR - map_y;
+        int object_x = bx / FACTOR - map_x;
+        int object_y = by / FACTOR - map_y;
 
-        polygon.setPosition(object_x_, INTERNAL_SCREEN_HEIGHT - object_y_);
-        Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(polygon);
+        objectPolygon.setPosition(object_x, INTERNAL_SCREEN_HEIGHT - object_y);
 
-        if (renderer != null) {
-            renderer.polygon(polygon.getTransformedVertices());
-            CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
-        }
-
-        map.drawMap(null, null, x, y, sx, sy,
-                new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
-
-        map.drawEnemies(null, null, x, y, sx, sy, null,
-                new CollisionChecker(renderer, object_x_, object_y_, shipPolygons, this));
-
-        return collision;
+        return map.checkCollision(object_x, object_y, x, y, sx, sy, objectPolygon, null, renderer);
     }
 
-    private boolean ship_map_collision(ShapeRenderer renderer) {
-        collision = false;
-
+    private boolean checkShipWithMapCollision(ShapeRenderer renderer) {
         int x = ship_x / FACTOR - 32;
         int y = ship_y / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        Polygon shipPolygon = assets.graphicAssets.shipPolygon;
+        Polygon objectPolygon = assets.graphicAssets.shipPolygon;
 
-        int ship_x_ = ship_x / FACTOR - map_x;
-        int ship_y_ = ship_y / FACTOR - map_y;
-        shipPolygon.setRotation(360 - ship_angle);
-        shipPolygon.setPosition(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
+        int objectX = ship_x / FACTOR - map_x;
+        int objectY = ship_y / FACTOR - map_y;
 
-        Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(shipPolygon);
-        if (renderer != null) {
-            renderer.polygon(shipPolygon.getTransformedVertices());
-        }
+        objectPolygon.setRotation(360 - ship_angle);
+        objectPolygon.setPosition(objectX, INTERNAL_SCREEN_HEIGHT - objectY);
 
-        map.drawMap(null, null, x, y, sx, sy,
-                new CollisionChecker(renderer, ship_x_, ship_y_, shipPolygons, this));
-
-        if (collision)
-            return collision;
-
-        map.drawEnemies(null, null, x, y, sx, sy, null,
-                new CollisionChecker(renderer, ship_x_, ship_y_, shipPolygons, this));
-
-        return collision;
+        return map.checkCollision(objectX, objectY, x, y, sx, sy, objectPolygon, null, renderer);
     }
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {
@@ -753,11 +722,6 @@ public class WorldController implements ICollisionHandler {
                 }
             }
         }
-    }
-
-    @Override
-    public void handleCollision() {
-        collision = true;
     }
 
 }
