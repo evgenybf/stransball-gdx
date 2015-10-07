@@ -481,7 +481,10 @@ public class WorldController {
 
                 Assets.assets.soundAssets.explosion.play();
             }
+        } else {
+            ship_map_collision(renderer);
         }
+
 
         // Fuel recharge: 
         if (map.ship_in_fuel_recharge(ship_x / FACTOR, ship_y / FACTOR)) {
@@ -596,11 +599,11 @@ public class WorldController {
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
 
-            //                    tile_map_collision(renderer, tilePolygons[360], bx, by);
-            //                    tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
+            tile_map_collision(renderer, tilePolygons[360], bx, by);
+            tile_map_collision(renderer, tilePolygons[360], bx, by - 1);
             tile_map_collision(renderer, tilePolygons[340], bx, by);
-            //                    tile_map_collision(renderer, tilePolygons[342], bx, by);
-            //                    tile_map_collision(renderer, tilePolygons[362], bx, by);
+            tile_map_collision(renderer, tilePolygons[342], bx, by);
+            tile_map_collision(renderer, tilePolygons[362], bx, by);
         }
 
     }
