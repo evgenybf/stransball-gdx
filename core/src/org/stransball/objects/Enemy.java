@@ -232,22 +232,23 @@ public class Enemy {
     }
 
     public void draw_bullet(SpriteBatch batch, ShapeRenderer renderer, int map_x, int map_y,
-            IPolygonDetector collisionDetector) {
+            IPolygonDetector detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
-        int tile0;
-        if (state >= 0) {
-            tile0 = tile;
-        } else {
-            int i;
-            i = (-state) / 8;
-            tile0 = 243 + i;
-        }
+        int tile0 = getBulletTile();
         if (batch != null) {
             batch.draw(tiles.get(tile0), (x / FACTOR) - map_x - 8,
                     Constants.INTERNAL_SCREEN_HEIGHT - ((y / FACTOR) - map_y /*???- 8*/) - 8);
         }
-        if (collisionDetector != null) {
-            collisionDetector.detect(x / FACTOR - map_x - 8, y / FACTOR - map_y - 8, tile0);
+        if (detector != null) {
+            detector.detect(x / FACTOR - map_x - 8, y / FACTOR - map_y - 8, tile0);
+        }
+    }
+
+    public int getBulletTile() {
+        if (state >= 0) {
+            return tile;
+        } else {
+            return 243 + (-state) / 8;
         }
     }
 

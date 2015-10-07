@@ -17,7 +17,9 @@ import org.stransball.objects.FuelRecharge;
 import org.stransball.objects.Smoke;
 import org.stransball.objects.SmokeSource;
 import org.stransball.objects.Switch;
+import org.stransball.util.CollisionDetectorUtils;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -45,6 +47,7 @@ public class GameMap {
 
     private List<SmokeSource> smokesources;
     private List<Smoke> smokes;
+    private boolean collision;
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -223,7 +226,7 @@ public class GameMap {
         animflag = 0;
     }
 
-    public void update(int ship_x, int ship_y) {
+    public void update(int ship_x, int ship_y, ShapeRenderer renderer, int map_x, int map_y) {
         ship_x /= FACTOR;
         ship_y /= FACTOR;
 
@@ -246,23 +249,7 @@ public class GameMap {
             for (Enemy e : enemies) {
                 switch (e.type) {
                 case BULLET:
-                //TODO: collision detection
-                {
-                    e.draw_bullet(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, null);
-
-                    draw_map_enemy(null, null, (e.x / FACTOR) - 32, (e.y / FACTOR) - 32, 64, 64, e,
-                            new IPolygonDetector() {
-
-                                @Override
-                                public void detect(int act_x, int act_y, int piece) {
-                                    // TODO Auto-generated method stub
-
-                                }
-                            });
-
-                }
-
-                    boolean collision = false;
+                    boolean collision = collidedWithEnemy(e, renderer, map_x, map_y);
                     if (!e.cycle_bullet(sx * 16, sy * 16, collision)) {
                         enemiestodelete.add(e);
                     }
@@ -367,6 +354,42 @@ public class GameMap {
 
             smokes.removeAll(todelete);
         }
+    }
+
+    private boolean collidedWithEnemy(Enemy e, ShapeRenderer renderer, int map_x, int map_y) {
+        collision = false;
+
+        int x = (e.x / FACTOR) - 32;
+        int y = (e.y / FACTOR) - 32;
+        int sx = 64;
+        int sy = 64;
+
+        int object_x_ = e.x / FACTOR - map_x;
+        int object_y_ = e.y / FACTOR - map_y;
+
+        int piece = e.getBulletTile();
+
+        Polygon bulletTile = Assets.assets.graphicAssets.tilePolygons[piece];
+        if (bulletTile != null) {// && e.x >= 0 && e.y >= 0) {
+
+            bulletTile.setPosition(object_x_ - 8, INTERNAL_SCREEN_HEIGHT - object_y_ + 8);
+
+            Polygon[] shipPolygons = CollisionDetectorUtils.tiangulate(bulletTile);
+            if (renderer != null) {
+                CollisionDetectorUtils.drawPolygons(renderer, shipPolygons);
+            }
+
+            drawWithoutEnemies(null, null, x, y, sx, sy,
+                    new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+
+            if (collision)
+                return collision;
+
+            drawEnemies(null, null, x, y, sx, sy, e,
+                    new CollisionDetector(renderer, object_x_, object_y_, shipPolygons));
+        }
+
+        return collision;
     }
 
     public void drawWithoutEnemies(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh,
@@ -509,7 +532,6 @@ public class GameMap {
         int x = act_x;
         int y = INTERNAL_SCREEN_HEIGHT - act_y - step_y;
 
-        //TODO: collision detection
         AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(piece);
         if (offset > 0 && offset < tile.getRegionWidth()) {
             Sprite sprite = new Sprite(tile);
@@ -520,7 +542,7 @@ public class GameMap {
                 sprite.draw(batch);
             }
             if (detector != null) {
-                detector.detect(act_x+offset, act_y, piece);
+                detector.detect(act_x + offset, act_y, piece);
             }
         } else if (offset == 0) {
             if (batch != null) {
@@ -541,12 +563,12 @@ public class GameMap {
             }
 
             if (detector != null) {
-                detector.detect(act_x+offset, act_y, piece);
+                detector.detect(act_x + offset, act_y, piece);
             }
         }
     }
 
-    void draw_map_enemy(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy,
+    void drawEnemies(SpriteBatch batch, ShapeRenderer renderer, int x, int y, int ww, int wh, Enemy enemy,
             IPolygonDetector detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
@@ -932,6 +954,45 @@ public class GameMap {
                 return true;
         }
         return false;
+    }
+
+    private final class CollisionDetector implements IPolygonDetector {
+        private final ShapeRenderer renderer;
+        private final int ship_x_;
+        private final int ship_y_;
+        private final Polygon[] shipPolygons;
+
+        private CollisionDetector(ShapeRenderer renderer, int ship_x_, int ship_y_, Polygon[] shipPolygons) {
+            this.renderer = renderer;
+            this.ship_x_ = ship_x_;
+            this.ship_y_ = ship_y_;
+            this.shipPolygons = shipPolygons;
+        }
+
+        @Override
+        public void detect(int act_x, int act_y, int piece) {
+            Polygon poly = Assets.assets.graphicAssets.tilePolygons[piece];
+            if (poly != null) {
+                poly.setPosition(ship_x_ + act_x - 32, INTERNAL_SCREEN_HEIGHT - (ship_y_ + act_y - 32));
+
+                Polygon[] polygons = CollisionDetectorUtils.tiangulate(poly);
+
+                if (CollisionDetectorUtils.overlapPolygons(shipPolygons, polygons)) {
+                    if (renderer != null) {
+                        renderer.setColor(Color.RED);
+                    }
+                    collision = true;
+                } else {
+                    if (renderer != null) {
+                        renderer.setColor(Color.WHITE);
+                    }
+                }
+
+                if (renderer != null) {
+                    CollisionDetectorUtils.drawPolygons(renderer, polygons);
+                }
+            }
+        }
     }
 
 }
