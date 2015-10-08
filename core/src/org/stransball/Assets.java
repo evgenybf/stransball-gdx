@@ -9,8 +9,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -79,9 +77,9 @@ public class Assets {
         public final Polygon[] tilePolygons;
 
         public final AtlasRegion shipRegion;
-        public final Animation shipThrustAnimation;
+        public final Array<AtlasRegion> shipThrustTiles;
         public final Polygon shipPolygon;
-        public final Animation shipExplosionAnimation;
+        public final Array<AtlasRegion> shipExplosionTiles;
         private final Pixmap whiteSpotPixmap;
         public final Texture whiteSpot;
 
@@ -93,10 +91,8 @@ public class Assets {
 
             shipRegion = atlas.findRegion("ship");
             shipPolygon = contourLoader.findPolygon("ship", true);
-
-            shipThrustAnimation = new Animation(0.1f, atlas.findRegions("shipThrust"), PlayMode.LOOP);
-
-            shipExplosionAnimation = new Animation(0.1f, atlas.findRegions("shipExplosion"), PlayMode.LOOP);
+            shipThrustTiles = atlas.findRegions("shipThrust");
+            shipExplosionTiles = atlas.findRegions("shipExplosion");
 
             whiteSpotPixmap = new Pixmap(1, 1, Format.RGB888);
             whiteSpotPixmap.setColor(Color.WHITE);

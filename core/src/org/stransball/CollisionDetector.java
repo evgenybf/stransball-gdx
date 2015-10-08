@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
 
-public final class CollisionChecker implements ICollisionChecker, ICollisionHandler {
+public final class CollisionDetector implements ICollisionDetector, ICollisionHandler {
 
     private final ShapeRenderer renderer;
     private final int objectX;
@@ -16,7 +16,7 @@ public final class CollisionChecker implements ICollisionChecker, ICollisionHand
     private final Polygon[] objectPolygons;
     private boolean collision;
 
-    public CollisionChecker(ShapeRenderer renderer, int objectX, int objectY, Polygon[] objectPolygons) {
+    public CollisionDetector(ShapeRenderer renderer, int objectX, int objectY, Polygon[] objectPolygons) {
         this.renderer = renderer;
         this.objectX = objectX;
         this.objectY = objectY;

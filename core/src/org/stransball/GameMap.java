@@ -34,21 +34,21 @@ public class GameMap {
     private static final int EMPTY_ROWS = 8;
 
     private int[] map;
-    private int sx;
-    private int sy;
-    private int animtimer;
-    private int animflag;
+    private int cols;
+    private int rows;
+    private int animTimer;
+    private int animFlag;
 
     private BackgroundLayer background;
     private StarsLayer stars;
 
-    private int switchnumber;
+    private int switchNumber;
     private List<Enemy> enemies;
     private List<Door> doors;
     private List<Switch> switches;
-    private List<FuelRecharge> fuel_recharges;
+    private List<FuelRecharge> fuelRecharges;
 
-    private List<SmokeSource> smokesources;
+    private List<SmokeSource> smokeSources;
     private List<Smoke> smokes;
 
     public void load(Reader input) {
@@ -61,30 +61,29 @@ public class GameMap {
     }
 
     private void load(Scanner scanner) {
-        switchnumber = 1;
+        switchNumber = 1;
 
         enemies = new ArrayList<Enemy>();
         doors = new ArrayList<Door>();
         switches = new ArrayList<Switch>();
-        fuel_recharges = new ArrayList<FuelRecharge>();
-        smokesources = new ArrayList<SmokeSource>();
+        fuelRecharges = new ArrayList<FuelRecharge>();
+        smokeSources = new ArrayList<SmokeSource>();
         smokes = new ArrayList<Smoke>();
 
-        sx = scanner.nextInt();
-        sy = scanner.nextInt();
-        sy += EMPTY_ROWS;
+        cols = scanner.nextInt();
+        rows = scanner.nextInt();
+        rows += EMPTY_ROWS;
 
-        map = new int[sx * sy];
-
+        map = new int[cols * rows];
         Arrays.fill(map, -1);
 
-        for (int i = sx * EMPTY_ROWS; i < sx * sy; i++) {
+        for (int i = cols * EMPTY_ROWS; i < cols * rows; i++) {
             map[i] = scanner.nextInt();
             map[i]--;
         }
 
         // Look for enemies, doors, etc.:
-        for (int i = 0; i < sx * sy; i++) {
+        for (int i = 0; i < cols * rows; i++) {
 
             // ENEMIES:
             if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 196 && map[i] < 200) || (map[i] >= 216 && map[i] < 220)
@@ -93,8 +92,8 @@ public class GameMap {
                     || (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407)) {
 
                 int direction = 0;
-                int x = (i % sx) * 16;
-                int y = (i / sx) * 16;
+                int x = (i % cols) * 16;
+                int y = (i / cols) * 16;
 
                 if (map[i] == 176 || map[i] == 216 || map[i] == 236 || map[i] == 196 || map[i] == 154 || map[i] == 386)
                     direction = 0;
@@ -157,8 +156,8 @@ public class GameMap {
             if (map[i] == 113) {
                 Door d = new Door();
 
-                d.x = i % sx;
-                d.y = i / sx;
+                d.x = i % cols;
+                d.y = i / cols;
                 d.action = 0;
 
                 d.state = scanner.nextInt();
@@ -169,9 +168,9 @@ public class GameMap {
             // SWITCHES:
             if ((map[i] >= 116 && map[i] < 120) || (map[i] >= 136 && map[i] < 140) || (map[i] >= 156 && map[i] < 160)) {
                 Switch s = new Switch();
-                s.x = i % sx;
-                s.y = i / sx;
-                s.number = switchnumber++;
+                s.x = i % cols;
+                s.y = i / cols;
+                s.number = switchNumber++;
                 s.state = 0;
                 switches.add(s);
             }
@@ -179,9 +178,9 @@ public class GameMap {
             // FUEL RECHARGES:
             if (map[i] == 132) {
                 FuelRecharge f = new FuelRecharge();
-                f.x = i % sx;
-                f.y = i / sx;
-                fuel_recharges.add(f);
+                f.x = i % cols;
+                f.y = i / cols;
+                fuelRecharges.add(f);
             }
         }
 
@@ -213,29 +212,29 @@ public class GameMap {
         }
 
         int background_type = scanner.nextInt();
-        background = new BackgroundLayer(background_type, sx, sy);
+        background = new BackgroundLayer(background_type, cols, rows);
 
-        animtimer = 0;
-        animflag = 0;
+        animTimer = 0;
+        animFlag = 0;
 
-        stars = new StarsLayer(sx);
+        stars = new StarsLayer(cols);
     }
 
-    public void update(int ship_x, int ship_y, int map_x, int map_y, ShapeRenderer renderer) {
+    public void update(int shipXInternal, int shipYInternal, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
         // Tile animation
         {
-            animtimer++;
-            if (animtimer > 24) {
-                animflag++;
-                if (animflag < 0 || animflag > 7)
-                    animflag = 0;
-                animtimer = 0;
+            animTimer++;
+            if (animTimer > 24) {
+                animFlag++;
+                if (animFlag < 0 || animFlag > 7)
+                    animFlag = 0;
+                animTimer = 0;
             }
         }
 
         background.update();
 
-        updateEnemies(ship_x / FACTOR, ship_y / FACTOR, map_x, map_y, renderer);
+        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, mapXScreen, mapYScreen, renderer);
 
         updateDoors();
         updateSwitches();
@@ -247,7 +246,7 @@ public class GameMap {
         List<Smoke> todelete = new ArrayList<Smoke>();
         List<SmokeSource> todelete2 = new ArrayList<SmokeSource>();
 
-        for (SmokeSource ss : smokesources) {
+        for (SmokeSource ss : smokeSources) {
             ss.timer++;
             if (ss.timer > 256) {
                 todelete2.add(ss);
@@ -275,7 +274,7 @@ public class GameMap {
             }
         }
 
-        smokesources.removeAll(todelete2);
+        smokeSources.removeAll(todelete2);
 
         for (Smoke s : smokes) {
             s.timer++;
@@ -321,25 +320,26 @@ public class GameMap {
         }
     }
 
-    private void updateEnemies(int ship_x, int ship_y, int map_x, int map_y, ShapeRenderer renderer) {
+    private void updateEnemies(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen,
+            ShapeRenderer renderer) {
         ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
         ArrayList<Enemy> newenemies = new ArrayList<Enemy>();
 
         for (Enemy e : enemies) {
             switch (e.type) {
             case BULLET:
-                boolean collision = checkEnemyWithMapCollision(e, map_x, map_y, renderer);
-                if (!e.cycleBullet(sx * 16, sy * 16, collision)) {
+                boolean collision = checkEnemyWithMapCollision(e, mapXScreen, mapYScreen, renderer);
+                if (!e.cycleBullet(cols * 16, rows * 16, collision)) {
                     enemiestodelete.add(e);
                 }
                 break;
             case CANON:
-                if (!e.cycle_canon(ship_x, ship_y, newenemies)) {
+                if (!e.cycle_canon(shipXScreenF, shipYScreenF, newenemies)) {
                     enemiestodelete.add(e);
                 }
                 break;
             case FAST_CANON:
-                if (!e.cycle_fastcanon(ship_x, ship_y, newenemies)) {
+                if (!e.cycle_fastcanon(shipXScreenF, shipYScreenF, newenemies)) {
                     enemiestodelete.add(e);
                 }
                 break;
@@ -353,57 +353,58 @@ public class GameMap {
         enemies.addAll(newenemies);
     }
 
-    private boolean checkEnemyWithMapCollision(Enemy enemy, int map_x, int map_y, ShapeRenderer renderer) {
-        int x = enemy.x / FACTOR - 32;
-        int y = enemy.y / FACTOR - 32;
+    private boolean checkEnemyWithMapCollision(Enemy enemy, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+        int xScreenF = enemy.x / FACTOR - 32;
+        int yScreenF = enemy.y / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        int objectX = enemy.x / FACTOR - map_x;
-        int objectY = enemy.y / FACTOR - map_y;
+        int objectXScreen = enemy.x / FACTOR - mapXScreen;
+        int objectYScreen = enemy.y / FACTOR - mapYScreen;
 
-        int piece = enemy.getBulletTile();
+        int tileIndex = enemy.getBulletTileIndex();
 
-        Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[piece];
+        Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[tileIndex];
         if (objectPolygon == null) {
             return false;
         }
 
-        objectPolygon.setPosition(objectX - 8, INTERNAL_SCREEN_HEIGHT - objectY + 8);
-        return checkCollision(objectX, objectY, x, y, sx, sy, objectPolygon, enemy, renderer);
+        objectPolygon.setPosition(objectXScreen - 8, INTERNAL_SCREEN_HEIGHT - (objectYScreen - 8));
+        return checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, sx, sy, objectPolygon, enemy, renderer);
     }
 
-    public void render(SpriteBatch batch, int x, int y, int ww, int wh) {
-        stars.render(batch, x, y);
-        background.render(batch, x, y, ww, wh);
+    public void render(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight) {
+        stars.render(batch, mapXScreen, mapYScreen);
+        background.render(batch, mapXScreen, mapYScreen, screenWidth, screenHeight);
 
-        drawWalls(batch, x, y, ww, wh, null);
+        drawWalls(batch, mapXScreen, mapYScreen, screenWidth, screenHeight, null);
 
-        renderSmoke(batch, x, y, ww, wh);
+        renderSmoke(batch, mapXScreen, mapYScreen, screenWidth, screenHeight);
 
-        drawEnemies(batch, x, y, ww, wh, null, null);
+        drawEnemies(batch, mapXScreen, mapYScreen, screenWidth, screenHeight, null, null);
     }
 
-    private void drawWalls(SpriteBatch batch, int x, int y, int ww, int wh, ICollisionChecker checker) {
+    private void drawWalls(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
+            ICollisionDetector detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
-        int step_x = tiles.get(0).originalWidth;
-        int step_y = tiles.get(0).originalHeight;
+        int stepX = tiles.get(0).originalWidth;
+        int stepY = tiles.get(0).originalHeight;
 
-        for (int j = 0, act_y = -y; j < sy; j++, act_y += step_y) {
-            if (act_y >= -step_y && act_y < wh) {
-                for (int i = 0, act_x = -x; i < sx; i++, act_x += step_x) {
-                    if (act_x >= -step_x && act_x < ww) {
-                        int piece = -1;
+        for (int j = 0, act_y = -mapYScreen; j < rows; j++, act_y += stepY) {
+            if (act_y >= -stepY && act_y < screenHeight) {
+                for (int i = 0, act_x = -mapXScreen; i < cols; i++, act_x += stepX) {
+                    if (act_x >= -stepX && act_x < screenWidth) {
+                        int tileIndex = -1;
 
                         if (j >= 0) {
-                            piece = map[i + j * sx];
+                            tileIndex = map[i + j * cols];
                         }
 
-                        piece = animpiece(piece);
+                        tileIndex = animateTile(tileIndex);
 
-                        if (piece >= 0) {
-                            if (piece == 113 || piece == 114) {
+                        if (tileIndex >= 0) {
+                            if (tileIndex == 113 || tileIndex == 114) {
                                 // DOOR
                                 int state = 0;
 
@@ -412,36 +413,36 @@ public class GameMap {
                                         state = d.state;
                                 }
 
-                                int offset = (piece == 113) ? -state : state;
-                                drawWithOffset(act_x, act_y, offset, batch, piece, checker, step_y);
+                                int offset = (tileIndex == 113) ? -state : state;
+                                drawWithOffset(act_x, act_y, offset, batch, tileIndex, detector, stepY);
                             } else {
-                                if ((piece >= 116 && piece < 120) || (piece >= 136 && piece < 140)
-                                        || (piece >= 156 && piece < 160)) {
+                                if ((tileIndex >= 116 && tileIndex < 120) || (tileIndex >= 136 && tileIndex < 140)
+                                        || (tileIndex >= 156 && tileIndex < 160)) {
                                     // SWITCH
                                     for (Switch s : switches) {
                                         if (s.x == i && s.y == j) {
-                                            int tileIndex;
+                                            int tileIndex_;
                                             if (s.state != 0) {
-                                                tileIndex = piece + 140;
+                                                tileIndex_ = tileIndex + 140;
                                             } else {
-                                                tileIndex = piece;
+                                                tileIndex_ = tileIndex;
                                             }
                                             if (batch != null) {
-                                                batch.draw(tiles.get(tileIndex), act_x,
-                                                        INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                                batch.draw(tiles.get(tileIndex_), act_x,
+                                                        INTERNAL_SCREEN_HEIGHT - act_y - stepY);
                                             }
-                                            if (checker != null) {
-                                                checker.checkCollision(act_x, act_y, tileIndex);
+                                            if (detector != null) {
+                                                detector.checkCollision(act_x, act_y, tileIndex_);
                                             }
                                         }
                                     }
                                 } else {
                                     if (batch != null) {
-                                        batch.draw(tiles.get(piece), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                        batch.draw(tiles.get(tileIndex), act_x, INTERNAL_SCREEN_HEIGHT - act_y - stepY);
                                     }
 
-                                    if (checker != null) {
-                                        checker.checkCollision(act_x, act_y, piece);
+                                    if (detector != null) {
+                                        detector.checkCollision(act_x, act_y, tileIndex);
                                     }
                                 }
                             }
@@ -453,7 +454,7 @@ public class GameMap {
     }
 
     private void drawWithOffset(int act_x, int act_y, int offset, SpriteBatch batch, int piece,
-            ICollisionChecker detector, int step_y) {
+            ICollisionDetector detector, int step_y) {
         int x = act_x;
         int y = INTERNAL_SCREEN_HEIGHT - act_y - step_y;
 
@@ -493,34 +494,42 @@ public class GameMap {
         }
     }
 
-    private void drawEnemies(SpriteBatch batch, int x, int y, int ww, int wh, Enemy enemy, ICollisionChecker detector) {
+    private void drawEnemies(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
+            Enemy enemy, ICollisionDetector detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
                 switch (e.type) {
                 case BULLET:
-                    if (e.x > (-16 + x) * FACTOR && e.x < (ww + x) * FACTOR && e.y > (-16 + y) * FACTOR
-                            && e.y < (wh + y) * FACTOR)
-                        e.drawBullet(batch, x, y, detector);
+                    if (e.x > (-16 + mapXScreen) * FACTOR && e.x < (screenWidth + mapXScreen) * FACTOR
+                            && e.y > (-16 + mapYScreen) * FACTOR && e.y < (screenHeight + mapYScreen) * FACTOR)
+                        e.drawBullet(batch, mapXScreen, mapYScreen, detector);
                     break;
                 case DIRECTIONAL_CANON:
-                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.drawDirectionalCanon(batch, map[(e.x) / 16 + (e.y / 16) * sx], x, y, detector);
+                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
+                            && e.y < (screenHeight + mapYScreen))
+                        e.drawDirectionalCanon(batch, map[(e.x) / 16 + (e.y / 16) * cols], mapXScreen, mapYScreen,
+                                detector);
                     break;
                 case TANK:
-                    if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
-                        e.drawTank(batch, x, y, detector);
+                    if (e.x > (-32 + mapXScreen) && e.x < (screenWidth + mapXScreen + 32) && e.y > (-32 + mapYScreen)
+                            && e.y < (screenHeight + mapYScreen + 32))
+                        e.drawTank(batch, mapXScreen, mapYScreen, detector);
                     break;
                 case DESTOYED_TANK:
-                    if (e.x > (-32 + x) && e.x < (ww + x + 32) && e.y > (-32 + y) && e.y < (wh + y + 32))
-                        e.drawDestroyedTank(batch, x, y, detector);
+                    if (e.x > (-32 + mapXScreen) && e.x < (screenWidth + mapXScreen + 32) && e.y > (-32 + mapYScreen)
+                            && e.y < (screenHeight + mapYScreen + 32))
+                        e.drawDestroyedTank(batch, mapXScreen, mapYScreen, detector);
                     break;
                 case EXPLOSION:
-                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.drawExplosion(batch, x, y, detector);
+                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
+                            && e.y < (screenHeight + mapYScreen))
+                        e.drawExplosion(batch, mapXScreen, mapYScreen, detector);
                     break;
                 case DIRECTIONAL_CANON_2:
-                    if (e.x > (-16 + x) && e.x < (ww + x) && e.y > (-16 + y) && e.y < (wh + y))
-                        e.drawDirectionalCanon2(batch, map[(e.x) / 16 + (e.y / 16) * sx], x, y, detector);
+                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
+                            && e.y < (screenHeight + mapYScreen))
+                        e.drawDirectionalCanon2(batch, map[(e.x) / 16 + (e.y / 16) * cols], mapXScreen, mapYScreen,
+                                detector);
                     break;
                 default:
                     break;
@@ -530,18 +539,21 @@ public class GameMap {
 
     }
 
-    private void renderSmoke(SpriteBatch batch, int x, int y, int ww, int wh) {
+    private void renderSmoke(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight) {
         if (batch == null)
             return;
 
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
         for (Smoke s : smokes) {
-            int tile = ((s.timer) >> 3) % 3;
-            int rx = (s.x / FACTOR) - x;
-            int ry = (s.y / FACTOR) - y;
-            if (rx > -16 && rx < ww && ry > -16 && ry < wh) {
+            int tileIndex = ((s.timer) >> 3) % 3;
+
+            int rx = (s.x / FACTOR) - mapXScreen;
+            int ry = (s.y / FACTOR) - mapYScreen;
+
+            if (rx > -16 && rx < screenWidth && ry > -16 && ry < screenHeight) {
                 int alpha = 255 - s.timer;
+
                 alpha = (alpha * alpha) / (255);
 
                 if (alpha < 0)
@@ -549,9 +561,9 @@ public class GameMap {
                 if (alpha > 255)
                     alpha = 255;
 
-                AtlasRegion image = tiles.get(272 + tile);
+                AtlasRegion tile = tiles.get(272 + tileIndex);
 
-                Sprite sprite = new Sprite(image);
+                Sprite sprite = new Sprite(tile);
 
                 int x_ = rx + 8;
                 int y_ = ry + 8;
@@ -563,96 +575,96 @@ public class GameMap {
         }
     }
 
-    private int animpiece(int piece) {
+    private int animateTile(int piece) {
         if (piece < 0)
             return piece;
 
-        if (piece == 110 && animtimer > 16)
+        if (piece == 110 && animTimer > 16)
             return 111;
-        if (piece == 110 && animtimer > 8)
+        if (piece == 110 && animTimer > 8)
             return 112;
 
-        if (piece == 64 && animtimer > 16)
+        if (piece == 64 && animTimer > 16)
             return 66;
-        if (piece == 64 && animtimer > 8)
+        if (piece == 64 && animTimer > 8)
             return 65;
 
-        if (piece == 67 && (animflag & 0x01) == 1)
+        if (piece == 67 && (animFlag & 0x01) == 1)
             return 69;
-        if (piece == 68 && (animflag & 0x01) == 1)
+        if (piece == 68 && (animFlag & 0x01) == 1)
             return 70;
 
-        if (piece == 26 && animtimer > 12 && (animflag & 0x01) == 0)
+        if (piece == 26 && animTimer > 12 && (animFlag & 0x01) == 0)
             return 24;
-        if (piece == 26 && animtimer > 12 && (animflag & 0x01) == 1)
+        if (piece == 26 && animTimer > 12 && (animFlag & 0x01) == 1)
             return 25;
 
-        if (piece == 146 && animtimer > 12 && (animflag & 0x01) == 0)
+        if (piece == 146 && animTimer > 12 && (animFlag & 0x01) == 0)
             return 144;
-        if (piece == 146 && animtimer > 12 && (animflag & 0x01) == 1)
+        if (piece == 146 && animTimer > 12 && (animFlag & 0x01) == 1)
             return 145;
 
-        if (piece == 27 && (animflag & 0x01) == 1)
+        if (piece == 27 && (animFlag & 0x01) == 1)
             return 28;
-        if (piece == 147 && (animflag & 0x01) == 1)
+        if (piece == 147 && (animFlag & 0x01) == 1)
             return 148;
 
-        if (piece == 115 && animflag > 3)
+        if (piece == 115 && animFlag > 3)
             return -1;
-        if (piece == 130 && animflag > 3)
+        if (piece == 130 && animFlag > 3)
             return -1;
 
-        if (piece == 32 && animflag > 3)
+        if (piece == 32 && animFlag > 3)
             return 30;
-        if (piece == 33 && animflag > 3)
+        if (piece == 33 && animFlag > 3)
             return 31;
-        if (piece == 36 && animflag > 3)
+        if (piece == 36 && animFlag > 3)
             return 34;
-        if (piece == 37 && animflag > 3)
+        if (piece == 37 && animFlag > 3)
             return 35;
 
-        if (piece == 422 && animflag > 3)
+        if (piece == 422 && animFlag > 3)
             return 420;
-        if (piece == 423 && animflag > 3)
+        if (piece == 423 && animFlag > 3)
             return 421;
 
-        if (piece == 162 && animflag > 3)
+        if (piece == 162 && animFlag > 3)
             return 160;
-        if (piece == 163 && animflag > 3)
+        if (piece == 163 && animFlag > 3)
             return 161;
-        if (piece == 166 && animflag > 3)
+        if (piece == 166 && animFlag > 3)
             return 164;
-        if (piece == 167 && animflag > 3)
+        if (piece == 167 && animFlag > 3)
             return 165;
 
-        if (piece == 76 && animtimer <= 12 && (animflag & 0x03) == 0)
+        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 0)
             return -1;
-        if (piece == 76 && animtimer > 12 && (animflag & 0x03) == 0)
+        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 0)
             return 79;
-        if (piece == 76 && animtimer <= 12 && (animflag & 0x03) == 1)
+        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 1)
             return 78;
-        if (piece == 76 && animtimer > 12 && (animflag & 0x03) == 1)
+        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 1)
             return 77;
-        if (piece == 76 && animtimer > 12 && (animflag & 0x03) == 2)
+        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 2)
             return 77;
-        if (piece == 76 && animtimer <= 12 && (animflag & 0x03) == 3)
+        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 3)
             return 78;
-        if (piece == 76 && animtimer > 12 && (animflag & 0x03) == 3)
+        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 3)
             return 79;
 
-        if (piece == 150 && animtimer <= 12 && (animflag & 0x03) == 0)
+        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 0)
             return -1;
-        if (piece == 150 && animtimer > 12 && (animflag & 0x03) == 0)
+        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 0)
             return 153;
-        if (piece == 150 && animtimer <= 12 && (animflag & 0x03) == 1)
+        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 1)
             return 152;
-        if (piece == 150 && animtimer > 12 && (animflag & 0x03) == 1)
+        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 1)
             return 151;
-        if (piece == 150 && animtimer > 12 && (animflag & 0x03) == 2)
+        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 2)
             return 151;
-        if (piece == 150 && animtimer <= 12 && (animflag & 0x03) == 3)
+        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 3)
             return 152;
-        if (piece == 150 && animtimer > 12 && (animflag & 0x03) == 3)
+        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 3)
             return 153;
 
         return piece;
@@ -709,11 +721,9 @@ public class GameMap {
 
             if (selected.type == EnemyType.CANON || selected.type == EnemyType.FAST_CANON
                     || selected.type == EnemyType.DIRECTIONAL_CANON || selected.type == EnemyType.DIRECTIONAL_CANON_2) {
-                int x_, y_, i;
-
-                x_ = selected.x / 16;
-                y_ = selected.y / 16;
-                i = x_ + y_ * sx;
+                int x_ = selected.x / 16;
+                int y_ = selected.y / 16;
+                int i = x_ + y_ * cols;
 
                 if (map[i] == 154 || map[i] == 386) {
                     map[i] = 180;
@@ -754,7 +764,7 @@ public class GameMap {
                     ss.speed_x = 0;
                     ss.speed_y = -FACTOR / 4;
                     ss.timer = 0;
-                    smokesources.add(ss);
+                    smokeSources.add(ss);
                 }
                 if (generate_smoke == 1) {
                     SmokeSource ss = new SmokeSource();
@@ -763,7 +773,7 @@ public class GameMap {
                     ss.speed_x = 0;
                     ss.speed_y = FACTOR / 4;
                     ss.timer = 0;
-                    smokesources.add(ss);
+                    smokeSources.add(ss);
                 }
                 if (generate_smoke == 2) {
                     SmokeSource ss = new SmokeSource();
@@ -772,7 +782,7 @@ public class GameMap {
                     ss.speed_x = FACTOR / 4;
                     ss.speed_y = 0;
                     ss.timer = 0;
-                    smokesources.add(ss);
+                    smokeSources.add(ss);
                 }
                 if (generate_smoke == 3) {
                     SmokeSource ss = new SmokeSource();
@@ -781,7 +791,7 @@ public class GameMap {
                     ss.speed_x = -FACTOR / 4;
                     ss.speed_y = 0;
                     ss.timer = 0;
-                    smokesources.add(ss);
+                    smokeSources.add(ss);
                 }
                 Assets.assets.soundAssets.explosion.play();
             }
@@ -807,7 +817,7 @@ public class GameMap {
                         ss.speed_x = 0;
                         ss.speed_y = -FACTOR / 4;
                         ss.timer = 0;
-                        smokesources.add(ss);
+                        smokeSources.add(ss);
                     }
                 }
             }
@@ -817,25 +827,25 @@ public class GameMap {
     }
 
     public int getCols() {
-        return sx;
+        return cols;
     }
 
     public int getRows() {
-        return sy;
+        return rows;
     }
 
     public int getBallPositionX() {
-        for (int i = 0; i < sx * sy; i++) {
+        for (int i = 0; i < cols * rows; i++) {
             if (map[i] == 110)
-                return i % sx;
+                return i % cols;
         }
         return 0;
     }
 
     public int getBallPositionY() {
-        for (int i = 0; i < sx * sy; i++) {
+        for (int i = 0; i < cols * rows; i++) {
             if (map[i] == 110)
-                return i / sx;
+                return i / cols;
         }
         return 0;
     }
@@ -871,7 +881,7 @@ public class GameMap {
     }
 
     public boolean isShipInFuelRecharge(int ship_x, int ship_y) {
-        for (FuelRecharge f : fuel_recharges) {
+        for (FuelRecharge f : fuelRecharges) {
             if (ship_x >= f.x * 16 && ship_x < (f.x * 16 + 32) && ship_y >= f.y * 16 && ship_y < (f.y * 16 + 32))
                 return true;
         }
@@ -885,20 +895,20 @@ public class GameMap {
 
         Polygon[] objectPolygons = CollisionDetectionUtils.tiangulate(objectPolygon);
 
-        ICollisionChecker checker = new CollisionChecker(renderer, objectX, objectY, objectPolygons);
+        ICollisionDetector detector = new CollisionDetector(renderer, objectX, objectY, objectPolygons);
 
         if (renderer != null) {
             CollisionDetectionUtils.drawPolygons(renderer, objectPolygons);
         }
 
-        drawWalls(null, x, y, sx, sy, checker);
+        drawWalls(null, x, y, sx, sy, detector);
 
-        if (checker.wasCollision())
+        if (detector.wasCollision())
             return true;
 
-        drawEnemies(null, x, y, sx, sy, enemy, checker);
+        drawEnemies(null, x, y, sx, sy, enemy, detector);
 
-        return checker.wasCollision();
+        return detector.wasCollision();
     }
 
 }

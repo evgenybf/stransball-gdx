@@ -4,6 +4,8 @@ import static com.badlogic.gdx.math.MathUtils.cos;
 import static com.badlogic.gdx.math.MathUtils.degreesToRadians;
 import static com.badlogic.gdx.math.MathUtils.random;
 import static com.badlogic.gdx.math.MathUtils.sin;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 import static org.stransball.Assets.assets;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
@@ -19,12 +21,10 @@ import java.util.List;
 import org.stransball.objects.ShipBullet;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 
 public class WorldController {
@@ -33,46 +33,47 @@ public class WorldController {
         NORMAL, EXPLODED
     }
 
-    @SuppressWarnings("unused")
-    private int fuelUsed;
-    private int fuel;
-    @SuppressWarnings("unused")
-    private int shotsCount;
-    @SuppressWarnings("unused")
-    private int hitsCount;
-    @SuppressWarnings("unused")
-    private int enemiesDestroyed;
-
     private final GameMap map;
+
+    private int mapXScreen;
+    private int mapYScreen;
 
     private int shipXInternal; // x * FACTOR
     private int shipYInternal; // y * FACTOR
     private int shipSpeedX;
     private int shipSpeedY;
     private int shipAngle;
+    private int shipFuel;
     private ShipState shipState;
-    private int mapXScreen;
-    private int mapYScreen;
     private int shipAnim;
-    private AtlasRegion shipRegion;
-    private Sprite sprite;
-    private Animation shipThrottleAnimation;
-    private boolean playThrustSound;
-    private List<ShipBullet> bullets;
     @SuppressWarnings("unused")
-    private int enemiesDestroyedCount;
+    private int shipFuelUsed;
+    @SuppressWarnings("unused")
+    private int shipShotsCount;
+    @SuppressWarnings("unused")
+    private int shipHitsCount;
+    @SuppressWarnings("unused")
+    private int shipEnemiesDestroyedCount;
+    private AtlasRegion shipRegion;
+    private Sprite shipSprite;
+    private boolean shipPlayThrustSound;
+
+    private int atractorParticlesCount;
+    private int attractorParticles;
+    private int[] attractorPX, attractorPY;
+    private float[] attractorPSpeed;
+    private long[] attractorPColor;
+
+    private List<ShipBullet> bullets;
+
     private int ballXInternal; // x * FACTOR
-    private int ballYInternal; // x * FACTOR
+    private int ballYInternal; // y * FACTOR
     private int ballSpeedX;
     private int ballSpeedY;
-    private int ballState;
-    private int shipAtractor;
-    private int atractor_particles;
-    int[] atractor_p_x, atractor_p_y;
-    float[] atractor_p_speed;
-    long[] atractor_p_color;
+    private int ballMagnetisationLevel;
+
     @SuppressWarnings("unused")
-    private int fade_state;
+    private int fadingState;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -89,372 +90,44 @@ public class WorldController {
         shipState = ShipState.NORMAL;
         shipAnim = 0;
 
-        fuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: have to depend on the map settings
+        shipFuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: have to depend on the map settings
 
         {
             shipRegion = assets.graphicAssets.shipRegion;
 
-            sprite = new Sprite(shipRegion);
-            sprite.setScale(0.5f, 0.5f);
-
-            shipThrottleAnimation = assets.graphicAssets.shipThrustAnimation;
+            shipSprite = new Sprite(shipRegion);
+            shipSprite.setScale(0.5f, 0.5f);
 
             assets.graphicAssets.shipPolygon.setScale(0.5f, 0.5f);
         }
 
         {
-            int x = map.getBallPositionX();
-            int y = map.getBallPositionY();
+            int ballCol = map.getBallPositionX();
+            int ballRow = map.getBallPositionY();
 
-            ballState = -32;
-            ballXInternal = x * 16 * FACTOR;
-            ballYInternal = (y * 16 - 6) * FACTOR;
+            ballMagnetisationLevel = -32;
+            ballXInternal = ballCol * 16 * FACTOR;
+            ballYInternal = (ballRow * 16 - 6) * FACTOR;
             ballSpeedX = 0;
             ballSpeedY = 0;
         }
 
-        atractor_p_x = new int[MAX_ATRACTOR_P];
-        atractor_p_y = new int[MAX_ATRACTOR_P];
-        atractor_p_speed = new float[MAX_ATRACTOR_P];
-        atractor_p_color = new long[MAX_ATRACTOR_P];
+        attractorPX = new int[MAX_ATRACTOR_P];
+        attractorPY = new int[MAX_ATRACTOR_P];
+        attractorPSpeed = new float[MAX_ATRACTOR_P];
+        attractorPColor = new long[MAX_ATRACTOR_P];
     }
 
     public void update(ShapeRenderer renderer) {
-        if (shipState == ShipState.NORMAL) {
-            if (bLeft) {
-                shipAngle -= 4;
-                if (shipAngle < 0)
-                    shipAngle += 360;
-            }
+        updateShip();
+        updateShipPositionByGravity();
 
-            if (bRight) {
-                shipAngle += 4;
-                if (shipAngle > 360)
-                    shipAngle -= 360;
-            }
+        updateBall();
+        updateBallPositionByGravity();
 
-            if (bThrust && fuel > 0) {
-                float radian_angle = (shipAngle - 90.0f) * degreesToRadians;
-                shipSpeedX += (int) (cos(radian_angle) * 18f);
-                shipSpeedY += (int) (sin(radian_angle) * 18f);
-                if (shipSpeedX > 4 * FACTOR)
-                    shipSpeedX = 4 * FACTOR;
-                if (shipSpeedX < -4 * FACTOR)
-                    shipSpeedX = -4 * FACTOR;
-                if (shipSpeedY > 4 * FACTOR)
-                    shipSpeedY = 4 * FACTOR;
-                if (shipSpeedY < -4 * FACTOR)
-                    shipSpeedY = -4 * FACTOR;
-                if (!Constants.DEBUG_GOD_MODE) {
-                    fuel--;
-                }
-                fuelUsed++;
-                shipAnim++;
-                if (shipAnim >= 6)
-                    shipAnim = 1;
-
-                if (!playThrustSound) {
-                    assets.soundAssets.thrust.play();
-                    assets.soundAssets.thrust.loop();
-                    playThrustSound = true;
-                }
-            } else {
-                shipAnim = 0;
-
-                assets.soundAssets.thrust.stop();
-                playThrustSound = false;
-            }
-
-            if (GameKeysStatus.bAtractor) {
-                shipAtractor++;
-                if (shipAtractor > 4)
-                    shipAtractor = 1;
-
-                if (atractor_particles < Constants.MAX_ATRACTOR_P) {
-                    atractor_p_x[atractor_particles] = shipXInternal + (random(16 * FACTOR - 1)) - 8 * FACTOR;
-                    atractor_p_y[atractor_particles] = shipYInternal + (random(16 * FACTOR - 1)) + 16 * FACTOR;
-                    atractor_p_speed[atractor_particles] = (float) (5 + random(5 - 1)) / 10.0F;
-                    atractor_p_color[atractor_particles] = 0;
-                    atractor_particles++;
-                }
-
-            } else {
-                shipAtractor = 0;
-                if (atractor_particles > 0)
-                    atractor_particles -= 8;
-                if (atractor_particles < 0)
-                    atractor_particles = 0;
-            }
-
-            for (int i = 0; i < atractor_particles; i++) {
-                atractor_p_x[i] += (int) (shipSpeedX * 0.9f);
-                atractor_p_y[i] += (int) (shipSpeedY * 0.9f);
-                atractor_p_x[i] = (int) (shipXInternal * (1.0f - atractor_p_speed[i])
-                        + atractor_p_x[i] * atractor_p_speed[i]);
-                atractor_p_y[i] = (int) (shipYInternal * (1.0f - atractor_p_speed[i])
-                        + atractor_p_y[i] * atractor_p_speed[i]);
-                if ((Math.abs(shipXInternal - atractor_p_x[i]) < 2 * FACTOR)
-                        && (Math.abs(shipYInternal - atractor_p_y[i]) < 2 * FACTOR)) {
-                    atractor_p_x[i] = shipXInternal + (random(16 * FACTOR - 1)) - 8 * FACTOR;
-                    atractor_p_y[i] = shipYInternal + (random(16 * FACTOR - 1)) + 16 * FACTOR;
-                    atractor_p_speed[i] = (float) (5 + (random(5 - 1))) / 10.0F;
-                    atractor_p_color[i] = 0;
-                }
-            }
-
-            if (GameKeysStatus.isFire()) {
-                float radian_angle = (shipAngle - 90) * MathUtils.degreesToRadians;
-
-                shotsCount++;
-                if (!Constants.DEBUG_GOD_MODE) {
-                    fuel -= Constants.shotfuel[0];
-                }
-                fuelUsed += Constants.shotfuel[0];
-
-                ShipBullet b = new ShipBullet();
-                {
-                    b.x = shipXInternal - 8 * FACTOR;
-                    b.y = shipYInternal - 8 * FACTOR;
-                    b.speed_x = (int) (MathUtils.cos(radian_angle) * 4 * FACTOR);
-                    b.speed_y = (int) (MathUtils.sin(radian_angle) * 4 * FACTOR);
-                    b.state = 0;
-                }
-                bullets.add(b);
-
-                Assets.assets.soundAssets.shipshot.play();
-            }
-
-        } else if (shipState == ShipState.EXPLODED) {
-            assets.soundAssets.thrust.stop();
-            playThrustSound = false;
-
-            shipAnim++;
-            if (shipAnim >= 64)
-                fade_state = 2;
-            if (shipAnim >= 96) {
-                throw new RuntimeException("You failed");
-            }
-        }
-
-        // Ship cinematics:
-        if (shipSpeedX > 0)
-            shipSpeedX--;
-        if (shipSpeedX < 0)
-            shipSpeedX++;
-        shipSpeedY += 2;
-
-        if (shipSpeedX > 4 * FACTOR)
-            shipSpeedX = 4 * FACTOR;
-        if (shipSpeedX < -4 * FACTOR)
-            shipSpeedX = -4 * FACTOR;
-        if (shipSpeedY > 4 * FACTOR)
-            shipSpeedY = 4 * FACTOR;
-        if (shipSpeedY < -4 * FACTOR)
-            shipSpeedY = -4 * FACTOR;
-        shipXInternal += shipSpeedX;
-        shipYInternal += shipSpeedY;
-
-        if ((shipXInternal / FACTOR) < 0) {
-            shipXInternal = 0;
-            shipSpeedX = 0;
-        }
-        if ((shipYInternal / FACTOR) < 0) {
-            shipYInternal = 0;
-            shipSpeedY = 0;
-        }
-        if ((shipXInternal / FACTOR) > (map.getCols() * 16)) {
-            shipXInternal = (map.getCols() * 16) * FACTOR;
-            shipSpeedX = 0;
-        }
-        if ((shipYInternal / FACTOR) > (map.getRows() * 16)) {
-            shipYInternal = (map.getRows() * 16) * FACTOR;
-            shipSpeedY = 0;
-        }
-
-        // Ball cinematics: 
-        if (ballSpeedX > 0)
-            ballSpeedX--;
-        if (ballSpeedX < 0)
-            ballSpeedX++;
-        {
-            int bx = (ballXInternal / FACTOR) + 8;
-            int by = (ballYInternal / FACTOR) + 8;
-            int sx = shipXInternal / FACTOR;
-            int sy = (shipYInternal / FACTOR) + 8;
-
-            if (shipAtractor != 0 && bx > sx - 8 && bx < sx + 8 && by > sy && by < sy + 32 && ballState < 0) {
-                ballState++;
-                if (ballState == 0) {
-                    Assets.assets.soundAssets.takeball.play();
-                    map.takeBall();
-                }
-            } else {
-                if (ballState < 0)
-                    ballState = -32;
-            }
-
-            if (ballState == 0) {
-                int xdif = (ballXInternal / FACTOR) - (shipXInternal / FACTOR);
-                int ydif = (ballYInternal / FACTOR) - (shipYInternal / FACTOR);
-                int totdif;
-                xdif *= xdif;
-                ydif *= ydif;
-                totdif = xdif + ydif;
-                if (totdif < 10000) {
-                    if ((shipXInternal - 8 * FACTOR) < ballXInternal)
-                        ballSpeedX -= 2;
-                    if ((shipXInternal - 8 * FACTOR) > ballXInternal)
-                        ballSpeedX += 2;
-                    if ((shipYInternal - 8 * FACTOR) < ballYInternal)
-                        ballSpeedY -= 2;
-                    if ((shipYInternal - 8 * FACTOR) > ballYInternal)
-                        ballSpeedY += 2;
-                }
-                if (totdif < 4000) {
-                    if ((shipXInternal - 8 * FACTOR) < ballXInternal)
-                        ballSpeedX -= 2;
-                    if ((shipXInternal - 8 * FACTOR) > ballXInternal)
-                        ballSpeedX += 2;
-                    if ((shipYInternal - 8 * FACTOR) < ballYInternal)
-                        ballSpeedY -= 2;
-                    if ((shipYInternal - 8 * FACTOR) > ballYInternal)
-                        ballSpeedY += 2;
-                }
-                if (totdif < 1000) {
-                    if ((shipXInternal - 8 * FACTOR) < ballXInternal)
-                        ballSpeedX -= 2;
-                    if ((shipXInternal - 8 * FACTOR) > ballXInternal)
-                        ballSpeedX += 2;
-                    if ((shipYInternal - 8 * FACTOR) < ballYInternal)
-                        ballSpeedY -= 2;
-                    if ((shipYInternal - 8 * FACTOR) > ballYInternal)
-                        ballSpeedY += 2;
-                }
-                if (totdif < 100) {
-                    if ((shipXInternal - 8 * FACTOR) < ballXInternal)
-                        ballSpeedX -= 2;
-                    if ((shipXInternal - 8 * FACTOR) > ballXInternal)
-                        ballSpeedX += 2;
-                    if ((shipYInternal - 8 * FACTOR) < ballYInternal)
-                        ballSpeedY -= 2;
-                    if ((shipYInternal - 8 * FACTOR) > ballYInternal)
-                        ballSpeedY += 2;
-                }
-            }
-
-            bx = ballXInternal; // ??? (ball_x / FACTOR);
-            by = ballYInternal; // ??? (ball_y / FACTOR);
-
-            int bx_ = ballXInternal / FACTOR; // ??? (ball_x / FACTOR);
-            int by_ = ballYInternal / FACTOR; // ??? (ball_y / FACTOR);
-
-            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-            if (checkPolygonWithMapCollision(null, tilePolygons[360], bx, by)) {
-                if (ballSpeedY > 0) {
-                    ballSpeedY = (int) (-0.75 * ballSpeedY);
-                    map.collideBall(bx_ + 8, by_ + 12);
-                } else {
-                    if (checkPolygonWithMapCollision(null, tilePolygons[360], bx, by - 1))
-                        ballSpeedY -= 2;
-                }
-            } else {
-                ballSpeedY += 2;
-            }
-
-            if (checkPolygonWithMapCollision(null, tilePolygons[340], bx, by)) {
-                if (ballSpeedY < 0) {
-                    ballSpeedY = (int) (-0.75 * ballSpeedY);
-                    map.collideBall(bx_ + 8, by_ + 4);
-                } else {
-                    ballSpeedY += 2;
-                }
-            }
-
-            if (checkPolygonWithMapCollision(null, tilePolygons[342], bx, by)) {
-                if (ballSpeedX > 0) {
-                    ballSpeedX = (int) (-0.75 * ballSpeedX);
-                    map.collideBall(bx_ + 12, by_ + 8);
-                } else {
-                    ballSpeedX -= 2;
-                }
-            }
-
-            if (checkPolygonWithMapCollision(null, tilePolygons[362], bx, by)) {
-                if (ballSpeedX < 0) {
-                    ballSpeedX = (int) (-0.75 * ballSpeedX);
-                    map.collideBall(bx_ + 4, by_ + 8);
-                } else {
-                    ballSpeedX += 2;
-                }
-            }
-        }
-        if (ballSpeedX > 4 * FACTOR)
-            ballSpeedX = 4 * FACTOR;
-        if (ballSpeedX < -4 * FACTOR)
-            ballSpeedX = -4 * FACTOR;
-        if (ballSpeedY > 4 * FACTOR)
-            ballSpeedY = 4 * FACTOR;
-        if (ballSpeedY < -4 * FACTOR)
-            ballSpeedY = -4 * FACTOR;
-        ballXInternal += ballSpeedX;
-        ballYInternal += ballSpeedY;
-
-        if ((ballXInternal / FACTOR) < 0) {
-            ballXInternal = 0;
-            ballSpeedX = 0;
-        }
-        if ((ballYInternal / FACTOR) < 0 && ballState >= 0) {
-            fade_state = 2;
-            ballSpeedY = -FACTOR;
-            ballState++;
-            if (ballState >= 32) {
-                throw new RuntimeException("You win!");
-            }
-        }
-        if ((ballXInternal / FACTOR) > ((map.getCols() - 1) * 16)) {
-            ballXInternal = ((map.getCols() - 1) * 16) * FACTOR;
-            ballSpeedX = 0;
-        }
-        if ((ballYInternal / FACTOR) > ((map.getRows() - 1) * 16)) {
-            ballYInternal = ((map.getRows() - 1) * 16) * FACTOR;
-            ballSpeedY = 0;
-        }
-
-        // Bullets:
-        {
-            List<ShipBullet> deletelist = new ArrayList<ShipBullet>();
-
-            for (ShipBullet b : bullets) {
-                if (b.state == 0) {
-                    b.x += b.speed_x;
-                    b.y += b.speed_y;
-
-                    if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
-                        // int ship_strength[]={1,2,4};
-                        b.state++;
-                        int retv = map.collideShipBullet((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
-                        if (retv != 0)
-                            hitsCount++;
-                        if (retv == 2)
-                            enemiesDestroyedCount++;
-                    } else {
-                        if (b.x < -8 * FACTOR || b.x > (map.getCols() * 16 * FACTOR) + 8 * FACTOR || b.y < -8 * FACTOR
-                                || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR)
-                            deletelist.add(b);
-                    }
-                } else {
-                    b.state++;
-                    if (b.state >= 40)
-                        deletelist.add(b);
-                }
-
-            }
-
-            bullets.removeAll(deletelist);
-        }
+        updateBullets();
 
         updateMapCameraPosition();
-
         map.update(shipXInternal, shipYInternal, mapXScreen, mapYScreen, renderer);
 
         if (!Constants.DEBUG_GOD_MODE) {
@@ -469,54 +142,419 @@ public class WorldController {
             }
         }
 
-        // Fuel recharge: 
         if (map.isShipInFuelRecharge(shipXInternal / FACTOR, shipYInternal / FACTOR)) {
-            int old_fuel = fuel;
-            fuel += 8;
-            if (fuel > 50 * Constants.fuelfactor[0])
-                fuel = 50 * Constants.fuelfactor[0];
-            if ((old_fuel / Constants.fuelfactor[0]) < ((fuel - 1) / Constants.fuelfactor[0]))
-                Assets.assets.soundAssets.fuel.play();
+            rechargeShipFuel();
         }
     }
 
-    private boolean checkPolygonWithMapCollision(final ShapeRenderer renderer, Polygon objectPolygon, int bx, int by) {
-        int x = bx / FACTOR - 32;
-        int y = by / FACTOR - 32;
+    private void rechargeShipFuel() {
+        int prevShipFuel = shipFuel;
+
+        shipFuel += 8;
+        if (shipFuel > 50 * Constants.fuelfactor[0]) {
+            shipFuel = 50 * Constants.fuelfactor[0];
+        }
+
+        if (prevShipFuel / Constants.fuelfactor[0] < (shipFuel - 1) / Constants.fuelfactor[0]) {
+            Assets.assets.soundAssets.fuel.play();
+        }
+    }
+
+    private void updateBall() {
+        if (ballSpeedX > 0)
+            ballSpeedX--;
+        if (ballSpeedX < 0)
+            ballSpeedX++;
+
+        int ballXScreenF = ballXInternal / FACTOR + 8;
+        int ballYScreenF = ballYInternal / FACTOR + 8;
+        int shipXScreenF = shipXInternal / FACTOR;
+        int shipYScreenF = shipYInternal / FACTOR + 8;
+
+        if (atractorParticlesCount > 0 && ballMagnetisationLevel < 0 && abs(ballXScreenF - shipXScreenF) < 8
+                && ballYScreenF > shipYScreenF && ballYScreenF < shipYScreenF + 32) {
+            ballMagnetisationLevel++;
+            if (ballMagnetisationLevel == 0) {
+                // Ball has been magnetized
+                Assets.assets.soundAssets.takeball.play();
+                map.takeBall();
+            }
+        } else {
+            if (ballMagnetisationLevel < 0) {
+                ballMagnetisationLevel = -32;
+            }
+        }
+
+        if (ballMagnetisationLevel == 0) {
+            attractBallToShip();
+        }
+
+        handleBallBouncing();
+    }
+
+    private void attractBallToShip() {
+        int xdif = ballXInternal / FACTOR - shipXInternal / FACTOR;
+        xdif *= xdif;
+
+        int ydif = ballYInternal / FACTOR - shipYInternal / FACTOR;
+        ydif *= ydif;
+
+        int totdif = xdif + ydif;
+        if (totdif < 10000) {
+            if ((shipXInternal - 8 * FACTOR) < ballXInternal)
+                ballSpeedX -= 2;
+            if ((shipXInternal - 8 * FACTOR) > ballXInternal)
+                ballSpeedX += 2;
+            if ((shipYInternal - 8 * FACTOR) < ballYInternal)
+                ballSpeedY -= 2;
+            if ((shipYInternal - 8 * FACTOR) > ballYInternal)
+                ballSpeedY += 2;
+        }
+        if (totdif < 4000) {
+            if ((shipXInternal - 8 * FACTOR) < ballXInternal)
+                ballSpeedX -= 2;
+            if ((shipXInternal - 8 * FACTOR) > ballXInternal)
+                ballSpeedX += 2;
+            if ((shipYInternal - 8 * FACTOR) < ballYInternal)
+                ballSpeedY -= 2;
+            if ((shipYInternal - 8 * FACTOR) > ballYInternal)
+                ballSpeedY += 2;
+        }
+        if (totdif < 1000) {
+            if ((shipXInternal - 8 * FACTOR) < ballXInternal)
+                ballSpeedX -= 2;
+            if ((shipXInternal - 8 * FACTOR) > ballXInternal)
+                ballSpeedX += 2;
+            if ((shipYInternal - 8 * FACTOR) < ballYInternal)
+                ballSpeedY -= 2;
+            if ((shipYInternal - 8 * FACTOR) > ballYInternal)
+                ballSpeedY += 2;
+        }
+        if (totdif < 100) {
+            if ((shipXInternal - 8 * FACTOR) < ballXInternal)
+                ballSpeedX -= 2;
+            if ((shipXInternal - 8 * FACTOR) > ballXInternal)
+                ballSpeedX += 2;
+            if ((shipYInternal - 8 * FACTOR) < ballYInternal)
+                ballSpeedY -= 2;
+            if ((shipYInternal - 8 * FACTOR) > ballYInternal)
+                ballSpeedY += 2;
+        }
+    }
+
+    private void handleBallBouncing() {
+        int ballXScreenF = ballXInternal / FACTOR; //FIXME: ?+8 - see updateBall
+        int ballYScreenF = ballYInternal / FACTOR; //FIXME: ?+8 - see updateBall
+
+        Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
+        if (checkPolygonWithMapCollision(null, tilePolygons[360], ballXInternal, ballYInternal)) {
+            if (ballSpeedY > 0) {
+                ballSpeedY = (int) (-0.75 * ballSpeedY);
+                map.collideBall(ballXScreenF + 8, ballYScreenF + 12);
+            } else {
+                if (checkPolygonWithMapCollision(null, tilePolygons[360], ballXInternal, ballYInternal - 1))
+                    ballSpeedY -= 2;
+            }
+        } else {
+            ballSpeedY += 2;
+        }
+
+        if (checkPolygonWithMapCollision(null, tilePolygons[340], ballXInternal, ballYInternal)) {
+            if (ballSpeedY < 0) {
+                ballSpeedY = (int) (-0.75 * ballSpeedY);
+                map.collideBall(ballXScreenF + 8, ballYScreenF + 4);
+            } else {
+                ballSpeedY += 2;
+            }
+        }
+
+        if (checkPolygonWithMapCollision(null, tilePolygons[342], ballXInternal, ballYInternal)) {
+            if (ballSpeedX > 0) {
+                ballSpeedX = (int) (-0.75 * ballSpeedX);
+                map.collideBall(ballXScreenF + 12, ballYScreenF + 8);
+            } else {
+                ballSpeedX -= 2;
+            }
+        }
+
+        if (checkPolygonWithMapCollision(null, tilePolygons[362], ballXInternal, ballYInternal)) {
+            if (ballSpeedX < 0) {
+                ballSpeedX = (int) (-0.75 * ballSpeedX);
+                map.collideBall(ballXScreenF + 4, ballYScreenF + 8);
+            } else {
+                ballSpeedX += 2;
+            }
+        }
+    }
+
+    private void updateBallPositionByGravity() {
+        if (ballSpeedX > 4 * FACTOR)
+            ballSpeedX = 4 * FACTOR;
+        if (ballSpeedX < -4 * FACTOR)
+            ballSpeedX = -4 * FACTOR;
+        if (ballSpeedY > 4 * FACTOR)
+            ballSpeedY = 4 * FACTOR;
+        if (ballSpeedY < -4 * FACTOR)
+            ballSpeedY = -4 * FACTOR;
+
+        ballXInternal += ballSpeedX;
+        ballYInternal += ballSpeedY;
+
+        if ((ballXInternal / FACTOR) < 0) {
+            ballXInternal = 0;
+            ballSpeedX = 0;
+        }
+
+        if (ballYInternal / FACTOR < 0 && ballMagnetisationLevel >= 0) {
+            fadingState = 2;
+            ballSpeedY = -FACTOR;
+            ballMagnetisationLevel++;
+            if (ballMagnetisationLevel >= 32) {
+                throw new RuntimeException("You win!");
+            }
+        }
+
+        if (ballXInternal / FACTOR > (map.getCols() - 1) * 16) {
+            ballXInternal = (map.getCols() - 1) * 16 * FACTOR;
+            ballSpeedX = 0;
+        }
+
+        if (ballYInternal / FACTOR > (map.getRows() - 1) * 16) {
+            ballYInternal = ((map.getRows() - 1) * 16) * FACTOR;
+            ballSpeedY = 0;
+        }
+    }
+
+    private void updateShip() {
+        if (shipState == ShipState.NORMAL) {
+            if (bLeft) {
+                shipAngle -= 4;
+                if (shipAngle < 0)
+                    shipAngle += 360;
+            }
+
+            if (bRight) {
+                shipAngle += 4;
+                if (shipAngle > 360)
+                    shipAngle -= 360;
+            }
+
+            if (bThrust && shipFuel > 0) {
+                float radianAngle = (shipAngle - 90.0f) * degreesToRadians;
+                shipSpeedX += (int) (cos(radianAngle) * 18f);
+                shipSpeedY += (int) (sin(radianAngle) * 18f);
+                if (shipSpeedX > 4 * FACTOR)
+                    shipSpeedX = 4 * FACTOR;
+                if (shipSpeedX < -4 * FACTOR)
+                    shipSpeedX = -4 * FACTOR;
+                if (shipSpeedY > 4 * FACTOR)
+                    shipSpeedY = 4 * FACTOR;
+                if (shipSpeedY < -4 * FACTOR)
+                    shipSpeedY = -4 * FACTOR;
+                if (!Constants.DEBUG_GOD_MODE) {
+                    shipFuel--;
+                }
+                shipFuelUsed++;
+                shipAnim++;
+                if (shipAnim >= 6)
+                    shipAnim = 1;
+
+                if (!shipPlayThrustSound) {
+                    assets.soundAssets.thrust.play();
+                    assets.soundAssets.thrust.loop();
+                    shipPlayThrustSound = true;
+                }
+            } else {
+                shipAnim = 0;
+
+                assets.soundAssets.thrust.stop();
+                shipPlayThrustSound = false;
+            }
+
+            if (GameKeysStatus.bAtractor) {
+                atractorParticlesCount++;
+                if (atractorParticlesCount > 4)
+                    atractorParticlesCount = 1;
+
+                if (attractorParticles < Constants.MAX_ATRACTOR_P) {
+                    attractorPX[attractorParticles] = shipXInternal + (random(16 * FACTOR - 1)) - 8 * FACTOR;
+                    attractorPY[attractorParticles] = shipYInternal + (random(16 * FACTOR - 1)) + 16 * FACTOR;
+                    attractorPSpeed[attractorParticles] = (float) (5 + random(5 - 1)) / 10.0F;
+                    attractorPColor[attractorParticles] = 0;
+                    attractorParticles++;
+                }
+
+            } else {
+                atractorParticlesCount = 0;
+                if (attractorParticles > 0)
+                    attractorParticles -= 8;
+                if (attractorParticles < 0)
+                    attractorParticles = 0;
+            }
+
+            for (int i = 0; i < attractorParticles; i++) {
+                attractorPX[i] += (int) (shipSpeedX * 0.9f);
+                attractorPY[i] += (int) (shipSpeedY * 0.9f);
+                attractorPX[i] = (int) (shipXInternal * (1.0f - attractorPSpeed[i])
+                        + attractorPX[i] * attractorPSpeed[i]);
+                attractorPY[i] = (int) (shipYInternal * (1.0f - attractorPSpeed[i])
+                        + attractorPY[i] * attractorPSpeed[i]);
+                if ((Math.abs(shipXInternal - attractorPX[i]) < 2 * FACTOR)
+                        && (Math.abs(shipYInternal - attractorPY[i]) < 2 * FACTOR)) {
+                    attractorPX[i] = shipXInternal + (random(16 * FACTOR - 1)) - 8 * FACTOR;
+                    attractorPY[i] = shipYInternal + (random(16 * FACTOR - 1)) + 16 * FACTOR;
+                    attractorPSpeed[i] = (float) (5 + (random(5 - 1))) / 10.0F;
+                    attractorPColor[i] = 0;
+                }
+            }
+
+            if (GameKeysStatus.isFire()) {
+                float radianAngle = (shipAngle - 90) * degreesToRadians;
+
+                shipShotsCount++;
+                if (!Constants.DEBUG_GOD_MODE) {
+                    shipFuel -= Constants.shotfuel[0];
+                }
+                shipFuelUsed += Constants.shotfuel[0];
+
+                ShipBullet b = new ShipBullet();
+                {
+                    b.x = shipXInternal - 8 * FACTOR;
+                    b.y = shipYInternal - 8 * FACTOR;
+                    b.speedX = (int) (cos(radianAngle) * 4 * FACTOR);
+                    b.speedY = (int) (sin(radianAngle) * 4 * FACTOR);
+                    b.state = 0;
+                }
+                bullets.add(b);
+
+                Assets.assets.soundAssets.shipshot.play();
+            }
+
+        } else if (shipState == ShipState.EXPLODED) {
+            assets.soundAssets.thrust.stop();
+            shipPlayThrustSound = false;
+
+            shipAnim++;
+
+            if (shipAnim >= 64)
+                fadingState = 2;
+
+            if (shipAnim >= 96) {
+                throw new RuntimeException("You failed");
+            }
+        }
+    }
+
+    private void updateShipPositionByGravity() {
+        if (shipSpeedX > 0)
+            shipSpeedX--;
+        if (shipSpeedX < 0)
+            shipSpeedX++;
+        shipSpeedY += 2;
+
+        if (shipSpeedX > 4 * FACTOR)
+            shipSpeedX = 4 * FACTOR;
+        if (shipSpeedX < -4 * FACTOR)
+            shipSpeedX = -4 * FACTOR;
+        if (shipSpeedY > 4 * FACTOR)
+            shipSpeedY = 4 * FACTOR;
+        if (shipSpeedY < -4 * FACTOR)
+            shipSpeedY = -4 * FACTOR;
+
+        shipXInternal += shipSpeedX;
+        shipYInternal += shipSpeedY;
+
+        if (shipXInternal / FACTOR < 0) {
+            shipXInternal = 0;
+            shipSpeedX = 0;
+        }
+        if (shipYInternal / FACTOR < 0) {
+            shipYInternal = 0;
+            shipSpeedY = 0;
+        }
+        if (shipXInternal / FACTOR > map.getCols() * 16) {
+            shipXInternal = map.getCols() * 16 * FACTOR;
+            shipSpeedX = 0;
+        }
+        if (shipYInternal / FACTOR > map.getRows() * 16) {
+            shipYInternal = map.getRows() * 16 * FACTOR;
+            shipSpeedY = 0;
+        }
+    }
+
+    private void updateBullets() {
+        List<ShipBullet> toDeleteList = new ArrayList<ShipBullet>();
+
+        for (ShipBullet b : bullets) {
+            if (b.state == 0) {
+                b.x += b.speedX;
+                b.y += b.speedY;
+
+                if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x,
+                        b.y)) {
+                    // int ship_strength[]={1,2,4};
+                    b.state++;
+                    int retv = map.collideShipBullet((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
+                    if (retv != 0)
+                        shipHitsCount++;
+                    if (retv == 2)
+                        shipEnemiesDestroyedCount++;
+                } else {
+                    if (b.x < -8 * FACTOR || b.x > (map.getCols() * 16 * FACTOR) + 8 * FACTOR
+                            || b.y < -8 * FACTOR || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR)
+                        toDeleteList.add(b);
+                }
+            } else {
+                b.state++;
+                if (b.state >= 40)
+                    toDeleteList.add(b);
+            }
+
+        }
+
+        bullets.removeAll(toDeleteList);
+    }
+
+    private boolean checkPolygonWithMapCollision(final ShapeRenderer renderer, Polygon objectPolygon, int xInternal,
+            int yInternal) {
+        int xScreenF = xInternal / FACTOR - 32;
+        int yScreenF = yInternal / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
-        int object_x = bx / FACTOR - mapXScreen;
-        int object_y = by / FACTOR - mapYScreen;
+        int objectXScreen = xInternal / FACTOR - mapXScreen;
+        int objectYScreen = yInternal / FACTOR - mapYScreen;
 
-        objectPolygon.setPosition(object_x, INTERNAL_SCREEN_HEIGHT - object_y);
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(object_x, object_y, x, y, sx, sy, objectPolygon, null, renderer);
+        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, sx, sy, objectPolygon, null,
+                renderer);
     }
 
     private boolean checkShipWithMapCollision(ShapeRenderer renderer) {
-        int x = shipXInternal / FACTOR - 32;
-        int y = shipYInternal / FACTOR - 32;
+        int xScreenF = shipXInternal / FACTOR - 32;
+        int yScreenF = shipYInternal / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
         Polygon objectPolygon = assets.graphicAssets.shipPolygon;
 
-        int objectX = shipXInternal / FACTOR - mapXScreen;
-        int objectY = shipYInternal / FACTOR - mapYScreen;
+        int objectXScreen = shipXInternal / FACTOR - mapXScreen;
+        int objectYScreen = shipYInternal / FACTOR - mapYScreen;
 
         objectPolygon.setRotation(360 - shipAngle);
-        objectPolygon.setPosition(objectX, INTERNAL_SCREEN_HEIGHT - objectY);
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(objectX, objectY, x, y, sx, sy, objectPolygon, null, renderer);
+        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, sx, sy, objectPolygon, null,
+                renderer);
     }
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {
-        int sx = INTERNAL_SCREEN_WIDTH;
-        int sy = INTERNAL_SCREEN_HEIGHT;
-
         if (batch != null) {
-            map.render(batch, mapXScreen, mapYScreen, sx, sy);
+            int screenWidth = INTERNAL_SCREEN_WIDTH;
+            int screenHeight = INTERNAL_SCREEN_HEIGHT;
+
+            map.render(batch, mapXScreen, mapYScreen, screenWidth, screenHeight);
 
             renderBall(batch);
             renderAttractor(batch);
@@ -529,6 +567,7 @@ public class WorldController {
 
     private void drawFuelStatus(SpriteBatch batch) {
         Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); //Assets.assets.graphicAssets.tiles.get(498));
+
         sprite.setPosition(2, INTERNAL_SCREEN_HEIGHT - 2);
         sprite.setSize(52, 1);
         sprite.setColor(Color.WHITE);
@@ -545,13 +584,14 @@ public class WorldController {
         sprite.draw(batch);
 
         sprite.setPosition(3, INTERNAL_SCREEN_HEIGHT - 8);
-        sprite.setSize(fuel / 64.0f, 6);
+        sprite.setSize(shipFuel / 64.0f, 6);
 
-        float f = (float) (fuel) / (64.0f * 30.0F);
-        if (f >= 1.0F)
-            f = 1.0F;
+        float f = (float) (shipFuel) / (64.0f * 30.0F);
+        if (f >= 1.0f) {
+            f = 1.0f;
+        }
 
-        sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * Math.sqrt(f)), 0, 1));
+        sprite.setColor(new Color((int) (255 * (1 - f * f)), (int) (200 * sqrt(f)), 0, 1));
         sprite.draw(batch);
     }
 
@@ -562,18 +602,18 @@ public class WorldController {
         AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(242);
         Sprite sprite = new Sprite(tile);
 
-        for (int i = 0; i < atractor_particles; i++) {
-            if (atractor_p_color[i] == 0) {
+        for (int i = 0; i < attractorParticles; i++) {
+            if (attractorPColor[i] == 0) {
                 int v = (random(192 - 1)) + 64;
-                atractor_p_color[i] = v;
+                attractorPColor[i] = v;
             }
 
             sprite.setScale(0.4f, 0.4f);
-            sprite.setAlpha(255.0f / atractor_p_color[i]);
+            sprite.setAlpha(255.0f / attractorPColor[i]);
 
-            int x = atractor_p_x[i] / FACTOR - mapXScreen;
-            int y = atractor_p_y[i] / FACTOR - mapYScreen;
-            sprite.setCenter(x, Constants.INTERNAL_SCREEN_HEIGHT - y);
+            int xScreen = attractorPX[i] / FACTOR - mapXScreen;
+            int yScreen = attractorPY[i] / FACTOR - mapYScreen;
+            sprite.setCenter(xScreen, Constants.INTERNAL_SCREEN_HEIGHT - yScreen);
 
             sprite.draw(batch);
         }
@@ -583,15 +623,15 @@ public class WorldController {
         if (batch == null)
             return;
 
-        int tileIndex = (ballState < 0) ? 320 : 321;
+        int tileIndex = (ballMagnetisationLevel < 0) ? 320 : 321;
         AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
 
         Sprite sprite = new Sprite(tile);
 
-        int x = ballXInternal / FACTOR - mapXScreen + 8; // FIXME: ball's coordinates returned by the Map are not correct!
-        int y = ballYInternal / FACTOR - mapYScreen + 8;
+        int ballXScreen = ballXInternal / FACTOR - mapXScreen + 8; // FIXME: ball's coordinates returned by the Map are not correct!
+        int ballYScreen = ballYInternal / FACTOR - mapYScreen + 8;
 
-        sprite.setCenter(x, INTERNAL_SCREEN_HEIGHT - y);
+        sprite.setCenter(ballXScreen, INTERNAL_SCREEN_HEIGHT - ballYScreen);
         sprite.draw(batch);
     }
 
@@ -603,42 +643,42 @@ public class WorldController {
             int tileIndex = (b.state < 8) ? 242 : 399 + (b.state / 8);
             AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
 
-            int x = b.x / FACTOR - mapXScreen + 8; // FIXME: bullet's coordinates are not correct!
-            int y = b.y / FACTOR - mapYScreen + 8;
+            int bulletXScreen = b.x / FACTOR - mapXScreen + 8; // FIXME: bullet's coordinates are not correct!
+            int bulletYScreen = b.y / FACTOR - mapYScreen + 8;
 
             Sprite sprite = new Sprite(tile);
-            sprite.setCenter(x, INTERNAL_SCREEN_HEIGHT - y);
+            sprite.setCenter(bulletXScreen, INTERNAL_SCREEN_HEIGHT - bulletYScreen);
             sprite.draw(batch);
         }
     }
 
     private void updateMapCameraPosition() {
-        int sx = INTERNAL_SCREEN_WIDTH;
-        int sy = INTERNAL_SCREEN_HEIGHT;
+        int screenWidth = INTERNAL_SCREEN_WIDTH;
+        int screenHeight = INTERNAL_SCREEN_HEIGHT;
 
-        int dx = shipXInternal / FACTOR - INTERNAL_SCREEN_WIDTH / 2 - mapXScreen;
-        int dy = shipYInternal / FACTOR - (int) (INTERNAL_SCREEN_HEIGHT / 2.4) - mapYScreen;
+        int deltaX = shipXInternal / FACTOR - INTERNAL_SCREEN_WIDTH / 2 - mapXScreen;
+        int deltaY = shipYInternal / FACTOR - (int) (INTERNAL_SCREEN_HEIGHT / 2.4) - mapYScreen;
 
-        if (dx > 8)
-            dx = 8;
-        else if (dx < -9)
-            dx = -8;
+        if (deltaX > 8)
+            deltaX = 8;
+        else if (deltaX < -9)
+            deltaX = -8;
 
-        if (dy > 8)
-            dy = 8;
-        else if (dy < -9)
-            dy = -8;
+        if (deltaY > 8)
+            deltaY = 8;
+        else if (deltaY < -9)
+            deltaY = -8;
 
-        mapXScreen += dx;
-        mapYScreen += dy;
+        mapXScreen += deltaX;
+        mapYScreen += deltaY;
 
-        if (mapXScreen > map.getCols() * 16 - sx)
-            mapXScreen = map.getCols() * 16 - sx;
+        if (mapXScreen > map.getCols() * 16 - screenWidth)
+            mapXScreen = map.getCols() * 16 - screenWidth;
         else if (mapXScreen < 0)
             mapXScreen = 0;
 
-        if (mapYScreen > map.getRows() * 16 - sy)
-            mapYScreen = map.getRows() * 16 - sy;
+        if (mapYScreen > map.getRows() * 16 - screenHeight)
+            mapYScreen = map.getRows() * 16 - screenHeight;
         else if (mapYScreen < 0)
             mapYScreen = 0;
     }
@@ -650,13 +690,13 @@ public class WorldController {
 
             if (batch != null) {
                 if (shipAnim == 0)
-                    sprite.setRegion(shipRegion);
+                    shipSprite.setRegion(shipRegion);
                 else
-                    sprite.setRegion(shipThrottleAnimation.getKeyFrames()[shipAnim - 1]);
+                    shipSprite.setRegion(Assets.assets.graphicAssets.shipThrustTiles.get(shipAnim - 1));
 
-                sprite.setRotation(360 - shipAngle);
-                sprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
-                sprite.draw(batch);
+                shipSprite.setRotation(360 - shipAngle);
+                shipSprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
+                shipSprite.draw(batch);
             }
 
             if (renderer != null) {
@@ -669,16 +709,16 @@ public class WorldController {
             int frame = shipAnim / 8;
 
             if (frame < 6) {
-                sprite.setRegion(Assets.assets.graphicAssets.shipExplosionAnimation.getKeyFrames()[frame]);
+                shipSprite.setRegion(Assets.assets.graphicAssets.shipExplosionTiles.get(frame));
 
                 int shipXScreen = shipXInternal / FACTOR - mapXScreen;
                 int shipYScreen = shipYInternal / FACTOR - mapYScreen;
 
-                sprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
-                sprite.setRotation(0);
+                shipSprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
+                shipSprite.setRotation(0);
 
                 if (batch != null) {
-                    sprite.draw(batch);
+                    shipSprite.draw(batch);
                 }
             }
         }

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import org.stransball.Assets;
 import org.stransball.Constants;
-import org.stransball.ICollisionChecker;
+import org.stransball.ICollisionDetector;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -18,7 +18,7 @@ public class Enemy {
         BULLET, CANON, FAST_CANON, DIRECTIONAL_CANON, TANK, DESTOYED_TANK, EXPLOSION, DIRECTIONAL_CANON_2,
     }
 
-    public EnemyType type;  //TODO: make it final
+    public EnemyType type; //TODO: make it final
     public int state;
     public int life;
     public int x;
@@ -35,7 +35,7 @@ public class Enemy {
     public Enemy(EnemyType type) {
         this.type = type;
     }
-    
+
     public boolean collision(int strength) {
         life -= strength;
         if (life <= 0)
@@ -226,9 +226,9 @@ public class Enemy {
         return true;
     }
 
-    public void drawBullet(SpriteBatch batch, int map_x, int map_y, ICollisionChecker detector) {
+    public void drawBullet(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
-        int tile0 = getBulletTile();
+        int tile0 = getBulletTileIndex();
         if (batch != null) {
             batch.draw(tiles.get(tile0), (x / FACTOR) - map_x - 8,
                     Constants.INTERNAL_SCREEN_HEIGHT - ((y / FACTOR) - map_y /*???- 8*/) - 8);
@@ -238,7 +238,7 @@ public class Enemy {
         }
     }
 
-    public int getBulletTile() {
+    public int getBulletTileIndex() {
         if (state >= 0) {
             return tile;
         } else {
@@ -246,27 +246,27 @@ public class Enemy {
         }
     }
 
-    public void drawDirectionalCanon(SpriteBatch batch, int i, int x2, int y2, ICollisionChecker collisionDetector) {
+    public void drawDirectionalCanon(SpriteBatch batch, int i, int x2, int y2, ICollisionDetector detector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void drawTank(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
+    public void drawTank(SpriteBatch batch, int x2, int y2, ICollisionDetector detector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void drawDestroyedTank(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
+    public void drawDestroyedTank(SpriteBatch batch, int x2, int y2, ICollisionDetector detector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void drawExplosion(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
+    public void drawExplosion(SpriteBatch batch, int x2, int y2, ICollisionDetector detector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void drawDirectionalCanon2(SpriteBatch batch, int i, int x2, int y2, ICollisionChecker collisionDetector) {
+    public void drawDirectionalCanon2(SpriteBatch batch, int i, int x2, int y2, ICollisionDetector detector) {
         // TODO Auto-generated method stub
 
     }
