@@ -1,8 +1,10 @@
-package org.stransball;
+package org.stransball.objects;
 
 import static com.badlogic.gdx.math.MathUtils.random;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
+
+import org.stransball.Assets;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,6 +33,9 @@ public class StarsLayer {
     }
 
     public void render(SpriteBatch batch, int map_x, int map_y) {
+        if (batch == null)
+            return;
+        
         int sx = INTERNAL_SCREEN_WIDTH;
         int sy = INTERNAL_SCREEN_HEIGHT;
 

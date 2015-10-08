@@ -71,7 +71,6 @@ public class WorldController {
     private int ball_speed_y;
     @SuppressWarnings("unused")
     private int fade_state;
-    private StarsLayer stars;
 
     public WorldController(GameMap map) {
         this.map = map;
@@ -116,8 +115,6 @@ public class WorldController {
         atractor_p_y = new int[MAX_ATRACTOR_P];
         atractor_p_speed = new float[MAX_ATRACTOR_P];
         atractor_p_color = new long[MAX_ATRACTOR_P];
-
-        stars = new StarsLayer(map.get_sx());
     }
 
     public void update(ShapeRenderer renderer) {
@@ -510,8 +507,6 @@ public class WorldController {
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {
         if (batch != null) {
-            stars.render(batch, map_x, map_y);
-
             renderMap(batch, renderer);
             renderBall(batch);
             renderAttractor(batch);
@@ -650,8 +645,8 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawMap(batch, renderer, map_x, map_y, sx, sy, null);
-        map.drawEnemies(batch, renderer, map_x, map_y, sx, sy, null, null);
+        map.drawMap(batch, map_x, map_y, sx, sy, null);
+        map.drawEnemies(batch, map_x, map_y, sx, sy, null, null);
     }
 
     private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {

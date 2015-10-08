@@ -10,7 +10,6 @@ import org.stransball.ICollisionChecker;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 
 public class Enemy {
@@ -19,7 +18,7 @@ public class Enemy {
         BULLET, CANON, FAST_CANON, DIRECTIONAL_CANON, TANK, DESTOYED_TANK, EXPLOSION, DIRECTIONAL_CANON_2,
     }
 
-    public EnemyType type;
+    public EnemyType type;  //TODO: make it final
     public int state;
     public int life;
     public int x;
@@ -33,6 +32,10 @@ public class Enemy {
     public int speed_y;
     public int tile;
 
+    public Enemy(EnemyType type) {
+        this.type = type;
+    }
+    
     public boolean collision(int strength) {
         life -= strength;
         if (life <= 0)
@@ -47,8 +50,7 @@ public class Enemy {
             case 0:
                 if (ship_x >= (x - 8) && ship_x <= (x + 24) && ship_y < y && ship_y > y - 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 12;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 0) * FACTOR;
@@ -65,8 +67,7 @@ public class Enemy {
             case 1:
                 if (ship_x >= (x - 8) && ship_x <= (x + 24) && ship_y > y && ship_y < y + 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 12;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 16) * FACTOR;
@@ -83,8 +84,7 @@ public class Enemy {
             case 2:
                 if (ship_y >= (y - 8) && ship_y <= (y + 24) && ship_x > x && ship_x < x + 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 12;
                     e.x = (x + 16) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -101,8 +101,7 @@ public class Enemy {
             case 3:
                 if (ship_y >= (y - 8) && ship_y <= (y + 24) && ship_x < x && ship_x > x - 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 12;
                     e.x = (x + 0) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -132,8 +131,7 @@ public class Enemy {
             case 0:
                 if (ship_x >= (x - 8) && ship_x <= (x + 24) && ship_y < y && ship_y > y - 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 0) * FACTOR;
@@ -150,8 +148,7 @@ public class Enemy {
             case 1:
                 if (ship_x >= (x - 8) && ship_x <= (x + 24) && ship_y > y && ship_y < y + 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 16) * FACTOR;
@@ -168,8 +165,7 @@ public class Enemy {
             case 2:
                 if (ship_y >= (y - 8) && ship_y <= (y + 24) && ship_x > x && ship_x < x + 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 8;
                     e.x = (x + 16) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -186,8 +182,7 @@ public class Enemy {
             case 3:
                 if (ship_y >= (y - 8) && ship_y <= (y + 24) && ship_x < x && ship_x > x - 160) {
                     Enemy e;
-                    e = new Enemy();
-                    e.type = EnemyType.BULLET;
+                    e = new EnemyBullet();
                     e.state = 8;
                     e.x = (x + 0) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -211,7 +206,7 @@ public class Enemy {
         return true;
     }
 
-    public boolean cycle_bullet(int sx, int sy, boolean collision) {
+    public boolean cycleBullet(int sx, int sy, boolean collision) {
         if (state != 0)
             state--;
 
@@ -231,8 +226,7 @@ public class Enemy {
         return true;
     }
 
-    public void draw_bullet(SpriteBatch batch, ShapeRenderer renderer, int map_x, int map_y,
-            ICollisionChecker detector) {
+    public void drawBullet(SpriteBatch batch, int map_x, int map_y, ICollisionChecker detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
         int tile0 = getBulletTile();
         if (batch != null) {
@@ -252,32 +246,27 @@ public class Enemy {
         }
     }
 
-    public void draw_directionalcanon(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
-            ICollisionChecker collisionDetector) {
+    public void drawDirectionalCanon(SpriteBatch batch, int i, int x2, int y2, ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void draw_tank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            ICollisionChecker collisionDetector) {
+    public void drawTank(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void draw_destroyedtank(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            ICollisionChecker collisionDetector) {
+    public void drawDestroyedTank(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void draw_explosion(SpriteBatch batch, ShapeRenderer renderer, int x2, int y2,
-            ICollisionChecker collisionDetector) {
+    public void drawExplosion(SpriteBatch batch, int x2, int y2, ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }
 
-    public void draw_directionalcanon2(SpriteBatch batch, ShapeRenderer renderer, int i, int x2, int y2,
-            ICollisionChecker collisionDetector) {
+    public void drawDirectionalCanon2(SpriteBatch batch, int i, int x2, int y2, ICollisionChecker collisionDetector) {
         // TODO Auto-generated method stub
 
     }

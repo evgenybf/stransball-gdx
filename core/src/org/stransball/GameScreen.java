@@ -53,7 +53,7 @@ public class GameScreen extends ScreenAdapter {
 
     private GameMap loadMap() {
         GameMap map = new GameMap();
-        FileHandle fileHandle = Gdx.files.internal("maps/map6.map");
+        FileHandle fileHandle = Gdx.files.internal(Constants.MAP_NAME);
         BufferedReader reader = new BufferedReader(new InputStreamReader(fileHandle.read()), 64);
         map.load(reader);
         return map;
