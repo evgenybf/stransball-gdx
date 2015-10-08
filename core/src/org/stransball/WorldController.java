@@ -29,13 +29,17 @@ import com.badlogic.gdx.math.Polygon;
 
 public class WorldController {
 
+    public enum ShipState {
+        NORMAL, EXPLODED
+    }
+
     @SuppressWarnings("unused")
-    private int fuel_used;
+    private int fuelUsed;
     private int fuel;
     @SuppressWarnings("unused")
-    private int n_shots;
+    private int shotsCount;
     @SuppressWarnings("unused")
-    private int n_hits;
+    private int hitsCount;
     @SuppressWarnings("unused")
     private int enemiesDestroyed;
 
@@ -46,7 +50,7 @@ public class WorldController {
     private int shipSpeedX;
     private int shipSpeedY;
     private int shipAngle;
-    private int shipState;
+    private ShipState shipState;
     private int mapXScreen;
     private int mapYScreen;
     private int shipAnim;
@@ -82,7 +86,7 @@ public class WorldController {
         shipSpeedX = 0;
         shipSpeedY = 0;
 
-        shipState = 0;
+        shipState = ShipState.NORMAL;
         shipAnim = 0;
 
         fuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: have to depend on the map settings
@@ -116,7 +120,7 @@ public class WorldController {
     }
 
     public void update(ShapeRenderer renderer) {
-        if (shipState == 0) {
+        if (shipState == ShipState.NORMAL) {
             if (bLeft) {
                 shipAngle -= 4;
                 if (shipAngle < 0)
@@ -144,7 +148,7 @@ public class WorldController {
                 if (!Constants.DEBUG_GOD_MODE) {
                     fuel--;
                 }
-                fuel_used++;
+                fuelUsed++;
                 shipAnim++;
                 if (shipAnim >= 6)
                     shipAnim = 1;
@@ -201,11 +205,11 @@ public class WorldController {
             if (GameKeysStatus.isFire()) {
                 float radian_angle = (shipAngle - 90) * MathUtils.degreesToRadians;
 
-                n_shots++;
+                shotsCount++;
                 if (!Constants.DEBUG_GOD_MODE) {
                     fuel -= Constants.shotfuel[0];
                 }
-                fuel_used += Constants.shotfuel[0];
+                fuelUsed += Constants.shotfuel[0];
 
                 ShipBullet b = new ShipBullet();
                 {
@@ -220,7 +224,7 @@ public class WorldController {
                 Assets.assets.soundAssets.shipshot.play();
             }
 
-        } else if (shipState == 1) {
+        } else if (shipState == ShipState.EXPLODED) {
             assets.soundAssets.thrust.stop();
             playThrustSound = false;
 
@@ -430,7 +434,7 @@ public class WorldController {
                         b.state++;
                         int retv = map.collideShipBullet((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
                         if (retv != 0)
-                            n_hits++;
+                            hitsCount++;
                         if (retv == 2)
                             enemiesDestroyedCount++;
                     } else {
@@ -449,14 +453,16 @@ public class WorldController {
             bullets.removeAll(deletelist);
         }
 
+        updateMapCameraPosition();
+
         map.update(shipXInternal, shipYInternal, mapXScreen, mapYScreen, renderer);
 
         if (!Constants.DEBUG_GOD_MODE) {
             // Ship collision detection 
-            if (shipState == 0 && checkShipWithMapCollision(null)) {
+            if (shipState == ShipState.NORMAL && checkShipWithMapCollision(null)) {
                 shipSpeedX /= 4;
                 shipSpeedY /= 4;
-                shipState = 1;
+                shipState = ShipState.EXPLODED;
                 shipAnim = 0;
 
                 Assets.assets.soundAssets.explosion.play();
@@ -506,8 +512,12 @@ public class WorldController {
     }
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {
+        int sx = INTERNAL_SCREEN_WIDTH;
+        int sy = INTERNAL_SCREEN_HEIGHT;
+
         if (batch != null) {
-            renderMap(batch, renderer);
+            map.render(batch, mapXScreen, mapYScreen, sx, sy);
+
             renderBall(batch);
             renderAttractor(batch);
             renderShip(batch, renderer);
@@ -602,18 +612,6 @@ public class WorldController {
         }
     }
 
-    private void renderMap(SpriteBatch batch, ShapeRenderer renderer) {
-        if (batch == null)
-            return;
-
-        int sx = INTERNAL_SCREEN_WIDTH;
-        int sy = INTERNAL_SCREEN_HEIGHT;
-
-        updateMapCameraPosition();
-
-        map.render(batch, mapXScreen, mapYScreen, sx, sy);
-    }
-
     private void updateMapCameraPosition() {
         int sx = INTERNAL_SCREEN_WIDTH;
         int sy = INTERNAL_SCREEN_HEIGHT;
@@ -646,7 +644,7 @@ public class WorldController {
     }
 
     private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {
-        if (shipState == 0) {
+        if (shipState == ShipState.NORMAL) {
             int shipXScreen = shipXInternal / FACTOR - mapXScreen;
             int shipYScreen = shipYInternal / FACTOR - mapYScreen;
 
@@ -667,7 +665,7 @@ public class WorldController {
                 shipPolygon.setPosition(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
                 renderer.polygon(shipPolygon.getTransformedVertices());
             }
-        } else if (shipState == 1) {
+        } else if (shipState == ShipState.EXPLODED) {
             int frame = shipAnim / 8;
 
             if (frame < 6) {
