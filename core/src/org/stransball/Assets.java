@@ -7,8 +7,8 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -71,7 +71,6 @@ public class Assets {
         public FontAssets(AssetManager assetManager) {
             defaultFont = assetManager.get("graphics/font3.fnt", BitmapFont.class);
             defaultFont.setColor(Color.WHITE);
-            // defaultFont.getData().setScale(5f);
         }
     }
 

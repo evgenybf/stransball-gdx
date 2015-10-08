@@ -40,14 +40,13 @@ public class WorldController {
     @SuppressWarnings("unused")
     private int enemiesDestroyed;
 
-    private int ship_angle;
-    private int ship_speed_x;
-    private int ship_speed_y;
+    private final GameMap map;
 
     private int ship_x;
     private int ship_y;
-
-    private final GameMap map;
+    private int ship_angle;
+    private int ship_speed_x;
+    private int ship_speed_y;
     private int map_x;
     private int map_y;
     private int ship_state;
@@ -635,13 +634,13 @@ public class WorldController {
         map_x += dx;
         map_y += dy;
 
-        if (map_x > ((map.get_sx() * 16) - sx))
-            map_x = ((map.get_sx() * 16) - sx);
+        if (map_x > (map.get_sx() * 16 - sx))
+            map_x = (map.get_sx() * 16 - sx);
         if (map_x < 0)
             map_x = 0;
 
-        if (map_y > ((map.get_sy() * 16) - sy))
-            map_y = ((map.get_sy() * 16) - sy);
+        if (map_y > (map.get_sy() * 16 - sy))
+            map_y = (map.get_sy() * 16 - sy);
         if (map_y < 0)
             map_y = 0;
 
@@ -680,7 +679,6 @@ public class WorldController {
                 int ship_y_ = ship_y / FACTOR - map_y;
 
                 sprite.setCenter(ship_x_, INTERNAL_SCREEN_HEIGHT - ship_y_);
-
                 sprite.setRotation(0);
 
                 if (batch != null) {

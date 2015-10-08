@@ -68,8 +68,7 @@ public class BackgroundLayer {
                                 if (((j >> 1) & 0x03) == 0) {
                                     if (animflag < 2) {
                                         int t[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
-                                        int step;
-                                        step = (animtimer + animflag * 24) / 4;
+                                        int step = (animtimer + animflag * 24) / 4;
                                         if (step > 11)
                                             step = 11;
                                         batch.draw(tiles.get(t[step]), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);

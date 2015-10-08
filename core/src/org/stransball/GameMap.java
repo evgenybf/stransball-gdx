@@ -39,17 +39,17 @@ public class GameMap {
     private int animtimer;
     private int animflag;
 
+    private BackgroundLayer background;
+    private StarsLayer stars;
+
+    private int switchnumber;
     private List<Enemy> enemies;
     private List<Door> doors;
     private List<Switch> switches;
-    private int switchnumber;
     private List<FuelRecharge> fuel_recharges;
 
     private List<SmokeSource> smokesources;
     private List<Smoke> smokes;
-
-    private BackgroundLayer background;
-    private StarsLayer stars;
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -61,10 +61,11 @@ public class GameMap {
     }
 
     private void load(Scanner scanner) {
+        switchnumber = 1;
+
         enemies = new ArrayList<Enemy>();
         doors = new ArrayList<Door>();
         switches = new ArrayList<Switch>();
-        switchnumber = 1;
         fuel_recharges = new ArrayList<FuelRecharge>();
         smokesources = new ArrayList<SmokeSource>();
         smokes = new ArrayList<Smoke>();
@@ -221,9 +222,6 @@ public class GameMap {
     }
 
     public void update(int ship_x, int ship_y, int map_x, int map_y, ShapeRenderer renderer) {
-        ship_x /= FACTOR;
-        ship_y /= FACTOR;
-
         // Tile animation
         {
             animtimer++;
@@ -237,124 +235,127 @@ public class GameMap {
 
         background.update();
 
-        // Enemies
-        {
-            ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
-            ArrayList<Enemy> newenemies = new ArrayList<Enemy>();
+        updateEnemies(ship_x / FACTOR, ship_y / FACTOR, map_x, map_y, renderer);
 
-            for (Enemy e : enemies) {
-                switch (e.type) {
-                case BULLET:
-                    boolean collision = checkEnemyWithMapCollision(e, map_x, map_y, renderer);
-                    if (!e.cycleBullet(sx * 16, sy * 16, collision)) {
-                        enemiestodelete.add(e);
-                    }
-                    break;
-                case CANON:
-                    if (!e.cycle_canon(ship_x, ship_y, newenemies)) {
-                        enemiestodelete.add(e);
-                    }
-                    break;
-                case FAST_CANON:
-                    if (!e.cycle_fastcanon(ship_x, ship_y, newenemies)) {
-                        enemiestodelete.add(e);
-                    }
-                    break;
-                default:
-                    //TODO: tank, directional canons and so on
-                    break;
-                }
-            }
+        updateDoors();
+        updateSwitches();
 
-            enemies.removeAll(enemiestodelete);
-            enemies.addAll(newenemies);
-        }
+        updateSmoke();
+    }
 
-        // Doors:  
-        {
-            for (Door d : doors) {
-                if (d.action == -1) {
-                    if (d.state > 0)
-                        d.state--;
-                    else
-                        d.action = 0;
-                }
-                if (d.action == 1) {
-                    if (d.state < 14)
-                        d.state++;
-                    else
-                        d.action = 0;
+    private void updateSmoke() {
+        List<Smoke> todelete = new ArrayList<Smoke>();
+        List<SmokeSource> todelete2 = new ArrayList<SmokeSource>();
+
+        for (SmokeSource ss : smokesources) {
+            ss.timer++;
+            if (ss.timer > 256) {
+                todelete2.add(ss);
+            } else {
+                int chance;
+
+                chance = ss.timer;
+                chance = (chance * chance) / 256;
+                chance /= 16;
+
+                if (MathUtils.random(chance + 2 - 1) == 0) {
+                    Smoke s = new Smoke();
+
+                    s.x = ss.x * FACTOR;
+                    s.y = ss.y * FACTOR;
+
+                    s.speed_x = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_x;
+                    s.speed_y = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_y;
+                    s.desired_x = (random(FACTOR / 4 - 1)) - FACTOR / 8;
+                    s.desired_y = ((random(1 + FACTOR / 4 - 1) - (FACTOR / 8))) - FACTOR / 4;
+                    s.timer = 0;
+
+                    smokes.add(s);
                 }
             }
         }
 
-        // Switches:  
-        {
-            for (Switch s : switches) {
-                if (s.state > 0)
-                    s.state--;
+        smokesources.removeAll(todelete2);
+
+        for (Smoke s : smokes) {
+            s.timer++;
+            s.x += s.speed_x;
+            s.y += s.speed_y;
+            if (s.speed_x > s.desired_x)
+                s.speed_x -= 2;
+            if (s.speed_x < s.desired_x)
+                s.speed_x += 2;
+            if (s.speed_y > s.desired_y)
+                s.speed_y -= 1;
+            if (s.speed_y < s.desired_y)
+                s.speed_y += 1;
+            if (s.timer > 255 || s.y < -8 * FACTOR) {
+                todelete.add(s);
             }
         }
 
-        // Smoke
-        {
-            List<Smoke> todelete = new ArrayList<Smoke>();
-            List<SmokeSource> todelete2 = new ArrayList<SmokeSource>();
+        smokes.removeAll(todelete);
+    }
 
-            for (SmokeSource ss : smokesources) {
-                ss.timer++;
-                if (ss.timer > 256) {
-                    todelete2.add(ss);
-                } else {
-                    int chance;
-
-                    chance = ss.timer;
-                    chance = (chance * chance) / 256;
-                    chance /= 16;
-
-                    if (MathUtils.random(chance + 2 - 1) == 0) {
-                        Smoke s = new Smoke();
-
-                        s.x = ss.x * FACTOR;
-                        s.y = ss.y * FACTOR;
-
-                        s.speed_x = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_x;
-                        s.speed_y = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_y;
-                        s.desired_x = (random(FACTOR / 4 - 1)) - FACTOR / 8;
-                        s.desired_y = ((random(1 + FACTOR / 4 - 1) - (FACTOR / 8))) - FACTOR / 4;
-                        s.timer = 0;
-
-                        smokes.add(s);
-                    }
-                }
-            }
-
-            smokesources.removeAll(todelete2);
-
-            for (Smoke s : smokes) {
-                s.timer++;
-                s.x += s.speed_x;
-                s.y += s.speed_y;
-                if (s.speed_x > s.desired_x)
-                    s.speed_x -= 2;
-                if (s.speed_x < s.desired_x)
-                    s.speed_x += 2;
-                if (s.speed_y > s.desired_y)
-                    s.speed_y -= 1;
-                if (s.speed_y < s.desired_y)
-                    s.speed_y += 1;
-                if (s.timer > 255 || s.y < -8 * FACTOR) {
-                    todelete.add(s);
-                }
-            }
-
-            smokes.removeAll(todelete);
+    private void updateSwitches() {
+        for (Switch s : switches) {
+            if (s.state > 0)
+                s.state--;
         }
     }
 
+    private void updateDoors() {
+        for (Door d : doors) {
+            if (d.action == -1) {
+                if (d.state > 0)
+                    d.state--;
+                else
+                    d.action = 0;
+            }
+            if (d.action == 1) {
+                if (d.state < 14)
+                    d.state++;
+                else
+                    d.action = 0;
+            }
+        }
+    }
+
+    private void updateEnemies(int ship_x, int ship_y, int map_x, int map_y, ShapeRenderer renderer) {
+        ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
+        ArrayList<Enemy> newenemies = new ArrayList<Enemy>();
+
+        for (Enemy e : enemies) {
+            switch (e.type) {
+            case BULLET:
+                boolean collision = checkEnemyWithMapCollision(e, map_x, map_y, renderer);
+                if (!e.cycleBullet(sx * 16, sy * 16, collision)) {
+                    enemiestodelete.add(e);
+                }
+                break;
+            case CANON:
+                if (!e.cycle_canon(ship_x, ship_y, newenemies)) {
+                    enemiestodelete.add(e);
+                }
+                break;
+            case FAST_CANON:
+                if (!e.cycle_fastcanon(ship_x, ship_y, newenemies)) {
+                    enemiestodelete.add(e);
+                }
+                break;
+            default:
+                //TODO: tank, directional canons and so on
+                break;
+            }
+        }
+
+        enemies.removeAll(enemiestodelete);
+        enemies.addAll(newenemies);
+    }
+
     private boolean checkEnemyWithMapCollision(Enemy enemy, int map_x, int map_y, ShapeRenderer renderer) {
-        int x = (enemy.x / FACTOR) - 32;
-        int y = (enemy.y / FACTOR) - 32;
+        int x = enemy.x / FACTOR - 32;
+        int y = enemy.y / FACTOR - 32;
         int sx = 64;
         int sy = 64;
 
@@ -373,8 +374,8 @@ public class GameMap {
     }
 
     public void render(SpriteBatch batch, int x, int y, int ww, int wh) {
-        background.render(batch, x, y, ww, wh);
         stars.render(batch, x, y);
+        background.render(batch, x, y, ww, wh);
 
         drawWalls(batch, x, y, ww, wh, null);
 
