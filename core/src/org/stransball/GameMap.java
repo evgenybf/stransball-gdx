@@ -658,28 +658,31 @@ public class GameMap {
         return piece;
     }
 
-    public int shipbullet_collision(int x, int y, int strength) {
-        Enemy selected = null;
-        int mindistance = -1;
-        int tolerance;
+    public int collideShipBullet(int x, int y, int strength) {
         int retval = 0;
 
+        Enemy selected = null;
+        int mindistance = -1;
+
         for (Enemy e : enemies) {
-            int ex, ey, distance;
-            ex = e.x;
-            ey = e.y;
+            int ex = e.x;
+            int ey = e.y;
+
             if (e.type == EnemyType.BULLET) {
                 ex /= FACTOR;
                 ey /= FACTOR;
             }
+
             if (e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON || e.type == EnemyType.DIRECTIONAL_CANON
                     || e.type == EnemyType.DIRECTIONAL_CANON_2) {
                 ex += 8;
                 ey += 8;
             }
-            distance = (x - ex) * (x - ex) + (y - ey) * (y - ey);
 
-            tolerance = 100;
+            int distance = (x - ex) * (x - ex) + (y - ey) * (y - ey);
+
+            int tolerance = 100;
+
             if (e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.DIRECTIONAL_CANON_2
                     || (e.type == EnemyType.TANK && e.tank_type == 3))
                 tolerance = 200;
@@ -813,15 +816,15 @@ public class GameMap {
         return retval;
     }
 
-    public int get_sx() {
+    public int getCols() {
         return sx;
     }
 
-    public int get_sy() {
+    public int getRows() {
         return sy;
     }
 
-    public int get_ball_position_x() {
+    public int getBallPositionX() {
         for (int i = 0; i < sx * sy; i++) {
             if (map[i] == 110)
                 return i % sx;
@@ -829,7 +832,7 @@ public class GameMap {
         return 0;
     }
 
-    public int get_ball_position_y() {
+    public int getBallPositionY() {
         for (int i = 0; i < sx * sy; i++) {
             if (map[i] == 110)
                 return i / sx;
@@ -837,7 +840,7 @@ public class GameMap {
         return 0;
     }
 
-    public void ball_taken() {
+    public void takeBall() {
         for (Door d : doors) {
             // The doors with event==0 are activated when the ball is taken 
             if (d.event == 0)
@@ -845,7 +848,7 @@ public class GameMap {
         }
     }
 
-    public void ball_collision(int x, int y) {
+    public void collideBall(int x, int y) {
         Switch selected = null;
         int mindistance = -1;
 
