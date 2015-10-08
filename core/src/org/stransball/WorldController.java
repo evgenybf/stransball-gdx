@@ -645,8 +645,7 @@ public class WorldController {
         if (map_y < 0)
             map_y = 0;
 
-        map.drawMap(batch, map_x, map_y, sx, sy, null);
-        map.drawEnemies(batch, map_x, map_y, sx, sy, null, null);
+        map.render(batch, map_x, map_y, sx, sy);
     }
 
     private void renderShip(SpriteBatch batch, ShapeRenderer renderer) {

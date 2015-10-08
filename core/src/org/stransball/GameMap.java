@@ -213,10 +213,10 @@ public class GameMap {
 
         int background_type = scanner.nextInt();
         background = new BackgroundLayer(background_type, sx, sy);
-        
+
         animtimer = 0;
         animflag = 0;
-        
+
         stars = new StarsLayer(sx);
     }
 
@@ -236,7 +236,7 @@ public class GameMap {
         }
 
         background.update();
-        
+
         // Enemies
         {
             ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
@@ -372,17 +372,18 @@ public class GameMap {
         return checkCollision(objectX, objectY, x, y, sx, sy, objectPolygon, enemy, renderer);
     }
 
-    public void drawMap(SpriteBatch batch, int x, int y, int ww, int wh, ICollisionChecker checker) {
+    public void render(SpriteBatch batch, int x, int y, int ww, int wh) {
         background.render(batch, x, y, ww, wh);
         stars.render(batch, x, y);
 
-        drawWalls(batch, x, y, ww, wh, checker);
+        drawWalls(batch, x, y, ww, wh, null);
 
         renderSmoke(batch, x, y, ww, wh);
+
+        drawEnemies(batch, x, y, ww, wh, null, null);
     }
 
     private void drawWalls(SpriteBatch batch, int x, int y, int ww, int wh, ICollisionChecker checker) {
-
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
         int step_x = tiles.get(0).originalWidth;
@@ -491,7 +492,7 @@ public class GameMap {
         }
     }
 
-    void drawEnemies(SpriteBatch batch, int x, int y, int ww, int wh, Enemy enemy, ICollisionChecker detector) {
+    private void drawEnemies(SpriteBatch batch, int x, int y, int ww, int wh, Enemy enemy, ICollisionChecker detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
                 switch (e.type) {
@@ -886,7 +887,7 @@ public class GameMap {
             CollisionDetectionUtils.drawPolygons(renderer, objectPolygons);
         }
 
-        drawMap(null, x, y, sx, sy, checker);
+        drawWalls(null, x, y, sx, sy, checker);
 
         if (checker.wasCollision())
             return true;
