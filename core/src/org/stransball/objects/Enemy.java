@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import org.stransball.Assets;
 import org.stransball.ICollisionDetector;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Enemy {
@@ -227,15 +228,17 @@ public class Enemy {
     public void drawBullet(SpriteBatch batch, int mapXScreen, int mapYScreen, ICollisionDetector detector) {
         int tileIndex = getBulletTileIndex();
 
-        int bulletXScreen = x / FACTOR - mapXScreen - 8;
-        int bulletYScreen = y / FACTOR - mapYScreen - 8;
+        int bulletXScreen = x / FACTOR - mapXScreen;
+        int bulletYScreen = y / FACTOR - mapYScreen;
 
         if (batch != null) {
-            batch.draw(Assets.assets.graphicAssets.tiles.get(tileIndex), bulletXScreen,
-                    INTERNAL_SCREEN_HEIGHT - bulletYScreen - 16 /*???*/);
+            Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(tileIndex));
+            sprite.setCenter(bulletXScreen, INTERNAL_SCREEN_HEIGHT - bulletYScreen);
+            sprite.draw(batch);
         }
+
         if (detector != null) {
-            detector.handlePolygon(bulletXScreen, bulletYScreen, tileIndex);
+            detector.handlePolygon(bulletXScreen - 8, bulletYScreen - 8, tileIndex);
         }
     }
 

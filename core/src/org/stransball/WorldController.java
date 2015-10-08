@@ -38,8 +38,8 @@ public class WorldController {
     private int mapXScreen;
     private int mapYScreen;
 
-    private int shipXInternal; // x * FACTOR
-    private int shipYInternal; // y * FACTOR
+    private int shipXInternal; // xInternal = xScreenF * FACTOR
+    private int shipYInternal; // yInternal = yScreenF * FACTOR
     private int shipSpeedX;
     private int shipSpeedY;
     private int shipAngle;
@@ -66,8 +66,8 @@ public class WorldController {
 
     private List<ShipBullet> bullets;
 
-    private int ballXInternal; // x * FACTOR
-    private int ballYInternal; // y * FACTOR
+    private int ballXInternal; // xInternal = xScreenF * FACTOR
+    private int ballYInternal; // yInternal = yScreenF * FACTOR
     private int ballSpeedX;
     private int ballSpeedY;
     private int ballMagnetisationLevel;
@@ -490,8 +490,7 @@ public class WorldController {
                 b.x += b.speedX;
                 b.y += b.speedY;
 
-                if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x,
-                        b.y)) {
+                if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
                     // int ship_strength[]={1,2,4};
                     b.state++;
                     int retv = map.collideShipBullet((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
@@ -500,8 +499,8 @@ public class WorldController {
                     if (retv == 2)
                         shipEnemiesDestroyedCount++;
                 } else {
-                    if (b.x < -8 * FACTOR || b.x > (map.getCols() * 16 * FACTOR) + 8 * FACTOR
-                            || b.y < -8 * FACTOR || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR)
+                    if (b.x < -8 * FACTOR || b.x > (map.getCols() * 16 * FACTOR) + 8 * FACTOR || b.y < -8 * FACTOR
+                            || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR)
                         toDeleteList.add(b);
                 }
             } else {
@@ -519,23 +518,23 @@ public class WorldController {
             int yInternal) {
         int xScreenF = xInternal / FACTOR - 32;
         int yScreenF = yInternal / FACTOR - 32;
-        int sx = 64;
-        int sy = 64;
+        int regionWidth = 64;
+        int regionHeight = 64;
 
         int objectXScreen = xInternal / FACTOR - mapXScreen;
         int objectYScreen = yInternal / FACTOR - mapYScreen;
 
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, sx, sy, objectPolygon, null,
-                renderer);
+        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, regionWidth, regionHeight,
+                objectPolygon, null, renderer);
     }
 
     private boolean checkShipWithMapCollision(ShapeRenderer renderer) {
         int xScreenF = shipXInternal / FACTOR - 32;
         int yScreenF = shipYInternal / FACTOR - 32;
-        int sx = 64;
-        int sy = 64;
+        int regionWidth = 64;
+        int regionHeight = 64;
 
         Polygon objectPolygon = assets.graphicAssets.shipPolygon;
 
@@ -545,8 +544,8 @@ public class WorldController {
         objectPolygon.setRotation(360 - shipAngle);
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, sx, sy, objectPolygon, null,
-                renderer);
+        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, regionWidth, regionHeight,
+                objectPolygon, null, renderer);
     }
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {

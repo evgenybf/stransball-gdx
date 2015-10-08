@@ -24,14 +24,14 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
     }
 
     @Override
-    public void handlePolygon(int act_x, int act_y, int tileIndex) {
+    public void handlePolygon(int actXScreen, int actYScreen, int tileIndex) {
         Polygon poly = Assets.assets.graphicAssets.tilePolygons[tileIndex];
 
         // Some objects like bullets can do not have contours in some states like explosion ans so on
         if (poly == null)
             return;
 
-        poly.setPosition(objectXScreen + act_x - 32, INTERNAL_SCREEN_HEIGHT - (objectYScreen + act_y - 32));
+        poly.setPosition(objectXScreen - 32 + actXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen - 32 + actYScreen));
 
         Polygon[] polygons = CollisionDetectionUtils.tiangulate(poly);
 
