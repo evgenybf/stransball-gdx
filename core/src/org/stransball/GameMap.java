@@ -135,7 +135,7 @@ public class GameMap {
                     e.x = x;
                     e.y = y;
                     e.direction = direction;
-                    e.turret_angle = 0;
+                    e.turretAngle = 0;
                     enemies.add(e);
                 }
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
@@ -146,8 +146,8 @@ public class GameMap {
                     e.x = x;
                     e.y = y;
                     e.direction = direction;
-                    e.tank_angle = 0;
-                    e.turret_angle = 0;
+                    e.tankAngle = 0;
+                    e.turretAngle = 0;
                     enemies.add(e);
                 }
             }
@@ -204,9 +204,9 @@ public class GameMap {
                 e.x = x;
                 e.y = y;
                 e.life = 10;
-                e.tank_type = type;
-                e.tank_angle = 0;
-                e.turret_angle = 90;
+                e.tankType = type;
+                e.tankAngle = 0;
+                e.turretAngle = 90;
                 enemies.add(e);
             }
         }
@@ -329,17 +329,17 @@ public class GameMap {
             switch (e.type) {
             case BULLET:
                 boolean collision = checkEnemyWithMapCollision(e, mapXScreen, mapYScreen, renderer);
-                if (!e.cycleBullet(cols * 16, rows * 16, collision)) {
+                if (!e.updateBullet(cols * 16, rows * 16, collision)) {
                     enemiestodelete.add(e);
                 }
                 break;
             case CANON:
-                if (!e.cycle_canon(shipXScreenF, shipYScreenF, newenemies)) {
+                if (!e.updateCanon(shipXScreenF, shipYScreenF, newenemies)) {
                     enemiestodelete.add(e);
                 }
                 break;
             case FAST_CANON:
-                if (!e.cycle_fastcanon(shipXScreenF, shipYScreenF, newenemies)) {
+                if (!e.updateFastcanon(shipXScreenF, shipYScreenF, newenemies)) {
                     enemiestodelete.add(e);
                 }
                 break;
@@ -392,64 +392,65 @@ public class GameMap {
         int stepY = tiles.get(0).originalHeight;
 
         for (int j = 0, act_y = -mapYScreen; j < rows; j++, act_y += stepY) {
-            if (act_y >= -stepY && act_y < screenHeight) {
-                for (int i = 0, act_x = -mapXScreen; i < cols; i++, act_x += stepX) {
-                    if (act_x >= -stepX && act_x < screenWidth) {
-                        int tileIndex = -1;
+            if (act_y < -stepY || act_y >= screenHeight)
+                continue;
 
-                        if (j >= 0) {
-                            tileIndex = map[i + j * cols];
+            for (int i = 0, act_x = -mapXScreen; i < cols; i++, act_x += stepX) {
+                if (act_x < -stepX && act_x >= screenWidth)
+                    continue;
+
+                int tileIndex = -1;
+
+                if (j >= 0) {
+                    tileIndex = map[i + j * cols];
+                }
+
+                tileIndex = animateTile(tileIndex);
+
+                if (tileIndex >= 0) {
+                    if (tileIndex == 113 || tileIndex == 114) {
+                        // DOOR
+                        int state = 0;
+
+                        for (Door d : doors) {
+                            if ((d.x == i || d.x == i - 1) && d.y == j)
+                                state = d.state;
                         }
 
-                        tileIndex = animateTile(tileIndex);
+                        int offset = (tileIndex == 113) ? -state : state;
 
-                        if (tileIndex >= 0) {
-                            if (tileIndex == 113 || tileIndex == 114) {
-                                // DOOR
-                                int state = 0;
+                        drawWithOffset(act_x, act_y, offset, batch, tileIndex, detector, stepY);
+                    } else {
+                        if ((tileIndex >= 116 && tileIndex < 120) || (tileIndex >= 136 && tileIndex < 140)
+                                || (tileIndex >= 156 && tileIndex < 160)) {
+                            // SWITCH
+                            for (Switch s : switches) {
+                                if (s.x == i && s.y == j) {
+                                    int tileIndex_ = (s.state != 0) ? tileIndex + 140 : tileIndex;
 
-                                for (Door d : doors) {
-                                    if ((d.x == i || d.x == i - 1) && d.y == j)
-                                        state = d.state;
-                                }
-
-                                int offset = (tileIndex == 113) ? -state : state;
-                                drawWithOffset(act_x, act_y, offset, batch, tileIndex, detector, stepY);
-                            } else {
-                                if ((tileIndex >= 116 && tileIndex < 120) || (tileIndex >= 136 && tileIndex < 140)
-                                        || (tileIndex >= 156 && tileIndex < 160)) {
-                                    // SWITCH
-                                    for (Switch s : switches) {
-                                        if (s.x == i && s.y == j) {
-                                            int tileIndex_;
-                                            if (s.state != 0) {
-                                                tileIndex_ = tileIndex + 140;
-                                            } else {
-                                                tileIndex_ = tileIndex;
-                                            }
-                                            if (batch != null) {
-                                                batch.draw(tiles.get(tileIndex_), act_x,
-                                                        INTERNAL_SCREEN_HEIGHT - act_y - stepY);
-                                            }
-                                            if (detector != null) {
-                                                detector.checkCollision(act_x, act_y, tileIndex_);
-                                            }
-                                        }
-                                    }
-                                } else {
                                     if (batch != null) {
-                                        batch.draw(tiles.get(tileIndex), act_x, INTERNAL_SCREEN_HEIGHT - act_y - stepY);
+                                        batch.draw(tiles.get(tileIndex_), act_x,
+                                                INTERNAL_SCREEN_HEIGHT - act_y - stepY);
                                     }
 
                                     if (detector != null) {
-                                        detector.checkCollision(act_x, act_y, tileIndex);
+                                        detector.handlePolygon(act_x, act_y, tileIndex_);
                                     }
                                 }
+                            }
+                        } else {
+                            if (batch != null) {
+                                batch.draw(tiles.get(tileIndex), act_x, INTERNAL_SCREEN_HEIGHT - act_y - stepY);
+                            }
+
+                            if (detector != null) {
+                                detector.handlePolygon(act_x, act_y, tileIndex);
                             }
                         }
                     }
                 }
             }
+
         }
     }
 
@@ -468,7 +469,7 @@ public class GameMap {
                 sprite.draw(batch);
             }
             if (detector != null) {
-                detector.checkCollision(act_x + offset, act_y, piece);
+                detector.handlePolygon(act_x + offset, act_y, piece);
             }
         } else if (offset == 0) {
             if (batch != null) {
@@ -476,7 +477,7 @@ public class GameMap {
             }
 
             if (detector != null) {
-                detector.checkCollision(act_x, act_y, piece);
+                detector.handlePolygon(act_x, act_y, piece);
             }
         } else if (offset < 0) {
             Sprite sprite = new Sprite(tile);
@@ -489,7 +490,7 @@ public class GameMap {
             }
 
             if (detector != null) {
-                detector.checkCollision(act_x + offset, act_y, piece);
+                detector.handlePolygon(act_x + offset, act_y, piece);
             }
         }
     }
@@ -696,7 +697,7 @@ public class GameMap {
             int tolerance = 100;
 
             if (e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.DIRECTIONAL_CANON_2
-                    || (e.type == EnemyType.TANK && e.tank_type == 3))
+                    || (e.type == EnemyType.TANK && e.tankType == 3))
                 tolerance = 200;
 
             if (((mindistance == -1 && distance < tolerance) || distance < mindistance)
@@ -888,14 +889,14 @@ public class GameMap {
         return false;
     }
 
-    public boolean checkCollision(int objectX, int objectY, int x, int y, int sx, int sy, Polygon objectPolygon,
-            Enemy enemy, ShapeRenderer renderer) {
+    public boolean checkCollision(int objectXScreen, int objectYScreen, int x, int y, int sx, int sy,
+            Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
         if (objectPolygon == null)
             return false;
 
         Polygon[] objectPolygons = CollisionDetectionUtils.tiangulate(objectPolygon);
 
-        ICollisionDetector detector = new CollisionDetector(renderer, objectX, objectY, objectPolygons);
+        ICollisionDetector detector = new CollisionDetector(renderer, objectXScreen, objectYScreen, objectPolygons);
 
         if (renderer != null) {
             CollisionDetectionUtils.drawPolygons(renderer, objectPolygons);
