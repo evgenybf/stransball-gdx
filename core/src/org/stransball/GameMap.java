@@ -39,7 +39,7 @@ public class GameMap {
 
     private static final int EMPTY_ROWS = 8;
 
-    private int[] map;
+    public int[] map;
     private int cols;
     private int rows;
     private int animTimer;
@@ -112,7 +112,7 @@ public class GameMap {
                 if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 216 && map[i] < 220)
                         || (map[i] >= 236 && map[i] < 240)) {
                     // CANON:
-                    Enemy e = new EnemyCanon();
+                    Enemy e = new EnemyCanon(this);
                     e.state = 0;
                     e.life = 4;
                     e.x = x;
@@ -123,7 +123,7 @@ public class GameMap {
 
                 if (map[i] >= 196 && map[i] < 200) {
                     // FAST CANON:
-                    Enemy e = new EnemyFastCanon();
+                    Enemy e = new EnemyFastCanon(this);
                     e.state = 0;
                     e.life = 8;
                     e.x = x;
@@ -134,7 +134,7 @@ public class GameMap {
 
                 if (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175) {
                     // DIRECTIONAL CANON:
-                    Enemy e = new EnemyDirectionalCanon();
+                    Enemy e = new EnemyDirectionalCanon(this);
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -145,7 +145,7 @@ public class GameMap {
                 }
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
                     // DIRECTIONAL CANON 2:
-                    Enemy e = new EnemyDirectionalCanon2();
+                    Enemy e = new EnemyDirectionalCanon2(this);
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -195,7 +195,7 @@ public class GameMap {
 
             ntanks = scanner.nextInt();
             for (int i = 0; i < ntanks; i++) {
-                Enemy e = new EnemyTank();
+                Enemy e = new EnemyTank(this);
 
                 int col = scanner.nextInt();
                 int row = scanner.nextInt();
@@ -340,31 +340,11 @@ public class GameMap {
 
     private void updateEnemies(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen,
             ShapeRenderer renderer) {
-        ArrayList<Enemy> enemiesToDelete = new ArrayList<Enemy>();
-        ArrayList<Enemy> newEnemies = new ArrayList<Enemy>();
+        List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
+        List<Enemy> newEnemies = new ArrayList<Enemy>();
 
         for (Enemy e : enemies) {
-            switch (e.type) {
-            case BULLET:
-                boolean collision = checkEnemyWithMapCollision((EnemyBullet) e, mapXScreen, mapYScreen, renderer);
-                if (!((EnemyBullet) e).updateBullet(cols * 16, rows * 16, collision)) {
-                    enemiesToDelete.add(e);
-                }
-                break;
-            case CANON:
-                if (!e.updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
-                    enemiesToDelete.add(e);
-                }
-                break;
-            case FAST_CANON:
-                if (!e.updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
-                    enemiesToDelete.add(e);
-                }
-                break;
-            default:
-                //TODO: tank, directional canons and so on
-                break;
-            }
+            e.update(shipXScreenF, shipYScreenF, mapXScreen, mapYScreen, enemiesToDelete, newEnemies, renderer);
         }
 
         enemies.removeAll(enemiesToDelete);
@@ -431,7 +411,7 @@ public class GameMap {
 
                                 if (batch != null) {
                                     batch.draw(tiles.get(tileIndex_), actXScreen,
-                                            INTERNAL_SCREEN_HEIGHT - actYScreen - stepY);
+                                            INTERNAL_SCREEN_HEIGHT - (actYScreen + stepY));
                                 }
 
                                 if (detector != null) {
@@ -441,7 +421,7 @@ public class GameMap {
                         }
                     } else {
                         if (batch != null) {
-                            batch.draw(tiles.get(tileIndex), actXScreen, INTERNAL_SCREEN_HEIGHT - actYScreen - stepY);
+                            batch.draw(tiles.get(tileIndex), actXScreen, INTERNAL_SCREEN_HEIGHT - (actYScreen + stepY));
                         }
 
                         if (detector != null) {
@@ -455,32 +435,20 @@ public class GameMap {
 
     private void drawWithOffset(int actXScreen, int actYScreen, int offset, SpriteBatch batch, int tileIndex,
             ICollisionDetector detector, int stepY) {
-        AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
+        if (batch != null) {
+            AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
 
-        if (offset > 0 && offset < tile.getRegionWidth()) {
-            if (batch != null) {
-                Sprite sprite = new Sprite(tile);
+            Sprite sprite = new Sprite(tile);
 
-                sprite.setPosition(actXScreen + offset, INTERNAL_SCREEN_HEIGHT - actYScreen - stepY);
+            sprite.setPosition(actXScreen + offset, INTERNAL_SCREEN_HEIGHT - (actYScreen + stepY));
+
+            if (offset > 0 && offset < tile.getRegionWidth()) {
                 sprite.setRegionWidth(sprite.getRegionWidth() - offset);
-
-                sprite.draw(batch);
-            }
-
-        } else if (offset == 0) {
-            if (batch != null) {
-                batch.draw(tile, actXScreen, INTERNAL_SCREEN_HEIGHT - actYScreen - stepY);
-            }
-
-        } else if (offset < 0) {
-            if (batch != null) {
-                Sprite sprite = new Sprite(tile);
-
-                sprite.setPosition(actXScreen + offset, INTERNAL_SCREEN_HEIGHT - actYScreen - stepY);
+            } else if (offset < 0) {
                 sprite.setRegionWidth(sprite.getRegionWidth() + offset);
-
-                sprite.draw(batch);
             }
+
+            sprite.draw(batch);
         }
 
         if (detector != null) {
@@ -492,45 +460,9 @@ public class GameMap {
             Enemy enemy, ICollisionDetector detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
-                switch (e.type) {
-                case BULLET:
-                    if (e.x > (-16 + mapXScreen) * FACTOR && e.x < (screenWidth + mapXScreen) * FACTOR
-                            && e.y > (-16 + mapYScreen) * FACTOR && e.y < (screenHeight + mapYScreen) * FACTOR)
-                        ((EnemyBullet) e).drawBullet(batch, mapXScreen, mapYScreen, detector);
-                    break;
-                case DIRECTIONAL_CANON:
-                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
-                            && e.y < (screenHeight + mapYScreen))
-                        e.drawDirectionalCanon(batch, map[(e.x) / 16 + (e.y / 16) * cols], mapXScreen, mapYScreen,
-                                detector);
-                    break;
-                case TANK:
-                    if (e.x > (-32 + mapXScreen) && e.x < (screenWidth + mapXScreen + 32) && e.y > (-32 + mapYScreen)
-                            && e.y < (screenHeight + mapYScreen + 32))
-                        e.drawTank(batch, mapXScreen, mapYScreen, detector);
-                    break;
-                case DESTROYED_TANK:
-                    if (e.x > (-32 + mapXScreen) && e.x < (screenWidth + mapXScreen + 32) && e.y > (-32 + mapYScreen)
-                            && e.y < (screenHeight + mapYScreen + 32))
-                        e.drawDestroyedTank(batch, mapXScreen, mapYScreen, detector);
-                    break;
-                case EXPLOSION:
-                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
-                            && e.y < (screenHeight + mapYScreen))
-                        e.drawExplosion(batch, mapXScreen, mapYScreen, detector);
-                    break;
-                case DIRECTIONAL_CANON_2:
-                    if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
-                            && e.y < (screenHeight + mapYScreen))
-                        e.drawDirectionalCanon2(batch, map[(e.x) / 16 + (e.y / 16) * cols], mapXScreen, mapYScreen,
-                                detector);
-                    break;
-                default:
-                    break;
-                }
+                e.draw(batch, mapXScreen, mapYScreen, screenWidth, screenHeight, detector);
             }
         }
-
     }
 
     private void renderSmoke(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight) {
@@ -710,7 +642,7 @@ public class GameMap {
             retval = 1;
         }
 
-        if (selected != null && selected.collision(strength)) {
+        if (selected != null && selected.takeShot(strength)) {
             int generate_smoke = -1;
 
             if (selected.type != EnemyType.BULLET)
@@ -830,7 +762,7 @@ public class GameMap {
 
         enemies.removeAll(enemiesToDelete);
         enemies.addAll(newEnemies);
-        
+
         return retval;
     }
 
@@ -905,7 +837,8 @@ public class GameMap {
         return false;
     }
 
-    private boolean checkEnemyWithMapCollision(EnemyBullet enemy, int mapXScreen, int mapYScreen,
+    //FIXME: make it private
+    public boolean checkEnemyWithMapCollision(EnemyBullet enemy, int mapXScreen, int mapYScreen,
             ShapeRenderer renderer) {
         int tileIndex = enemy.getBulletTileIndex();
 

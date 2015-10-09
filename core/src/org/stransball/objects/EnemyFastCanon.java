@@ -2,24 +2,36 @@ package org.stransball.objects;
 
 import static org.stransball.Constants.FACTOR;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.stransball.Assets;
+import org.stransball.GameMap;
+import org.stransball.ICollisionDetector;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class EnemyFastCanon extends Enemy {
 
-    public EnemyFastCanon() {
-        super(EnemyType.FAST_CANON);
+    public EnemyFastCanon(GameMap map) {
+        super(EnemyType.FAST_CANON, map);
     }
 
     @Override
-    public boolean updateSimpleCanon(int shipXScreenF, int shipYScreenF, ArrayList<Enemy> enemies) {
+    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
+            List<Enemy> newEnemies, ShapeRenderer renderer) {
+        if (!updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
+            enemiesToDelete.add(this);
+        }
+    }
+
+    public boolean updateSimpleCanon(int shipXScreenF, int shipYScreenF, List<Enemy> enemies) {
         if (state == 0) {
             switch (direction) {
             case 0:
                 if (shipXScreenF >= (x - 8) && shipXScreenF <= (x + 24) && shipYScreenF < y && shipYScreenF > y - 160) {
                     Enemy e;
-                    e = new EnemyBullet();
+                    e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 0) * FACTOR;
@@ -36,7 +48,7 @@ public class EnemyFastCanon extends Enemy {
             case 1:
                 if (shipXScreenF >= (x - 8) && shipXScreenF <= (x + 24) && shipYScreenF > y && shipYScreenF < y + 160) {
                     Enemy e;
-                    e = new EnemyBullet();
+                    e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 16) * FACTOR;
@@ -53,7 +65,7 @@ public class EnemyFastCanon extends Enemy {
             case 2:
                 if (shipYScreenF >= (y - 8) && shipYScreenF <= (y + 24) && shipXScreenF > x && shipXScreenF < x + 160) {
                     Enemy e;
-                    e = new EnemyBullet();
+                    e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 16) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -70,7 +82,7 @@ public class EnemyFastCanon extends Enemy {
             case 3:
                 if (shipYScreenF >= (y - 8) && shipYScreenF <= (y + 24) && shipXScreenF < x && shipXScreenF > x - 160) {
                     Enemy e;
-                    e = new EnemyBullet();
+                    e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 0) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -93,5 +105,12 @@ public class EnemyFastCanon extends Enemy {
         }
 
         return true;
+    }
+
+    @Override
+    public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
+            ICollisionDetector detector) {
+        // TODO Auto-generated method stub
+
     }
 }
