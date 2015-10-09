@@ -516,36 +516,33 @@ public class WorldController {
 
     private boolean checkPolygonWithMapCollision(final ShapeRenderer renderer, Polygon objectPolygon, int xInternal,
             int yInternal) {
-        int xScreenF = xInternal / FACTOR - 32;
-        int yScreenF = yInternal / FACTOR - 32;
-        int regionWidth = 64;
-        int regionHeight = 64;
+        int objectXScreenF = xInternal / FACTOR;
+        int objectYScreenF = yInternal / FACTOR;
 
-        int objectXScreen = xInternal / FACTOR - mapXScreen;
-        int objectYScreen = yInternal / FACTOR - mapYScreen;
+        int objectXScreen = objectXScreenF - mapXScreen;
+        int objectYScreen = objectYScreenF - mapYScreen;
 
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, regionWidth, regionHeight,
-                objectPolygon, null, renderer);
+        return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
+                renderer);
     }
 
     private boolean checkShipWithMapCollision(ShapeRenderer renderer) {
-        int xScreenF = shipXInternal / FACTOR - 32;
-        int yScreenF = shipYInternal / FACTOR - 32;
-        int regionWidth = 64;
-        int regionHeight = 64;
-
         Polygon objectPolygon = assets.graphicAssets.shipPolygon;
 
-        int objectXScreen = shipXInternal / FACTOR - mapXScreen;
-        int objectYScreen = shipYInternal / FACTOR - mapYScreen;
-
         objectPolygon.setRotation(360 - shipAngle);
+
+        int objectXScreenF = shipXInternal / FACTOR;
+        int objectYScreenF = shipYInternal / FACTOR;
+
+        int objectXScreen = objectXScreenF - mapXScreen;
+        int objectYScreen = objectYScreenF - mapYScreen;
+
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
 
-        return map.checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, regionWidth, regionHeight,
-                objectPolygon, null, renderer);
+        return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
+                renderer);
     }
 
     public void render(SpriteBatch batch, ShapeRenderer renderer) {

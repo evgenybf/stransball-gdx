@@ -224,10 +224,14 @@ public class GameMap {
         // Tile animation
         {
             animTimer++;
+            
             if (animTimer > 24) {
                 animFlag++;
-                if (animFlag < 0 || animFlag > 7)
+
+                if (animFlag < 0 || animFlag > 7) {
                     animFlag = 0;
+                }
+
                 animTimer = 0;
             }
         }
@@ -248,12 +252,11 @@ public class GameMap {
 
             for (SmokeSource ss : smokeSources) {
                 ss.timer++;
+
                 if (ss.timer > 256) {
                     toDelete.add(ss);
                 } else {
-                    int chance;
-
-                    chance = ss.timer;
+                    int chance = ss.timer;
                     chance = (chance * chance) / 256;
                     chance /= 16;
 
@@ -282,16 +285,20 @@ public class GameMap {
 
             for (Smoke s : smokes) {
                 s.timer++;
+
                 s.x += s.speedX;
                 s.y += s.speedY;
+
                 if (s.speedX > s.desiredX)
                     s.speedX -= 2;
-                if (s.speedX < s.desiredX)
+                else if (s.speedX < s.desiredX)
                     s.speedX += 2;
+
                 if (s.speedY > s.desiredY)
                     s.speedY -= 1;
-                if (s.speedY < s.desiredY)
+                else if (s.speedY < s.desiredY)
                     s.speedY += 1;
+
                 if (s.timer > 255 || s.y < -8 * FACTOR) {
                     toDelete.add(s);
                 }
@@ -303,8 +310,9 @@ public class GameMap {
 
     private void updateSwitches() {
         for (Switch s : switches) {
-            if (s.state > 0)
+            if (s.state > 0) {
                 s.state--;
+            }
         }
     }
 
@@ -356,28 +364,6 @@ public class GameMap {
 
         enemies.removeAll(enemiestodelete);
         enemies.addAll(newenemies);
-    }
-
-    private boolean checkEnemyWithMapCollision(Enemy enemy, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
-        int xScreenF = enemy.x / FACTOR - 32;
-        int yScreenF = enemy.y / FACTOR - 32;
-        int regionWidht = 64;
-        int regionHeight = 64;
-
-        int objectXScreen = enemy.x / FACTOR - mapXScreen;
-        int objectYScreen = enemy.y / FACTOR - mapYScreen;
-
-        int tileIndex = enemy.getBulletTileIndex();
-
-        Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[tileIndex];
-        if (objectPolygon == null) {
-            return false;
-        }
-
-        objectPolygon.setPosition(objectXScreen - 8, INTERNAL_SCREEN_HEIGHT - (objectYScreen - 8));
-
-        return checkCollision(objectXScreen, objectYScreen, xScreenF, yScreenF, regionWidht, regionHeight,
-                objectPolygon, enemy, renderer);
     }
 
     public void render(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight) {
@@ -892,25 +878,56 @@ public class GameMap {
         return false;
     }
 
-    public boolean checkCollision(int objectXScreen, int objectYScreen, int objectXScreenF, int objectYScreenF,
-            int regionWidth, int regionHeight, Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
+    private boolean checkEnemyWithMapCollision(Enemy enemy, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+        int tileIndex = enemy.getBulletTileIndex();
+
+        Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[tileIndex];
+        if (objectPolygon == null) {
+            return false;
+        }
+
+        int objectXScreenF = enemy.x / FACTOR;
+        int objectYScreenF = enemy.y / FACTOR;
+
+        int objectXScreen = enemy.x / FACTOR - mapXScreen - 8; //TODO: can we avoid using -8 here?
+        int objectYScreen = enemy.y / FACTOR - mapYScreen - 8;
+
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
+
+        return checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, enemy, renderer);
+    }
+
+    public boolean checkCollision(int objectXScreenF, int objectYScreenF, int mapXScreen, int mapYScreen,
+            Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
+        int regionWidth = 32;
+        int regionHeight = 32;
+        int regionXScreenF = objectXScreenF - regionWidth / 2;
+        int regionYScreenF = objectYScreenF - regionHeight / 2;
+
+        return checkCollision(regionXScreenF, regionYScreenF, regionWidth, regionHeight, mapXScreen, mapYScreen,
+                objectPolygon, enemy, renderer);
+    }
+
+    private boolean checkCollision(int regionXScreenF, int regionYScreenF, int regionWidth, int regionHeight,
+            int mapXScreen, int mapYScreen, Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
         if (objectPolygon == null)
             return false;
 
         Polygon[] objectPolygons = CollisionDetectionUtils.tiangulate(objectPolygon);
 
-        ICollisionDetector detector = new CollisionDetector(renderer, objectXScreen, objectYScreen, objectPolygons);
+        ICollisionDetector detector = new CollisionDetector(renderer, objectPolygons, regionXScreenF, regionYScreenF,
+                mapXScreen, mapYScreen);
 
         if (renderer != null) {
             CollisionDetectionUtils.drawPolygons(renderer, objectPolygons);
         }
 
-        drawWalls(null, objectXScreenF, objectYScreenF, regionWidth, regionHeight, detector);
+        drawWalls(null, regionXScreenF, regionYScreenF, regionWidth, regionHeight, detector);
 
         if (detector.wasCollision())
             return true;
 
-        drawEnemies(null, objectXScreenF, objectYScreenF, regionWidth, regionHeight, enemy, detector);
+        drawEnemies(null, regionXScreenF, regionYScreenF, regionWidth, regionHeight, enemy, detector);
 
         return detector.wasCollision();
     }

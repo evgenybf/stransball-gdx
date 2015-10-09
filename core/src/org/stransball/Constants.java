@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input;
 public class Constants {
 
     public static final boolean DEBUG_GOD_MODE = true;
-    public static final boolean DEBUG_SHOW_COLLISION_DETECTION = true;
+    public static final boolean DEBUG_SHOW_COLLISION_DETECTION = false;
 
     public static final int DEFAULT_SCREEN_WIDTH = 320 * 3;
     public static final int DEFAULT_SCREEN_HEIGHT = 240 * 3;

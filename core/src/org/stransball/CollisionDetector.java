@@ -11,16 +11,21 @@ import com.badlogic.gdx.math.Polygon;
 public final class CollisionDetector implements ICollisionDetector, ICollisionHandler {
 
     private final ShapeRenderer renderer;
-    private final int objectXScreen;
-    private final int objectYScreen;
     private final Polygon[] objectPolygons;
     private boolean collision;
+    private int regionXScreenF;
+    private int regionYScreenF;
+    private int mapXScreen;
+    private int mapYScreen;
 
-    public CollisionDetector(ShapeRenderer renderer, int objectXScreen, int objectYScreen, Polygon[] objectPolygons) {
+    public CollisionDetector(ShapeRenderer renderer, Polygon[] objectPolygons, int regionXScreenF, int regionYScreenF,
+            int mapXScreen, int mapYScreen) {
         this.renderer = renderer;
-        this.objectXScreen = objectXScreen;
-        this.objectYScreen = objectYScreen;
         this.objectPolygons = objectPolygons;
+        this.regionXScreenF = regionXScreenF;
+        this.regionYScreenF = regionYScreenF;
+        this.mapXScreen = mapXScreen;
+        this.mapYScreen = mapYScreen;
     }
 
     @Override
@@ -31,7 +36,8 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
         if (poly == null)
             return;
 
-        poly.setPosition(objectXScreen - 32 + actXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen - 32 + actYScreen));
+        poly.setPosition(regionXScreenF + actXScreen - mapXScreen,
+                INTERNAL_SCREEN_HEIGHT - (regionYScreenF + actYScreen - mapYScreen));
 
         Polygon[] polygons = CollisionDetectionUtils.tiangulate(poly);
 
@@ -42,6 +48,7 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
 
         if (renderer != null) {
             renderer.setColor(wasCollision ? Color.RED : Color.WHITE);
+
             CollisionDetectionUtils.drawPolygons(renderer, polygons);
         }
     }
