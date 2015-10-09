@@ -14,6 +14,12 @@ import org.stransball.objects.BackgroundLayer;
 import org.stransball.objects.Door;
 import org.stransball.objects.Enemy;
 import org.stransball.objects.Enemy.EnemyType;
+import org.stransball.objects.EnemyBullet;
+import org.stransball.objects.EnemyCanon;
+import org.stransball.objects.EnemyDirectionalCanon;
+import org.stransball.objects.EnemyDirectionalCanon2;
+import org.stransball.objects.EnemyFastCanon;
+import org.stransball.objects.EnemyTank;
 import org.stransball.objects.FuelRecharge;
 import org.stransball.objects.Smoke;
 import org.stransball.objects.SmokeSource;
@@ -106,7 +112,7 @@ public class GameMap {
                 if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 216 && map[i] < 220)
                         || (map[i] >= 236 && map[i] < 240)) {
                     // CANON:
-                    Enemy e = new Enemy(EnemyType.CANON);
+                    Enemy e = new EnemyCanon();
                     e.state = 0;
                     e.life = 4;
                     e.x = x;
@@ -117,7 +123,7 @@ public class GameMap {
 
                 if (map[i] >= 196 && map[i] < 200) {
                     // FAST CANON:
-                    Enemy e = new Enemy(EnemyType.FAST_CANON);
+                    Enemy e = new EnemyFastCanon();
                     e.state = 0;
                     e.life = 8;
                     e.x = x;
@@ -128,7 +134,7 @@ public class GameMap {
 
                 if (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175) {
                     // DIRECTIONAL CANON:
-                    Enemy e = new Enemy(EnemyType.DIRECTIONAL_CANON);
+                    Enemy e = new EnemyDirectionalCanon();
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -139,7 +145,7 @@ public class GameMap {
                 }
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
                     // DIRECTIONAL CANON 2:
-                    Enemy e = new Enemy(EnemyType.DIRECTIONAL_CANON_2);
+                    Enemy e = new EnemyDirectionalCanon2();
                     e.state = i % 128;
                     e.life = 12;
                     e.x = x;
@@ -189,7 +195,7 @@ public class GameMap {
 
             ntanks = scanner.nextInt();
             for (int i = 0; i < ntanks; i++) {
-                Enemy e = new Enemy(EnemyType.TANK);
+                Enemy e = new EnemyTank();
 
                 int col = scanner.nextInt();
                 int row = scanner.nextInt();
@@ -265,8 +271,8 @@ public class GameMap {
                         s.x = ss.x * FACTOR;
                         s.y = ss.y * FACTOR;
 
-                        s.speedX = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_x;
-                        s.speedY = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speed_y;
+                        s.speedX = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speedX;
+                        s.speedY = ((random(1 + FACTOR / 16 - 1) - (FACTOR / 32))) + ss.speedY;
                         s.desiredX = (random(FACTOR / 4 - 1)) - FACTOR / 8;
                         s.desiredY = ((random(1 + FACTOR / 4 - 1) - (FACTOR / 8))) - FACTOR / 4;
                         s.timer = 0;
@@ -334,25 +340,25 @@ public class GameMap {
 
     private void updateEnemies(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen,
             ShapeRenderer renderer) {
-        ArrayList<Enemy> enemiestodelete = new ArrayList<Enemy>();
-        ArrayList<Enemy> newenemies = new ArrayList<Enemy>();
+        ArrayList<Enemy> enemiesToDelete = new ArrayList<Enemy>();
+        ArrayList<Enemy> newEnemies = new ArrayList<Enemy>();
 
         for (Enemy e : enemies) {
             switch (e.type) {
             case BULLET:
-                boolean collision = checkEnemyWithMapCollision(e, mapXScreen, mapYScreen, renderer);
-                if (!e.updateBullet(cols * 16, rows * 16, collision)) {
-                    enemiestodelete.add(e);
+                boolean collision = checkEnemyWithMapCollision((EnemyBullet) e, mapXScreen, mapYScreen, renderer);
+                if (!((EnemyBullet) e).updateBullet(cols * 16, rows * 16, collision)) {
+                    enemiesToDelete.add(e);
                 }
                 break;
             case CANON:
-                if (!e.updateCanon(shipXScreenF, shipYScreenF, newenemies)) {
-                    enemiestodelete.add(e);
+                if (!e.updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
+                    enemiesToDelete.add(e);
                 }
                 break;
             case FAST_CANON:
-                if (!e.updateFastcanon(shipXScreenF, shipYScreenF, newenemies)) {
-                    enemiestodelete.add(e);
+                if (!e.updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
+                    enemiesToDelete.add(e);
                 }
                 break;
             default:
@@ -361,8 +367,8 @@ public class GameMap {
             }
         }
 
-        enemies.removeAll(enemiestodelete);
-        enemies.addAll(newenemies);
+        enemies.removeAll(enemiesToDelete);
+        enemies.addAll(newEnemies);
     }
 
     public void render(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight) {
@@ -490,7 +496,7 @@ public class GameMap {
                 case BULLET:
                     if (e.x > (-16 + mapXScreen) * FACTOR && e.x < (screenWidth + mapXScreen) * FACTOR
                             && e.y > (-16 + mapYScreen) * FACTOR && e.y < (screenHeight + mapYScreen) * FACTOR)
-                        e.drawBullet(batch, mapXScreen, mapYScreen, detector);
+                        ((EnemyBullet) e).drawBullet(batch, mapXScreen, mapYScreen, detector);
                     break;
                 case DIRECTIONAL_CANON:
                     if (e.x > (-16 + mapXScreen) && e.x < (screenWidth + mapXScreen) && e.y > (-16 + mapYScreen)
@@ -503,7 +509,7 @@ public class GameMap {
                             && e.y < (screenHeight + mapYScreen + 32))
                         e.drawTank(batch, mapXScreen, mapYScreen, detector);
                     break;
-                case DESTOYED_TANK:
+                case DESTROYED_TANK:
                     if (e.x > (-32 + mapXScreen) && e.x < (screenWidth + mapXScreen + 32) && e.y > (-32 + mapYScreen)
                             && e.y < (screenHeight + mapYScreen + 32))
                         e.drawDestroyedTank(batch, mapXScreen, mapYScreen, detector);
@@ -536,8 +542,8 @@ public class GameMap {
         for (Smoke s : smokes) {
             int tileIndex = ((s.timer) >> 3) % 3;
 
-            int rx = (s.x / FACTOR) - mapXScreen;
-            int ry = (s.y / FACTOR) - mapYScreen;
+            int rx = s.x / FACTOR - mapXScreen;
+            int ry = s.y / FACTOR - mapYScreen;
 
             if (rx > -16 && rx < screenWidth && ry > -16 && ry < screenHeight) {
                 int alpha = 255 - s.timer;
@@ -661,6 +667,9 @@ public class GameMap {
     public int collideShipBullet(int x, int y, int strength) {
         int retval = 0;
 
+        List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
+        List<Enemy> newEnemies = new ArrayList<Enemy>();
+
         Enemy selected = null;
         int mindistance = -1;
 
@@ -749,8 +758,8 @@ public class GameMap {
                     SmokeSource ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
-                    ss.speed_x = 0;
-                    ss.speed_y = -FACTOR / 4;
+                    ss.speedX = 0;
+                    ss.speedY = -FACTOR / 4;
                     ss.timer = 0;
                     smokeSources.add(ss);
                 }
@@ -758,8 +767,8 @@ public class GameMap {
                     SmokeSource ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
-                    ss.speed_x = 0;
-                    ss.speed_y = FACTOR / 4;
+                    ss.speedX = 0;
+                    ss.speedY = FACTOR / 4;
                     ss.timer = 0;
                     smokeSources.add(ss);
                 }
@@ -767,8 +776,8 @@ public class GameMap {
                     SmokeSource ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
-                    ss.speed_x = FACTOR / 4;
-                    ss.speed_y = 0;
+                    ss.speedX = FACTOR / 4;
+                    ss.speedY = 0;
                     ss.timer = 0;
                     smokeSources.add(ss);
                 }
@@ -776,34 +785,42 @@ public class GameMap {
                     SmokeSource ss = new SmokeSource();
                     ss.x = selected.x + 6;
                     ss.y = selected.y + 6;
-                    ss.speed_x = -FACTOR / 4;
-                    ss.speed_y = 0;
+                    ss.speedX = -FACTOR / 4;
+                    ss.speedY = 0;
                     ss.timer = 0;
                     smokeSources.add(ss);
                 }
                 Assets.assets.soundAssets.explosion.play();
             }
 
-            if (selected.type != EnemyType.TANK && selected.type != EnemyType.DESTOYED_TANK
+            if (selected.type != EnemyType.TANK && selected.type != EnemyType.DESTROYED_TANK
                     && selected.type != EnemyType.EXPLOSION) {
                 if (selected.type == EnemyType.BULLET) {
-                    selected.type = EnemyType.EXPLOSION;
                     selected.state = 0;
+
+                    enemiesToDelete.add(selected);
+                    selected = ((EnemyBullet) selected).toExplosion();
+                    newEnemies.add(selected);
                 } else {
                     selected.state = -1;
                 }
             } else {
                 if (selected.type == EnemyType.TANK) {
                     Assets.assets.soundAssets.explosion.play();
-                    selected.type = EnemyType.DESTOYED_TANK;
                     selected.state = 0;
+
+                    enemiesToDelete.add(selected);
+                    selected = ((EnemyTank) selected).toDestroyedTank();
+                    newEnemies.add(selected);
+
                     generate_smoke = 0;
+
                     if (generate_smoke == 0) {
                         SmokeSource ss = new SmokeSource();
                         ss.x = selected.x;
                         ss.y = selected.y;
-                        ss.speed_x = 0;
-                        ss.speed_y = -FACTOR / 4;
+                        ss.speedX = 0;
+                        ss.speedY = -FACTOR / 4;
                         ss.timer = 0;
                         smokeSources.add(ss);
                     }
@@ -811,6 +828,9 @@ public class GameMap {
             }
         }
 
+        enemies.removeAll(enemiesToDelete);
+        enemies.addAll(newEnemies);
+        
         return retval;
     }
 
@@ -841,8 +861,9 @@ public class GameMap {
     public void takeBall() {
         for (Door d : doors) {
             // The doors with event==0 are activated when the ball is taken 
-            if (d.event == 0)
+            if (d.event == 0) {
                 d.activate();
+            }
         }
     }
 
@@ -865,7 +886,7 @@ public class GameMap {
 
         if (selected != null) {
             selected.state = 16;
-            
+
             Assets.assets.soundAssets.switchship.play();
 
             for (Door d : doors) {
@@ -884,7 +905,8 @@ public class GameMap {
         return false;
     }
 
-    private boolean checkEnemyWithMapCollision(Enemy enemy, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+    private boolean checkEnemyWithMapCollision(EnemyBullet enemy, int mapXScreen, int mapYScreen,
+            ShapeRenderer renderer) {
         int tileIndex = enemy.getBulletTileIndex();
 
         Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[tileIndex];
