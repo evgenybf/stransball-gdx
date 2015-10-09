@@ -42,7 +42,6 @@ public class GameMap {
     private BackgroundLayer background;
     private StarsLayer stars;
 
-    private int switchNumber;
     private List<Enemy> enemies;
     private List<Door> doors;
     private List<Switch> switches;
@@ -61,7 +60,7 @@ public class GameMap {
     }
 
     private void load(Scanner scanner) {
-        switchNumber = 1;
+        int switchNumber = 1;
 
         enemies = new ArrayList<Enemy>();
         doors = new ArrayList<Door>();
@@ -224,7 +223,7 @@ public class GameMap {
         // Tile animation
         {
             animTimer++;
-            
+
             if (animTimer > 24) {
                 animFlag++;
 
@@ -847,25 +846,32 @@ public class GameMap {
         }
     }
 
-    public void collideBall(int x, int y) {
+    public void collideBall(int ballXScreenF, int ballYScreenF) {
         Switch selected = null;
-        int mindistance = -1;
+        int minDistance = -1;
 
         for (Switch s : switches) {
-            int distance = (x - (s.col * 16 + 8)) * (x - (s.col * 16 + 8))
-                    + (y - (s.row * 16 + 8)) * (y - (s.row * 16 + 8));
-            if ((mindistance == -1 && distance < 64) || distance < mindistance) {
+            int switchXScreenF = s.col * 16 + 8;
+            int switchYScreenF = s.row * 16 + 8;
+
+            int distance = (ballXScreenF - switchXScreenF) * (ballXScreenF - switchXScreenF)
+                    + (ballYScreenF - switchYScreenF) * (ballYScreenF - switchYScreenF);
+
+            if ((minDistance == -1 && distance < 64) || distance < minDistance) {
                 selected = s;
-                mindistance = distance;
+                minDistance = distance;
             }
         }
 
         if (selected != null) {
             selected.state = 16;
+            
             Assets.assets.soundAssets.switchship.play();
+
             for (Door d : doors) {
-                if (d.event == selected.number)
+                if (d.event == selected.number) {
                     d.activate();
+                }
             }
         }
     }

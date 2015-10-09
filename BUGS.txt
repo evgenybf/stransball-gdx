@@ -1,0 +1,15 @@
+Bugs found in the original Super Transball 2:
+
+
+- Wrong door's event value in map9.map:
+
+0 0
+14 1
+
+but it has to be 
+
+0 1
+14 0
+
+because it looks like that the second (right) door should open when the ball is taken, 
+and the first (left) door should open when the button is pressed.
