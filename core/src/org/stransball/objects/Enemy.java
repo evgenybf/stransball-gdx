@@ -1,6 +1,7 @@
 package org.stransball.objects;
 
 import static java.lang.String.format;
+import static org.stransball.Constants.FACTOR;
 
 import java.util.List;
 
@@ -73,6 +74,12 @@ public abstract class Enemy {
         enemy.speedX = speedX;
         enemy.speedY = speedY;
         enemy.tileIndex = tileIndex;
+    }
+
+    @Deprecated
+    protected void fixPosition(Enemy e) {
+        e.x -= 8 * FACTOR;
+        e.y -= 8 * FACTOR;
     }
 
 }

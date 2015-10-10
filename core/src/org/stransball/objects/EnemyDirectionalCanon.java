@@ -1,12 +1,20 @@
 package org.stransball.objects;
 
+import static org.stransball.Assets.assets;
+import static org.stransball.Constants.FACTOR;
+import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
+
 import java.util.List;
 
+import org.stransball.Assets;
 import org.stransball.GameMap;
 import org.stransball.ICollisionDetector;
 
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
 
 public class EnemyDirectionalCanon extends Enemy {
 
@@ -17,8 +25,80 @@ public class EnemyDirectionalCanon extends Enemy {
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
             List<Enemy> newEnemies, ShapeRenderer renderer) {
-        // TODO Auto-generated method stub
+        if (!cycle_directionalcanon(shipXScreenF, shipYScreenF, newEnemies)) {
+            enemiesToDelete.add(this);
+        }
+    }
 
+    private boolean cycle_directionalcanon(int ship_x, int ship_y, List<Enemy> enemies) {
+        // Turret's angle:
+        int dx = ship_x - (x + 8);
+        int dy = ship_y - (y + 8);
+        float radians = (float) (MathUtils.atan2((float) dy, (float) dx));
+        int desired_turretAngle;
+
+        if (state >= 0) {
+            turretAngle = (int) ((radians * 180) / 3.141592F);
+            if (turretAngle < 0)
+                turretAngle += 360;
+            desired_turretAngle = turretAngle;
+
+            switch (direction) {
+            case UP:
+                if (turretAngle >= 345 || turretAngle < 90)
+                    turretAngle = 345;
+                if (turretAngle < 205)
+                    turretAngle = 205;
+                break;
+            case DOWN:
+                if (turretAngle < 15 || turretAngle >= 270)
+                    turretAngle = 15;
+                if (turretAngle >= 175)
+                    turretAngle = 175;
+                break;
+            case RIGHT:
+                if (turretAngle >= 75 && turretAngle < 180)
+                    turretAngle = 75;
+                if (turretAngle >= 180 && turretAngle < 285)
+                    turretAngle = 285;
+                break;
+            case LEFT:
+                if (turretAngle < 105)
+                    turretAngle = 105;
+                if (turretAngle >= 255)
+                    turretAngle = 255;
+                break;
+            }
+
+            state++;
+
+            if (state >= 128) {
+                if (turretAngle == desired_turretAngle) {
+                    if ((dx * dx) + (dy * dy) < 30000) {
+                        /* Fire!: */
+                        EnemyBullet e;
+                        e = new EnemyBullet(map);
+                        e.state = 8;
+                        e.speedX = (int) (MathUtils.cos(radians) * FACTOR);
+                        e.speedY = (int) (MathUtils.sin(radians) * FACTOR);
+                        e.x = (x + 8) * FACTOR + (e.speedX * 8);
+                        e.y = (y + 8) * FACTOR + (e.speedY * 8);
+                        e.life = 1;
+                        e.tileIndex = 344;
+
+                        fixPosition(e);
+
+                        enemies.add(e);
+                        Assets.assets.soundAssets.shot.play();
+                    }
+                }
+                state = 0;
+            }
+        } else {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -30,10 +110,41 @@ public class EnemyDirectionalCanon extends Enemy {
         }
     }
 
-    private void drawDirectionalCanon(SpriteBatch batch, int i, int mapXScreen, int mapYScreen,
+    private void drawDirectionalCanon(SpriteBatch batch, int tileIndex, int mapXScreen, int mapYScreen,
             ICollisionDetector detector) {
-        // TODO Auto-generated method stub
-        
+        if (state >= 0) {
+            int xScreen = x - mapXScreen;
+            int yScreen = y - mapYScreen;
+
+            if (batch != null) {
+                Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(254));
+                sprite.setScale(0.75f, 0.75f);
+
+                sprite.setOrigin(16, 14);
+                sprite.setRotation(180 - turretAngle);
+
+                //sprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
+                sprite.setCenter(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + 14));
+                sprite.draw(batch);
+            }
+            if (detector != null) {
+                //TODO: not implemented yet
+                
+                Polygon objectPolygon = assets.graphicAssets.tilePolygons[254];
+
+                objectPolygon.setRotation(180 - turretAngle);
+
+                objectPolygon.setPosition(x, y + 14);
+                
+                detector.handlePolygon(objectPolygon);
+            }
+
+            if (batch != null) {
+                Sprite sprite2 = new Sprite(Assets.assets.graphicAssets.tiles.get(tileIndex));
+                sprite2.setPosition(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + map.stepY));
+                sprite2.draw(batch);
+            }
+        }
     }
 
 }

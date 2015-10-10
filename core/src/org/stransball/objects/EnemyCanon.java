@@ -111,12 +111,6 @@ public class EnemyCanon extends Enemy {
         return true;
     }
 
-    @Deprecated
-    private void fixPosition(Enemy e) {
-        e.x -= 8 * FACTOR;
-        e.y -= 8 * FACTOR;
-    }
-
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
             ICollisionDetector detector) {
