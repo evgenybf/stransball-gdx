@@ -541,7 +541,7 @@ public class WorldController {
         int objectXScreen = objectXScreenF - mapXScreen;
         int objectYScreen = objectYScreenF - mapYScreen;
 
-        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
         return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
                 renderer);
@@ -558,7 +558,8 @@ public class WorldController {
         int objectXScreen = objectXScreenF - mapXScreen;
         int objectYScreen = objectYScreenF - mapYScreen;
 
-        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
+        // ship's polygon is centralised
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen /*+ map.stepY*/));
 
         return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
                 renderer);
@@ -734,7 +735,7 @@ public class WorldController {
             if (renderer != null) {
                 Polygon shipPolygon = assets.graphicAssets.shipPolygon;
                 shipPolygon.setRotation(360 - shipAngle);
-                shipPolygon.setPosition(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
+                shipPolygon.setPosition(shipXScreen, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
                 renderer.polygon(shipPolygon.getTransformedVertices());
             }
         } else if (shipState == ShipState.EXPLODED) {

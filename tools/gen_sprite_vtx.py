@@ -108,7 +108,7 @@ def read_pack(filename):
 def write_vec(out, obj, contours):
     index = (obj.index if obj.index is not None else -1)
     if contours is not None:
-        vertices = ",".join([str(x if i % 2 == 0 else -x) for i, x in enumerate(contours.flatten())])
+        vertices = ",".join((str(x) for x in contours.flatten()))
     else:
         vertices = ""
     out.write(VTX_TEMPLATE % (obj.name, vertices, obj.size_x, obj.size_y, index))

@@ -56,6 +56,8 @@ public class GameMap {
     private List<SmokeSource> smokeSources;
     private List<Smoke> smokes;
 
+    @Deprecated
+    //It has to be tile.height instead. Complete formula: screen.height - tile.height - y
     public int stepY;
 
     public void load(Reader input) {
@@ -91,7 +93,6 @@ public class GameMap {
 
         // Look for enemies, doors, etc.:
         for (int i = 0; i < cols * rows; i++) {
-
             // ENEMIES:
             if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 196 && map[i] < 200) || (map[i] >= 216 && map[i] < 220)
                     || (map[i] >= 236 && map[i] < 240)
@@ -418,7 +419,7 @@ public class GameMap {
                                 }
 
                                 if (detector != null) {
-                                    detector.handlePolygon(actXScreen, actYScreen, tileIndex_);
+                                    detector.handlePolygon(actXScreen, actYScreen + stepY, tileIndex_);
                                 }
                             }
                         }
@@ -428,7 +429,7 @@ public class GameMap {
                         }
 
                         if (detector != null) {
-                            detector.handlePolygon(actXScreen, actYScreen, tileIndex);
+                            detector.handlePolygon(actXScreen, actYScreen + stepY, tileIndex);
                         }
                     }
                 }
@@ -455,7 +456,7 @@ public class GameMap {
         }
 
         if (detector != null) {
-            detector.handlePolygon(actXScreen + offset, actYScreen, tileIndex);
+            detector.handlePolygon(actXScreen + offset, actYScreen + stepY, tileIndex);
         }
     }
 

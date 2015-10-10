@@ -1,5 +1,8 @@
 package org.stransball.util;
 
+import static org.stransball.util.PolygonUtils.centrialize;
+import static org.stransball.util.PolygonUtils.flipVertically;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -117,43 +120,27 @@ public class ContourLoader {
         return null;
     }
 
-    private static void centrializeSpritePolygon(int height, int width, float[] vertices) {
-        float dx = width / 2.0f;
-        float dy = height / 2.0f;
-        for (int i = 0; i < vertices.length; i += 2) {
-            vertices[i] = (vertices[i] - dx);
-        }
-        for (int i = 1; i < vertices.length; i += 2) {
-            //FIXME: clumsy flip.. I should something do with the gen_sprite_vtx.py about it
-            vertices[i] = -(-vertices[i] - dy);
-        }
-    }
-
     private static Polygon contourToPolygon(Contour contour, boolean centralize) {
         if (contour.vertiies == null)
             return null;
 
-        Polygon shipPolygon = new Polygon();
+        Polygon polygon = new Polygon();
         float[] vertiies = contour.vertiies;
         if (vertiies.length == 4) {
             int d = -1;
-//            if (vertiies[0] == vertiies[2]) {
-//                shipPolygon.setVertices(new float[] { 
-//                        vertiies[0] - d, vertiies[1], 
-//                        vertiies[0], vertiies[1],
-//                        vertiies[2] - d, vertiies[3], 
-//                        vertiies[2], vertiies[3] });
-//            } else {
-                shipPolygon.setVertices(new float[] { vertiies[0], vertiies[1] - d, vertiies[0], vertiies[1],
-                        vertiies[2], vertiies[3], vertiies[2], vertiies[3] - d });
-//            }
+            polygon.setVertices(new float[] { vertiies[0], vertiies[1] - d, vertiies[0], vertiies[1], vertiies[2],
+                    vertiies[3], vertiies[2], vertiies[3] - d });
         } else {
-            shipPolygon.setVertices(contour.vertiies);
-            if (centralize) {
-                centrializeSpritePolygon(contour.sizeX, contour.sizeY, shipPolygon.getVertices());
-            }
+            polygon.setVertices(contour.vertiies);
         }
-        return shipPolygon;
+
+        flipVertically(polygon, contour.sizeY);
+
+        if (centralize) {
+            centrialize(polygon, contour.sizeX, contour.sizeY);
+        }
+
+        return polygon;
     }
 
     private static final Comparator<Contour> indexComparator = new Comparator<Contour>() {

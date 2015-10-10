@@ -43,7 +43,7 @@ public class EnemyBullet extends Enemy {
         int objectXScreen = x / FACTOR - mapXScreen;// - 8;
         int objectYScreen = y / FACTOR - mapYScreen;// - 8;
 
-        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
+        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
         return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, this,
                 renderer);
@@ -92,7 +92,7 @@ public class EnemyBullet extends Enemy {
         }
 
         if (detector != null) {
-            detector.handlePolygon(bulletXScreen, bulletYScreen, tileIndex);
+            detector.handlePolygon(bulletXScreen, bulletYScreen + map.stepY, tileIndex);
         }
     }
 
