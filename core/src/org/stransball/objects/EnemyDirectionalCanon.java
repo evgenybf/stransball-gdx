@@ -123,19 +123,19 @@ public class EnemyDirectionalCanon extends Enemy {
                 sprite.setOrigin(16, 14);
                 sprite.setRotation(180 - turretAngle);
 
-                //sprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
                 sprite.setCenter(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + 14));
                 sprite.draw(batch);
             }
             if (detector != null) {
-                //TODO: not implemented yet
-                
                 Polygon objectPolygon = assets.graphicAssets.tilePolygons[254];
 
+                objectPolygon.setScale(0.75f, 0.75f);
+                objectPolygon.setOrigin(16, 14);
                 objectPolygon.setRotation(180 - turretAngle);
 
-                objectPolygon.setPosition(x, y + 14);
-                
+                //TODO: sync with shipPolygon. It's not clear why we need (-8, + 8) here
+                objectPolygon.setPosition(xScreen - 8, yScreen + 14 + 8);
+
                 detector.handlePolygon(objectPolygon);
             }
 

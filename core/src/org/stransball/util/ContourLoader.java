@@ -1,6 +1,5 @@
 package org.stransball.util;
 
-import static org.stransball.util.PolygonUtils.centrialize;
 import static org.stransball.util.PolygonUtils.flipVertically;
 
 import java.io.BufferedReader;
@@ -27,6 +26,7 @@ public class ContourLoader {
     private static class Contour {
         String name;
         float[] vertiies;
+        @SuppressWarnings("unused")
         public int sizeX;
         public int sizeY;
         int index;
@@ -79,48 +79,36 @@ public class ContourLoader {
     }
 
     public Polygon[] findPolygons(String name) {
-        return findPolygons(name, false);
-    }
-
-    public Polygon[] findPolygons(String name, boolean centralize) {
         Array<Polygon> matched = new Array<Polygon>();
         for (int i = 0, n = contours.size; i < n; i++) {
             Contour contour = contours.get(i);
             if (contour.name.equals(name)) {
-                matched.add(contourToPolygon(contour, centralize));
+                matched.add(contourToPolygon(contour));
             }
         }
         return matched.toArray(Polygon.class);
     }
 
     public Polygon findPolygon(String name) {
-        return findPolygon(name, false);
-    }
-
-    public Polygon findPolygon(String name, boolean centralize) {
         for (int i = 0, n = contours.size; i < n; i++)
             if (contours.get(i).name.equals(name))
-                return contourToPolygon(contours.get(i), centralize);
+                return contourToPolygon(contours.get(i));
         return null;
     }
 
     public Polygon findPolygon(String name, int index) {
-        return findPolygon(name, index, false);
-    }
-
-    public Polygon findPolygon(String name, int index, boolean centralize) {
         for (int i = 0, n = contours.size; i < n; i++) {
             Contour contour = contours.get(i);
             if (!contour.name.equals(name))
                 continue;
             if (contour.index != index)
                 continue;
-            return contourToPolygon(contour, centralize);
+            return contourToPolygon(contour);
         }
         return null;
     }
 
-    private static Polygon contourToPolygon(Contour contour, boolean centralize) {
+    private static Polygon contourToPolygon(Contour contour) {
         if (contour.vertiies == null)
             return null;
 
@@ -135,10 +123,6 @@ public class ContourLoader {
         }
 
         flipVertically(polygon, contour.sizeY);
-
-        if (centralize) {
-            centrialize(polygon, contour.sizeX, contour.sizeY);
-        }
 
         return polygon;
     }

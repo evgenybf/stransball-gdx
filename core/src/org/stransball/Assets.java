@@ -90,7 +90,7 @@ public class Assets {
             tilePolygons = contourLoader.findPolygons("tile");
 
             shipRegion = atlas.findRegion("ship");
-            shipPolygon = contourLoader.findPolygon("ship", true);
+            shipPolygon = contourLoader.findPolygon("ship");
             shipThrustTiles = atlas.findRegions("shipThrust");
             shipExplosionTiles = atlas.findRegions("shipExplosion");
 

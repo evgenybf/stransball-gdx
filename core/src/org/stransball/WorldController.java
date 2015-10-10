@@ -102,7 +102,9 @@ public class WorldController {
             shipSprite = new Sprite(shipRegion);
             shipSprite.setScale(0.5f, 0.5f);
 
-            assets.graphicAssets.shipPolygon.setScale(0.5f, 0.5f);
+            Polygon shipPolygon = assets.graphicAssets.shipPolygon;
+            shipPolygon.setOrigin(shipSprite.getWidth() / 2.0f, shipSprite.getHeight() / 2.0f);
+            shipPolygon.setScale(0.5f, 0.5f);
         }
 
         {
