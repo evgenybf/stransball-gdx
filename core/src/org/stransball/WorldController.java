@@ -7,6 +7,10 @@ import static com.badlogic.gdx.math.MathUtils.sin;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static org.stransball.Assets.assets;
+import static org.stransball.Constants.DEBUG_SHOW_BALL_COLLISION;
+import static org.stransball.Constants.DEBUG_SHOW_BULLET_COLLISION;
+import static org.stransball.Constants.DEBUG_SHOW_ENEMY_COLLISION;
+import static org.stransball.Constants.DEBUG_SHOW_SHIP_COLLISION;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
@@ -122,17 +126,19 @@ public class WorldController {
         updateShip();
         updateShipPositionByGravity();
 
-        updateBall();
+        updateBall(passDebugRenderer(renderer, DEBUG_SHOW_BALL_COLLISION));
         updateBallPositionByGravity();
 
-        updateBullets();
+        updateBullets(passDebugRenderer(renderer, DEBUG_SHOW_BULLET_COLLISION));
 
         updateMapCameraPosition();
-        map.update(shipXInternal, shipYInternal, mapXScreen, mapYScreen, renderer);
+        map.update(shipXInternal, shipYInternal, mapXScreen, mapYScreen,
+                passDebugRenderer(renderer, DEBUG_SHOW_ENEMY_COLLISION));
 
-        if (!Constants.DEBUG_GOD_MODE) {
-            // Ship collision detection 
-            if (shipState == ShipState.NORMAL && checkShipWithMapCollision(null)) {
+        // Ship collision detection 
+        if (shipState == ShipState.NORMAL
+                && checkCollisionOfShipAndMap(passDebugRenderer(renderer, DEBUG_SHOW_SHIP_COLLISION))) {
+            if (!Constants.DEBUG_GOD_MODE) {
                 shipSpeedX /= 4;
                 shipSpeedY /= 4;
                 shipState = ShipState.EXPLODED;
@@ -142,9 +148,15 @@ public class WorldController {
             }
         }
 
-        if (map.isShipInFuelRecharge(shipXInternal / FACTOR, shipYInternal / FACTOR)) {
+        int shipXScreenF = shipXInternal / FACTOR;
+        int shipYScreenF = shipYInternal / FACTOR;
+        if (map.isShipInFuelRecharge(shipXScreenF, shipYScreenF)) {
             rechargeShipFuel();
         }
+    }
+
+    private ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
+        return enabled ? renderer : null;
     }
 
     private void rechargeShipFuel() {
@@ -160,7 +172,7 @@ public class WorldController {
         }
     }
 
-    private void updateBall() {
+    private void updateBall(ShapeRenderer renderer) {
         if (ballSpeedX > 0)
             ballSpeedX--;
         if (ballSpeedX < 0)
@@ -189,7 +201,7 @@ public class WorldController {
             attractBallToShip();
         }
 
-        handleBallBouncing();
+        handleBallBouncing(renderer);
     }
 
     private void attractBallToShip() {
@@ -242,24 +254,24 @@ public class WorldController {
         }
     }
 
-    private void handleBallBouncing() {
+    private void handleBallBouncing(ShapeRenderer renderer) {
         int ballXScreenF = ballXInternal / FACTOR; //FIXME: ?+8 - see updateBall
         int ballYScreenF = ballYInternal / FACTOR; //FIXME: ?+8 - see updateBall
 
         Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-        if (checkPolygonWithMapCollision(null, tilePolygons[360], ballXInternal, ballYInternal)) {
+        if (checkCollisionOfPolygonAndMap(tilePolygons[360], ballXInternal, ballYInternal, renderer)) {
             if (ballSpeedY > 0) {
                 ballSpeedY = (int) (-0.75 * ballSpeedY);
                 map.collideBall(ballXScreenF + 8, ballYScreenF + 12);
             } else {
-                if (checkPolygonWithMapCollision(null, tilePolygons[360], ballXInternal, ballYInternal - 1))
+                if (checkCollisionOfPolygonAndMap(tilePolygons[360], ballXInternal, ballYInternal - 1, renderer))
                     ballSpeedY -= 2;
             }
         } else {
             ballSpeedY += 2;
         }
 
-        if (checkPolygonWithMapCollision(null, tilePolygons[340], ballXInternal, ballYInternal)) {
+        if (checkCollisionOfPolygonAndMap(tilePolygons[340], ballXInternal, ballYInternal, renderer)) {
             if (ballSpeedY < 0) {
                 ballSpeedY = (int) (-0.75 * ballSpeedY);
                 map.collideBall(ballXScreenF + 8, ballYScreenF + 4);
@@ -268,7 +280,7 @@ public class WorldController {
             }
         }
 
-        if (checkPolygonWithMapCollision(null, tilePolygons[342], ballXInternal, ballYInternal)) {
+        if (checkCollisionOfPolygonAndMap(tilePolygons[342], ballXInternal, ballYInternal, renderer)) {
             if (ballSpeedX > 0) {
                 ballSpeedX = (int) (-0.75 * ballSpeedX);
                 map.collideBall(ballXScreenF + 12, ballYScreenF + 8);
@@ -277,7 +289,7 @@ public class WorldController {
             }
         }
 
-        if (checkPolygonWithMapCollision(null, tilePolygons[362], ballXInternal, ballYInternal)) {
+        if (checkCollisionOfPolygonAndMap(tilePolygons[362], ballXInternal, ballYInternal, renderer)) {
             if (ballSpeedX < 0) {
                 ballSpeedX = (int) (-0.75 * ballSpeedX);
                 map.collideBall(ballXScreenF + 4, ballYScreenF + 8);
@@ -482,7 +494,7 @@ public class WorldController {
         }
     }
 
-    private void updateBullets() {
+    private void updateBullets(ShapeRenderer renderer) {
         List<ShipBullet> toDeleteList = new ArrayList<ShipBullet>();
 
         for (ShipBullet b : bullets) {
@@ -490,18 +502,25 @@ public class WorldController {
                 b.x += b.speedX;
                 b.y += b.speedY;
 
-                if (checkPolygonWithMapCollision(null, Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y)) {
-                    // int ship_strength[]={1,2,4};
+                if (checkCollisionOfPolygonAndMap(Assets.assets.graphicAssets.tilePolygons[242], b.x, b.y, renderer)) {
                     b.state++;
-                    int retv = map.collideShipBullet((b.x / FACTOR) + 8, (b.y / FACTOR) + 8, 1);
+
+                    int bulletXScreenF = (b.x / FACTOR) + 8;
+                    int bulletYScreenF = (b.y / FACTOR) + 8;
+                    int buleltStrength = 1; // int ship_strength[]={1,2,4};
+
+                    int retv = map.collideShipBullet(bulletXScreenF, bulletYScreenF, buleltStrength);
+
                     if (retv != 0)
                         shipHitsCount++;
+
                     if (retv == 2)
                         shipEnemiesDestroyedCount++;
                 } else {
                     if (b.x < -8 * FACTOR || b.x > (map.getCols() * 16 * FACTOR) + 8 * FACTOR || b.y < -8 * FACTOR
-                            || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR)
+                            || b.y > (map.getRows() * 16 * FACTOR) + 8 * FACTOR) {
                         toDeleteList.add(b);
+                    }
                 }
             } else {
                 b.state++;
@@ -514,8 +533,8 @@ public class WorldController {
         bullets.removeAll(toDeleteList);
     }
 
-    private boolean checkPolygonWithMapCollision(final ShapeRenderer renderer, Polygon objectPolygon, int xInternal,
-            int yInternal) {
+    private boolean checkCollisionOfPolygonAndMap(Polygon objectPolygon, int xInternal, int yInternal,
+            ShapeRenderer renderer) {
         int objectXScreenF = xInternal / FACTOR;
         int objectYScreenF = yInternal / FACTOR;
 
@@ -528,7 +547,7 @@ public class WorldController {
                 renderer);
     }
 
-    private boolean checkShipWithMapCollision(ShapeRenderer renderer) {
+    private boolean checkCollisionOfShipAndMap(ShapeRenderer renderer) {
         Polygon objectPolygon = assets.graphicAssets.shipPolygon;
 
         objectPolygon.setRotation(360 - shipAngle);
@@ -624,10 +643,15 @@ public class WorldController {
 
         Sprite sprite = new Sprite(tile);
 
-        int ballXScreen = ballXInternal / FACTOR - mapXScreen + 8; // FIXME: ball's coordinates returned by the Map are not correct!
-        int ballYScreen = ballYInternal / FACTOR - mapYScreen + 8;
+        // int ballXScreen = ballXInternal / FACTOR - mapXScreen + 8; // FIXME: ball's coordinates returned by the Map are not correct!
+        // int ballYScreen = ballYInternal / FACTOR - mapYScreen + 8;
+        // sprite.setCenter(ballXScreen, INTERNAL_SCREEN_HEIGHT - ballYScreen);
 
-        sprite.setCenter(ballXScreen, INTERNAL_SCREEN_HEIGHT - ballYScreen);
+        int ballXScreen = ballXInternal / FACTOR - mapXScreen;
+        int ballYScreen = ballYInternal / FACTOR - mapYScreen;
+
+        sprite.setPosition(ballXScreen, INTERNAL_SCREEN_HEIGHT - (ballYScreen + map.stepY));
+
         sprite.draw(batch);
     }
 
@@ -639,11 +663,17 @@ public class WorldController {
             int tileIndex = (b.state < 8) ? 242 : 399 + (b.state / 8);
             AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
 
-            int bulletXScreen = b.x / FACTOR - mapXScreen + 8; // FIXME: bullet's coordinates are not correct!
-            int bulletYScreen = b.y / FACTOR - mapYScreen + 8;
-
             Sprite sprite = new Sprite(tile);
-            sprite.setCenter(bulletXScreen, INTERNAL_SCREEN_HEIGHT - bulletYScreen);
+
+            // int bulletXScreen = b.x / FACTOR - mapXScreen + 8; // FIXME: bullet's coordinates are not correct!
+            // int bulletYScreen = b.y / FACTOR - mapYScreen + 8;
+            // sprite.setCenter(bulletXScreen, INTERNAL_SCREEN_HEIGHT - bulletYScreen);
+
+            int bulletXScreen = b.x / FACTOR - mapXScreen;
+            int bulletYScreen = b.y / FACTOR - mapYScreen;
+
+            sprite.setPosition(bulletXScreen, INTERNAL_SCREEN_HEIGHT - (bulletYScreen + map.stepY));
+
             sprite.draw(batch);
         }
     }
@@ -691,7 +721,13 @@ public class WorldController {
                     shipSprite.setRegion(Assets.assets.graphicAssets.shipThrustTiles.get(shipAnim - 1));
 
                 shipSprite.setRotation(360 - shipAngle);
+
+                // TODO: There is a discrepancy here as the ship is the only object which has originX and originY set
+                // I have something to do with it in the future but for now it's ok as the polygon's coordinates are correct
+                // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
+
                 shipSprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
+
                 shipSprite.draw(batch);
             }
 

@@ -56,6 +56,8 @@ public class GameMap {
     private List<SmokeSource> smokeSources;
     private List<Smoke> smokes;
 
+    public int stepY;
+
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
         try {
@@ -117,7 +119,7 @@ public class GameMap {
                     e.life = 4;
                     e.x = x;
                     e.y = y;
-                    e.direction = direction;
+                    e.direction = Enemy.CanonDirection.fromInt(direction);
                     enemies.add(e);
                 }
 
@@ -128,7 +130,7 @@ public class GameMap {
                     e.life = 8;
                     e.x = x;
                     e.y = y;
-                    e.direction = direction;
+                    e.direction = Enemy.CanonDirection.fromInt(direction);
                     enemies.add(e);
                 }
 
@@ -139,7 +141,7 @@ public class GameMap {
                     e.life = 12;
                     e.x = x;
                     e.y = y;
-                    e.direction = direction;
+                    e.direction = Enemy.CanonDirection.fromInt(direction);
                     e.turretAngle = 0;
                     enemies.add(e);
                 }
@@ -150,7 +152,7 @@ public class GameMap {
                     e.life = 12;
                     e.x = x;
                     e.y = y;
-                    e.direction = direction;
+                    e.direction = Enemy.CanonDirection.fromInt(direction);
                     e.tankAngle = 0;
                     e.turretAngle = 0;
                     enemies.add(e);
@@ -223,11 +225,12 @@ public class GameMap {
         animFlag = 0;
 
         stars = new StarsLayer(cols);
+
+        stepY = Assets.assets.graphicAssets.tiles.get(0).originalHeight;
     }
 
     public void update(int shipXInternal, int shipYInternal, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
-        // Tile animation
-        {
+        { // Tile animation
             animTimer++;
 
             if (animTimer > 24) {
@@ -472,7 +475,7 @@ public class GameMap {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
         for (Smoke s : smokes) {
-            int tileIndex = ((s.timer) >> 3) % 3;
+            int frame = ((s.timer) >> 3) % 3;
 
             int rx = s.x / FACTOR - mapXScreen;
             int ry = s.y / FACTOR - mapYScreen;
@@ -487,7 +490,7 @@ public class GameMap {
                 if (alpha > 255)
                     alpha = 255;
 
-                AtlasRegion tile = tiles.get(272 + tileIndex);
+                AtlasRegion tile = tiles.get(272 + frame);
 
                 Sprite sprite = new Sprite(tile);
 
@@ -501,102 +504,102 @@ public class GameMap {
         }
     }
 
-    private int animateTile(int piece) {
-        if (piece < 0)
-            return piece;
+    private int animateTile(int tileIndex) {
+        if (tileIndex < 0)
+            return tileIndex;
 
-        if (piece == 110 && animTimer > 16)
+        if (tileIndex == 110 && animTimer > 16)
             return 111;
-        if (piece == 110 && animTimer > 8)
+        if (tileIndex == 110 && animTimer > 8)
             return 112;
 
-        if (piece == 64 && animTimer > 16)
+        if (tileIndex == 64 && animTimer > 16)
             return 66;
-        if (piece == 64 && animTimer > 8)
+        if (tileIndex == 64 && animTimer > 8)
             return 65;
 
-        if (piece == 67 && (animFlag & 0x01) == 1)
+        if (tileIndex == 67 && (animFlag & 0x01) == 1)
             return 69;
-        if (piece == 68 && (animFlag & 0x01) == 1)
+        if (tileIndex == 68 && (animFlag & 0x01) == 1)
             return 70;
 
-        if (piece == 26 && animTimer > 12 && (animFlag & 0x01) == 0)
+        if (tileIndex == 26 && animTimer > 12 && (animFlag & 0x01) == 0)
             return 24;
-        if (piece == 26 && animTimer > 12 && (animFlag & 0x01) == 1)
+        if (tileIndex == 26 && animTimer > 12 && (animFlag & 0x01) == 1)
             return 25;
 
-        if (piece == 146 && animTimer > 12 && (animFlag & 0x01) == 0)
+        if (tileIndex == 146 && animTimer > 12 && (animFlag & 0x01) == 0)
             return 144;
-        if (piece == 146 && animTimer > 12 && (animFlag & 0x01) == 1)
+        if (tileIndex == 146 && animTimer > 12 && (animFlag & 0x01) == 1)
             return 145;
 
-        if (piece == 27 && (animFlag & 0x01) == 1)
+        if (tileIndex == 27 && (animFlag & 0x01) == 1)
             return 28;
-        if (piece == 147 && (animFlag & 0x01) == 1)
+        if (tileIndex == 147 && (animFlag & 0x01) == 1)
             return 148;
 
-        if (piece == 115 && animFlag > 3)
+        if (tileIndex == 115 && animFlag > 3)
             return -1;
-        if (piece == 130 && animFlag > 3)
+        if (tileIndex == 130 && animFlag > 3)
             return -1;
 
-        if (piece == 32 && animFlag > 3)
+        if (tileIndex == 32 && animFlag > 3)
             return 30;
-        if (piece == 33 && animFlag > 3)
+        if (tileIndex == 33 && animFlag > 3)
             return 31;
-        if (piece == 36 && animFlag > 3)
+        if (tileIndex == 36 && animFlag > 3)
             return 34;
-        if (piece == 37 && animFlag > 3)
+        if (tileIndex == 37 && animFlag > 3)
             return 35;
 
-        if (piece == 422 && animFlag > 3)
+        if (tileIndex == 422 && animFlag > 3)
             return 420;
-        if (piece == 423 && animFlag > 3)
+        if (tileIndex == 423 && animFlag > 3)
             return 421;
 
-        if (piece == 162 && animFlag > 3)
+        if (tileIndex == 162 && animFlag > 3)
             return 160;
-        if (piece == 163 && animFlag > 3)
+        if (tileIndex == 163 && animFlag > 3)
             return 161;
-        if (piece == 166 && animFlag > 3)
+        if (tileIndex == 166 && animFlag > 3)
             return 164;
-        if (piece == 167 && animFlag > 3)
+        if (tileIndex == 167 && animFlag > 3)
             return 165;
 
-        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 0)
+        if (tileIndex == 76 && animTimer <= 12 && (animFlag & 0x03) == 0)
             return -1;
-        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 0)
+        if (tileIndex == 76 && animTimer > 12 && (animFlag & 0x03) == 0)
             return 79;
-        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 1)
+        if (tileIndex == 76 && animTimer <= 12 && (animFlag & 0x03) == 1)
             return 78;
-        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 1)
+        if (tileIndex == 76 && animTimer > 12 && (animFlag & 0x03) == 1)
             return 77;
-        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 2)
+        if (tileIndex == 76 && animTimer > 12 && (animFlag & 0x03) == 2)
             return 77;
-        if (piece == 76 && animTimer <= 12 && (animFlag & 0x03) == 3)
+        if (tileIndex == 76 && animTimer <= 12 && (animFlag & 0x03) == 3)
             return 78;
-        if (piece == 76 && animTimer > 12 && (animFlag & 0x03) == 3)
+        if (tileIndex == 76 && animTimer > 12 && (animFlag & 0x03) == 3)
             return 79;
 
-        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 0)
+        if (tileIndex == 150 && animTimer <= 12 && (animFlag & 0x03) == 0)
             return -1;
-        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 0)
+        if (tileIndex == 150 && animTimer > 12 && (animFlag & 0x03) == 0)
             return 153;
-        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 1)
+        if (tileIndex == 150 && animTimer <= 12 && (animFlag & 0x03) == 1)
             return 152;
-        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 1)
+        if (tileIndex == 150 && animTimer > 12 && (animFlag & 0x03) == 1)
             return 151;
-        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 2)
+        if (tileIndex == 150 && animTimer > 12 && (animFlag & 0x03) == 2)
             return 151;
-        if (piece == 150 && animTimer <= 12 && (animFlag & 0x03) == 3)
+        if (tileIndex == 150 && animTimer <= 12 && (animFlag & 0x03) == 3)
             return 152;
-        if (piece == 150 && animTimer > 12 && (animFlag & 0x03) == 3)
+        if (tileIndex == 150 && animTimer > 12 && (animFlag & 0x03) == 3)
             return 153;
 
-        return piece;
+        return tileIndex;
     }
 
-    public int collideShipBullet(int x, int y, int strength) {
+    public int collideShipBullet(int bulletXScreenF, int bulletYScreenF, int bulletStrength) {
         int retval = 0;
 
         List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
@@ -620,7 +623,8 @@ public class GameMap {
                 ey += 8;
             }
 
-            int distance = (x - ex) * (x - ex) + (y - ey) * (y - ey);
+            int distance = (bulletXScreenF - ex) * (bulletXScreenF - ex)
+                    + (bulletYScreenF - ey) * (bulletYScreenF - ey);
 
             int tolerance = 100;
 
@@ -642,7 +646,7 @@ public class GameMap {
             retval = 1;
         }
 
-        if (selected != null && selected.takeShot(strength)) {
+        if (selected != null && selected.takeShot(bulletStrength)) {
             int generate_smoke = -1;
 
             if (selected.type != EnemyType.BULLET)
@@ -831,31 +835,11 @@ public class GameMap {
 
     public boolean isShipInFuelRecharge(int shipXScreenF, int shipYScreenF) {
         for (FuelRecharge f : fuelRecharges) {
-            if (f.isInside(shipXScreenF, shipYScreenF))
+            if (f.isInside(shipXScreenF, shipYScreenF)) {
                 return true;
+            }
         }
         return false;
-    }
-
-    //FIXME: make it private
-    public boolean checkEnemyWithMapCollision(EnemyBullet enemy, int mapXScreen, int mapYScreen,
-            ShapeRenderer renderer) {
-        int tileIndex = enemy.getBulletTileIndex();
-
-        Polygon objectPolygon = Assets.assets.graphicAssets.tilePolygons[tileIndex];
-        if (objectPolygon == null) {
-            return false;
-        }
-
-        int objectXScreenF = enemy.x / FACTOR;
-        int objectYScreenF = enemy.y / FACTOR;
-
-        int objectXScreen = enemy.x / FACTOR - mapXScreen - 8; //TODO: can we avoid using -8 here?
-        int objectYScreen = enemy.y / FACTOR - mapYScreen - 8;
-
-        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - objectYScreen);
-
-        return checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, enemy, renderer);
     }
 
     public boolean checkCollision(int objectXScreenF, int objectYScreenF, int mapXScreen, int mapYScreen,
@@ -865,11 +849,11 @@ public class GameMap {
         int regionXScreenF = objectXScreenF - regionWidth / 2;
         int regionYScreenF = objectYScreenF - regionHeight / 2;
 
-        return checkCollision(regionXScreenF, regionYScreenF, regionWidth, regionHeight, mapXScreen, mapYScreen,
+        return checkCollisionInRegion(regionXScreenF, regionYScreenF, regionWidth, regionHeight, mapXScreen, mapYScreen,
                 objectPolygon, enemy, renderer);
     }
 
-    private boolean checkCollision(int regionXScreenF, int regionYScreenF, int regionWidth, int regionHeight,
+    private boolean checkCollisionInRegion(int regionXScreenF, int regionYScreenF, int regionWidth, int regionHeight,
             int mapXScreen, int mapYScreen, Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
         if (objectPolygon == null)
             return false;

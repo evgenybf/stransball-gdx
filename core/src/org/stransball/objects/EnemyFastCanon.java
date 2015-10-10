@@ -25,13 +25,12 @@ public class EnemyFastCanon extends Enemy {
         }
     }
 
-    public boolean updateSimpleCanon(int shipXScreenF, int shipYScreenF, List<Enemy> enemies) {
+    private boolean updateSimpleCanon(int shipXScreenF, int shipYScreenF, List<Enemy> enemies) {
         if (state == 0) {
             switch (direction) {
-            case 0:
+            case UP:
                 if (shipXScreenF >= (x - 8) && shipXScreenF <= (x + 24) && shipYScreenF < y && shipYScreenF > y - 160) {
-                    Enemy e;
-                    e = new EnemyBullet(map);
+                    Enemy e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 0) * FACTOR;
@@ -40,15 +39,16 @@ public class EnemyFastCanon extends Enemy {
                     e.life = 1;
                     e.tileIndex = 344;
 
+                    fixPosition(e);
+
                     enemies.add(e);
                     state = 64;
                     Assets.assets.soundAssets.shot.play();
                 }
                 break;
-            case 1:
+            case DOWN:
                 if (shipXScreenF >= (x - 8) && shipXScreenF <= (x + 24) && shipYScreenF > y && shipYScreenF < y + 160) {
-                    Enemy e;
-                    e = new EnemyBullet(map);
+                    Enemy e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 8) * FACTOR;
                     e.y = (y + 16) * FACTOR;
@@ -57,15 +57,16 @@ public class EnemyFastCanon extends Enemy {
                     e.life = 1;
                     e.tileIndex = 344;
 
+                    fixPosition(e);
+
                     enemies.add(e);
                     state = 64;
                     Assets.assets.soundAssets.shot.play();
                 }
                 break;
-            case 2:
+            case RIGHT:
                 if (shipYScreenF >= (y - 8) && shipYScreenF <= (y + 24) && shipXScreenF > x && shipXScreenF < x + 160) {
-                    Enemy e;
-                    e = new EnemyBullet(map);
+                    Enemy e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 16) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -74,15 +75,16 @@ public class EnemyFastCanon extends Enemy {
                     e.life = 1;
                     e.tileIndex = 344;
 
+                    fixPosition(e);
+
                     enemies.add(e);
                     state = 64;
                     Assets.assets.soundAssets.shot.play();
                 }
                 break;
-            case 3:
+            case LEFT:
                 if (shipYScreenF >= (y - 8) && shipYScreenF <= (y + 24) && shipXScreenF < x && shipXScreenF > x - 160) {
-                    Enemy e;
-                    e = new EnemyBullet(map);
+                    Enemy e = new EnemyBullet(map);
                     e.state = 8;
                     e.x = (x + 0) * FACTOR;
                     e.y = (y + 7) * FACTOR;
@@ -90,6 +92,8 @@ public class EnemyFastCanon extends Enemy {
                     e.speedY = 0;
                     e.life = 1;
                     e.tileIndex = 344;
+
+                    fixPosition(e);
 
                     enemies.add(e);
                     state = 64;
@@ -105,6 +109,12 @@ public class EnemyFastCanon extends Enemy {
         }
 
         return true;
+    }
+
+    @Deprecated
+    private void fixPosition(Enemy e) {
+        e.x -= 8 * FACTOR;
+        e.y -= 8 * FACTOR;
     }
 
     @Override

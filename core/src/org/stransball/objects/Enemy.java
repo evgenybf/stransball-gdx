@@ -1,5 +1,7 @@
 package org.stransball.objects;
 
+import static java.lang.String.format;
+
 import java.util.List;
 
 import org.stransball.GameMap;
@@ -14,13 +16,26 @@ public abstract class Enemy {
         BULLET, CANON, FAST_CANON, DIRECTIONAL_CANON, TANK, DESTROYED_TANK, EXPLOSION, DIRECTIONAL_CANON_2,
     }
 
+    public enum CanonDirection {
+        UP, DOWN, RIGHT, LEFT;
+
+        public static CanonDirection fromInt(int directione) {
+            for (CanonDirection value : values()) {
+                if (value.ordinal() == directione) {
+                    return value;
+                }
+            }
+            throw new IllegalArgumentException(format("Invalid direction: %d", directione));
+        }
+    }
+
     protected final GameMap map;
     public final EnemyType type;
     public int state;
     public int life;
     public int x; //FIXME: for several types of enemies (explosion) it's not in internal coordinates
     public int y; //FIXME: for several types of enemies (explosion) it's not in internal coordinates
-    public int direction;
+    public CanonDirection direction;
     public int turretAngle;
     public int tankAngle;
     public int state2;
