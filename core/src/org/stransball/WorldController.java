@@ -558,8 +558,8 @@ public class WorldController {
         int objectXScreen = objectXScreenF - mapXScreen;
         int objectYScreen = objectYScreenF - mapYScreen;
 
-        // ship's polygon is centralised
-        objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen /*+ map.stepY*/));
+        // ship's polygon is centralized
+        objectPolygon.setPosition(objectXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
         return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
                 renderer);
@@ -727,6 +727,7 @@ public class WorldController {
                 // I have something to do with it in the future but for now it's ok as the polygon's coordinates are correct
                 // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
 
+                //shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
                 shipSprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
 
                 shipSprite.draw(batch);
