@@ -127,6 +127,7 @@ public class EnemyDirectionalCanon extends Enemy {
                 sprite.setCenter(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + 14));
                 sprite.draw(batch);
             }
+
             if (detector != null) {
                 Polygon objectPolygon = assets.graphicAssets.tilePolygons[254];
 
@@ -144,6 +145,12 @@ public class EnemyDirectionalCanon extends Enemy {
                 Sprite sprite2 = new Sprite(Assets.assets.graphicAssets.tiles.get(tileIndex));
                 sprite2.setPosition(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + map.stepY));
                 sprite2.draw(batch);
+            }
+
+            if (detector != null) {
+                Polygon objectPolygon2 = assets.graphicAssets.tilePolygons[tileIndex];
+                objectPolygon2.setPosition(xScreen, (yScreen + map.stepY));
+                detector.handlePolygon(objectPolygon2);
             }
         }
     }
