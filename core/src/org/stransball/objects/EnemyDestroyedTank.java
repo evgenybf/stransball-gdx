@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.Array;
 
 public class EnemyDestroyedTank extends Enemy {
 
+    int state2;
+
     protected EnemyDestroyedTank(GameMap map) {
         super(EnemyType.DESTROYED_TANK, map);
     }
@@ -38,7 +40,7 @@ public class EnemyDestroyedTank extends Enemy {
             draw_destroyedtank(batch, x, y, detector);
     }
 
-    void draw_destroyedtank(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
+    private void draw_destroyedtank(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
         int tmp = 0;
 
         if ((state2 & 0x8) == 0)

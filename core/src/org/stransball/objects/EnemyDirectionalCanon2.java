@@ -13,6 +13,8 @@ public class EnemyDirectionalCanon2 extends Enemy {
 
     public EnemyDirectionalCanon2(GameMap map) {
         super(EnemyType.DIRECTIONAL_CANON_2, map);
+        turretAngle = 0;
+        tankAngle = 0;
     }
 
     @Override

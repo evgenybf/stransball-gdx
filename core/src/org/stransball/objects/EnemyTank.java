@@ -7,7 +7,9 @@ import static com.badlogic.gdx.math.MathUtils.degreesToRadians;
 import static com.badlogic.gdx.math.MathUtils.radiansToDegrees;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static java.lang.Math.abs;
+import static org.stransball.Assets.assets;
 import static org.stransball.Constants.FACTOR;
+import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
 import java.util.List;
 
@@ -19,39 +21,48 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
 public class EnemyTank extends Enemy {
 
+    private int state2;
+
     public EnemyTank(GameMap map) {
         super(EnemyType.TANK, map);
+        state2 = 0;
+        turretAngle = 90;
+        tankAngle = 0;
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+    public void update(int ship_x, int ship_y, int ship_speed_x, int ship_speed_y, int mapXScreen, int mapYScreen,
+            List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         //TODO: Not implemented yet
-        //            int i;
-        //            int gdist1=-1,gdist2=-1;
-        //            boolean lcol=false,rcol=false;
-        //            /* TANK: */ 
-        //            SDL_FillRect(enemy_sfc,0,0);
-        //            SDL_FillRect(back_sfc,0,0);
-        //            draw_tank(enemy_sfc,masks,e.x-32,e.y-32);
-        //            draw_map_noenemies(back_sfc,masks,e.x-32,e.y-32,64,64);
 
-        //            /* Compute the distance of the tracks to the ground: */ 
-        //            for(i=32;i<64 && (gdist1==-1 || gdist2==-1);i++) {
-        //                if (getpixel(back_sfc,24,i)!=0 && gdist1==-1) gdist1=i-45;
-        //                if (getpixel(back_sfc,40,i)!=0 && gdist2==-1) gdist2=i-45;
-        //            }  
-        //            if (gdist1==-1) gdist1=19;
-        //            if (gdist2==-1) gdist2=19;
-        //            if (getpixel(back_sfc,16,28)!=0) lcol=true;
-        //            if (getpixel(back_sfc,48,28)!=0) rcol=true;
+        int gdist1 = -1, gdist2 = -1;
+        boolean lcol = false, rcol = false;
+        // TANK: 
+        //        draw_tank(enemy_sfc, masks, e.x - 32, e.y - 32);
+        //        draw_map_noenemies(back_sfc, masks, e.x - 32, e.y - 32, 64, 64);
 
-        //            cycle_tank(ship_x,ship_y,ship_speed_x,ship_speed_y,gdist1,gdist2,lcol,rcol,newEnemies);
+        // Compute the distance of the tracks to the ground:  
+        //        for (int i = 32; i < 64 && (gdist1 == -1 || gdist2 == -1); i++) {
+        //            if (getpixel(back_sfc, 24, i) != 0 && gdist1 == -1)
+        //                gdist1 = i - 45;
+        //            if (getpixel(back_sfc, 40, i) != 0 && gdist2 == -1)
+        //                gdist2 = i - 45;
+        //        }
+        if (gdist1 == -1)
+            gdist1 = 19;
+        if (gdist2 == -1)
+            gdist2 = 19;
+        //        if (getpixel(back_sfc, 16, 28) != 0)
+        //                    lcol = true;
+        //        if (getpixel(back_sfc, 48, 28) != 0)
+        //                    rcol = true;
+
+        cycle_tank(ship_x, ship_y, ship_speed_x, ship_speed_y, gdist1, gdist2, lcol, rcol, newEnemies);
     }
 
     boolean cycle_tank(int ship_x, int ship_y, int ship_sx, int ship_sy, int gdist1, int gdist2, boolean lcol,
@@ -84,12 +95,12 @@ public class EnemyTank extends Enemy {
         }
 
         if (((gdist1 + gdist2) / 2) > 0) {
-            y++;
+            //            y++; //FIXME
             gdist1--;
             gdist2--;
         }
         if (((gdist1 + gdist2) / 2) < 0) {
-            y--;
+            //            y--; //FIXME
             gdist1++;
             gdist2++;
         }
@@ -168,7 +179,7 @@ public class EnemyTank extends Enemy {
                     min = 3.5779242F;
                     max = 6.0213847F;
 
-                    // Copute the error given an angle "alpha":
+                    // Compute the error given an angle "alpha":
                     for (alpha = min; alpha < max; alpha += 0.02F) {
                         b_sx = (float) (cos(alpha));
                         b_sy = (float) (sin(alpha));
@@ -212,10 +223,12 @@ public class EnemyTank extends Enemy {
                     radians = best_alpha;
                 }
 
-                while (desired_turret_angle < 0)
+                while (desired_turret_angle < 0) {
                     desired_turret_angle += 360;
-                while (desired_turret_angle >= 360)
+                }
+                while (desired_turret_angle >= 360) {
                     desired_turret_angle -= 360;
+                }
                 desired_turret_angle = 360 - desired_turret_angle;
                 for (i = 0; i < 2; i++) {
                     if (turretAngle < 0)
@@ -240,10 +253,9 @@ public class EnemyTank extends Enemy {
 
             if ((tankType < 3 && state2 >= 128) || (tankType == 3 && state2 >= 96)) {
                 if (turretAngle > 15 && turretAngle < 175) {
-                    if ((dx * dx) + (dy * dy) < 30000) {
+                    if (dx * dx + y * dy < 30000) {
                         // Fire!:
-                        Enemy e;
-                        e = new EnemyBullet(map);
+                        Enemy e = new EnemyBullet(map);
                         e.state = 8;
                         e.speedX = (int) (cos(radians) * FACTOR);
                         e.speedY = -(int) (sin(radians) * FACTOR);
@@ -281,112 +293,184 @@ public class EnemyTank extends Enemy {
 
     private void drawTank(SpriteBatch batch, int mapXScreen, int mapYScreen, ICollisionDetector detector) {
         if (x > (-32 + x) && x < (mapXScreen + x + 32) && y > (-32 + y) && y < (mapYScreen + y + 32))
-            draw_tank(batch, x, y, detector);
+            draw_tank(batch, mapXScreen, mapYScreen, detector);
     }
 
     private void draw_tank(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
-        if (batch == null)
-            return;
-
         int tmp = 0;
 
         if ((state2 & 0x8) == 0)
             tmp = 2;
 
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
+        Polygon[] tilePolygons = assets.graphicAssets.tilePolygons;
 
-        //        SDL_Rect d;
+        int dx = (x - map_x) - 24;
+        int dy = (y - map_y) - 16;
 
-        AtlasRegion t1;
-        AtlasRegion t2;
+        int tankAngle_ = tankAngle;
+        int turretAngle_ = -turretAngle;
+
+        int t1idx;
+        int t2idx;
+
+        //
+        // 1. Tank tracks:
+
         if (tankType < 3) {
-            t1 = tiles.get(282 + 4 * tankType + tmp);//.draw(0,0,tank_sfc);
-            t2 = tiles.get(283 + 4 * tankType + tmp);//.draw(16,0,tank_sfc);
+            t1idx = 282 + 4 * tankType + tmp;
+            t2idx = 283 + 4 * tankType + tmp;
         } else {
-            t1 = tiles.get(461 + ((state / 2) % 4) * 2);//.draw(0,0,tank_sfc);
-            t2 = tiles.get(462 + ((state / 2) % 4) * 2);//.draw(16,0,tank_sfc);
-        }
-        {
-            Sprite s1 = new Sprite(t1);
-            s1.setPosition(0, 0);
-
-            s1.draw(batch);
-        }
-        {
-            Sprite s2 = new Sprite(t2);
-            s2.setPosition(16, 0);
-            s2.draw(batch);
-
+            t1idx = 461 + ((state / 2) % 4) * 2;
+            t2idx = 462 + ((state / 2) % 4) * 2;
         }
 
-        //        sge_transform(tank_sfc,tank_sfc2, (float)(tankAngle), 1.0F, 1.0F, 16, 8, 24, 24, 0);
+        if (batch != null) {
+            {
+                //draw(0,0,tank_sfc);
+                Sprite s1 = new Sprite(tiles.get(t1idx));
+                s1.setOrigin(16, 8);
+                s1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
+                s1.rotate(tankAngle_);
+                s1.draw(batch);
+            }
+            {
+                //draw(16,0,tank_sfc);
+                Sprite s2 = new Sprite(tiles.get(t2idx));
+                s2.setOrigin(16, 8);
+                s2.rotate(tankAngle_);
+                s2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
+                s2.draw(batch);
+            }
+            //sge_transform(tank_sfc,tank_sfc2, (float)(tankAngle), 1.0F, 1.0F, 16, 8, 24, 24, 0);
+        }
 
-        // Turret: 
+        if (detector != null) {
+            {
+                Polygon p1 = tilePolygons[t1idx];
+                p1.setOrigin(16, 8);
+                p1.setPosition(dx + 0 + 8, (dy + 0 + 30));
+                p1.rotate(tankAngle_);
+                detector.handlePolygon(p1);
+            }
+            {
+                Polygon p2 = tilePolygons[t2idx];
+                p2.setOrigin(16, 8);
+                p2.rotate(tankAngle_);
+                p2.setPosition(dx + 16 + 8, (dy + 0 + 30));
+                detector.handlePolygon(p2);
+            }
+        }
+
+        //
+        // 2. Turret:
+
         if (tankType < 3) {
-            AtlasRegion t3 = null;
-            if (turretAngle < 37) {
-                t3 = tiles.get(271); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 37 && turretAngle < 53) {
-                t3 = tiles.get(270); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 53 && turretAngle < 75) {
-                t3 = tiles.get(269); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 75 && turretAngle < 105) {
-                t3 = tiles.get(268); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 105 && turretAngle < 127) {
-                t3 = tiles.get(267); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 127 && turretAngle < 143) {
-                t3 = tiles.get(266); //.draw(16,8,tank_sfc3);
-            } else if (turretAngle >= 143) {
-                t3 = tiles.get(265); //.draw(16,8,tank_sfc3);
-            }
-
-            if (t3 != null) {
-                Sprite s3 = new Sprite(t3);
-                s3.setPosition(16, 8);
-                s3.draw(batch);
-            }
-
-            AtlasRegion t4 = tiles.get(262 + tankType); //.draw(16,8,tank_sfc3);
             {
-                Sprite s4 = new Sprite(t4);
-                s4.setPosition(16, 8);
-                s4.draw(batch);
+                int t3idx = -1;
+                if (turretAngle < 37) {
+                    t3idx = 271;
+                } else if (turretAngle >= 37 && turretAngle < 53) {
+                    t3idx = 270;
+                } else if (turretAngle >= 53 && turretAngle < 75) {
+                    t3idx = 269;
+                } else if (turretAngle >= 75 && turretAngle < 105) {
+                    t3idx = 268;
+                } else if (turretAngle >= 105 && turretAngle < 127) {
+                    t3idx = 267;
+                } else if (turretAngle >= 127 && turretAngle < 143) {
+                    t3idx = 266;
+                } else if (turretAngle >= 143) {
+                    t3idx = 265;
+                }
+
+                if (batch != null) {
+                    if (t3idx >= 0) {
+                        //draw(16,8,tank_sfc3);
+                        Sprite s3 = new Sprite(tiles.get(t3idx));
+                        s3.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 8 + 14));
+                        s3.draw(batch);
+                    }
+                }
+
+                if (detector != null) {
+                    if (t3idx >= 0) {
+                        Polygon p3 = tilePolygons[t3idx];
+                        p3.setPosition(dx + 16, (dy + 8 + 14));
+                        detector.handlePolygon(p3);
+                    }
+                }
+            }
+
+            {
+                int t4idx = 262 + tankType;
+                if (batch != null) {
+                    //.draw(16,8,tank_sfc3);
+                    Sprite s4 = new Sprite(tiles.get(t4idx));
+                    s4.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 8 + 14));
+                    s4.draw(batch);
+                }
+
+                if (detector != null) {
+                    Polygon p4 = tilePolygons[t4idx];
+                    p4.setPosition(dx + 16, dy + 8 + 14);
+                    detector.handlePolygon(p4);
+                }
             }
         } else {
-            //            SDL_Rect d;
-
-            AtlasRegion t5 = tiles.get(334); //.draw(0,0,canon_sfc);
             {
-                Sprite s5 = new Sprite(t5);
-                s5.setPosition(0, 0);
-                s5.draw(batch);
+                int t5idx = 334;
+
+                if (batch != null) {
+                    //.draw(0,0,canon_sfc);
+                    Sprite s5 = new Sprite(tiles.get(t5idx));
+                    s5.setOrigin(0, 4);
+                    s5.setScale(0.75f);
+                    s5.rotate(turretAngle_);
+                    s5.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 14));
+                    s5.draw(batch);
+                    // sge_transform(canon_sfc,canon_sfc2, (float)(-turretAngle), 0.75F, 0.75F, 0, 4, 16, 16, 0);
+                    // d.x=8;
+                    // d.y=0;
+                    // SDL_BlitSurface(canon_sfc2,0,tank_sfc3,&d);
+                }
+
+                if (detector != null) {
+                    Polygon p5 = tilePolygons[t5idx];
+                    p5.setOrigin(0, 4);
+                    p5.setScale(0.75f, 0.75f);
+                    p5.rotate(turretAngle_);
+                    p5.setPosition(dx + 16, (dy + 14));
+                    detector.handlePolygon(p5);
+                }
             }
-            //            sge_transform(canon_sfc,canon_sfc2, (float)(-turretAngle), 0.75F, 0.75F, 0, 4, 16, 16, 0);
 
-            //            d.x=8;
-            //            d.y=0;
-            //            SDL_BlitSurface(canon_sfc2,0,tank_sfc3,&d);
-
-            AtlasRegion t6 = tiles.get(460); //.draw(16,6,tank_sfc3);
             {
-                Sprite s6 = new Sprite(t6);
-                s6.setPosition(16, 6);
-                s6.draw(batch);
+                int t6idx = 460;
+                if (batch != null) {
+                    Sprite s6 = new Sprite(tiles.get(t6idx));
+                    s6.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 6 + 14));
+                    s6.draw(batch);
+                }
+
+                if (detector != null) {
+                    Polygon p6 = tilePolygons[t6idx];
+                    p6.setPosition(dx + 16, (dy + 6 + 14));
+                    detector.handlePolygon(p6);
+                }
             }
         }
 
-        //        SDL_BlitSurface(tank_sfc2,0,tank_sfc3,0);
-
-        //        int d.x=(x-map_x)-24;
-        //        int d.y=(y-map_y)-16;
-
-        //        SDL_BlitSurface(tank_sfc3,0,screen,&d);
-
+        // SDL_BlitSurface(tank_sfc2,0,tank_sfc3,0);
+        // int d.x=(x-map_x)-24;
+        // int d.y=(y-map_y)-16;
+        // SDL_BlitSurface(tank_sfc3,0,screen,&d);
     }
 
     public EnemyDestroyedTank toDestroyedTank() {
         EnemyDestroyedTank enemy = new EnemyDestroyedTank(map);
         copyTo(enemy);
+        enemy.state2 = state2; // Do we really need to copy it?
         return enemy;
     }
 

@@ -37,12 +37,11 @@ public abstract class Enemy {
     public int x; //TODO: for several types of enemies (explosion) it's not in internal coordinates
     public int y;
     public CanonDirection direction;
-    public int turretAngle;
-    public int tankAngle;
-    public int state2;
+    protected int turretAngle;
+    protected int tankAngle;
     public int tankType;
-    public int speedX;
-    public int speedY;
+    protected int speedX;
+    protected int speedY;
     public int tileIndex;
 
     public Enemy(EnemyType type, GameMap map) {
@@ -69,7 +68,6 @@ public abstract class Enemy {
         enemy.direction = direction;
         enemy.turretAngle = turretAngle;
         enemy.tankAngle = tankAngle;
-        enemy.state2 = state2;
         enemy.tankType = tankType;
         enemy.speedX = speedX;
         enemy.speedY = speedY;

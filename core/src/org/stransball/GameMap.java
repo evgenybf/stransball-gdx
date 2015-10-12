@@ -144,7 +144,7 @@ public class GameMap {
                     e.x = x;
                     e.y = y;
                     e.direction = Enemy.CanonDirection.fromInt(direction);
-                    e.turretAngle = 0;
+
                     enemies.add(e);
                 }
                 if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
@@ -155,8 +155,6 @@ public class GameMap {
                     e.x = x;
                     e.y = y;
                     e.direction = Enemy.CanonDirection.fromInt(direction);
-                    e.tankAngle = 0;
-                    e.turretAngle = 0;
                     enemies.add(e);
                 }
             }
@@ -205,17 +203,11 @@ public class GameMap {
                 int row = scanner.nextInt();
                 int type = scanner.nextInt();
 
-                int x = col * 16;
-                int y = row * 16;
-
                 e.state = 1;
-                e.state2 = 0;
-                e.x = x;
-                e.y = y;
+                e.x = col * 16;
+                e.y = row * 16;
                 e.life = 10;
                 e.tankType = type;
-                e.tankAngle = 0;
-                e.turretAngle = 90;
                 enemies.add(e);
             }
         }
@@ -231,7 +223,8 @@ public class GameMap {
         stepY = Assets.assets.graphicAssets.tiles.get(0).originalHeight;
     }
 
-    public void update(int shipXInternal, int shipYInternal, int shipSpeedX, int shipSpeedY, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+    public void update(int shipXInternal, int shipYInternal, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, ShapeRenderer renderer) {
         { // Tile animation
             animTimer++;
 
@@ -248,7 +241,8 @@ public class GameMap {
 
         background.update();
 
-        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, renderer);
+        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen,
+                renderer);
 
         updateDoors();
         updateSwitches();
@@ -343,13 +337,14 @@ public class GameMap {
         }
     }
 
-    private void updateEnemies(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY,
-            int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+    private void updateEnemies(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, ShapeRenderer renderer) {
         List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
         List<Enemy> newEnemies = new ArrayList<Enemy>();
 
         for (Enemy e : enemies) {
-            e.update(shipXScreenF, shipYScreenF, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, enemiesToDelete, newEnemies, renderer);
+            e.update(shipXScreenF, shipYScreenF, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, enemiesToDelete,
+                    newEnemies, renderer);
         }
 
         enemies.removeAll(enemiesToDelete);
