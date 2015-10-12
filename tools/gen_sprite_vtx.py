@@ -123,6 +123,8 @@ def main():
             print (obj)
 
             sim = im[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
+            sim = cv2.copyMakeBorder(sim, 1, 1, 1, 1, cv2.BORDER_CONSTANT)
+
             sim_color = im_color[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
 
             imgray = cv2.cvtColor(sim, cv2.COLOR_BGR2GRAY)
@@ -137,10 +139,13 @@ def main():
                 for vtx in contours[1:]:
                     if len(max_vtx) < len(vtx):
                         max_vtx = vtx
+                max_vtx -= 1 # offset border around the image
                 epsilon = 0.01 * cv2.arcLength(max_vtx, True)
-                approx = cv2.approxPolyDP(max_vtx, epsilon, True)
+                approx = cv2.approxPolyDP(max_vtx+1, epsilon, True) 
+                approx_color = cv2.approxPolyDP(max_vtx, epsilon, True) 
+
                 cv2.drawContours(sim, approx, -1, colors[0], 1)
-                cv2.drawContours(sim_color, approx, -1, colors[0], 1)
+                cv2.drawContours(sim_color, approx_color, -1, colors[0], 1)
 
                 if DEBUG_OUT:
                     import os.path
@@ -153,6 +158,8 @@ def main():
             else:
                 print ("...skipped")
                 write_vec(fo, obj, None)
+                cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
+                cv2.imwrite("output/%s_color.png" % (obj.get_full_name(),), sim_color)
 
 
 if __name__ == "__main__":
