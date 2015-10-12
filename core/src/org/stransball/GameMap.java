@@ -27,6 +27,7 @@ import org.stransball.objects.StarsLayer;
 import org.stransball.objects.Switch;
 import org.stransball.util.CollisionDetectionUtils;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
@@ -230,7 +231,7 @@ public class GameMap {
         stepY = Assets.assets.graphicAssets.tiles.get(0).originalHeight;
     }
 
-    public void update(int shipXInternal, int shipYInternal, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
+    public void update(int shipXInternal, int shipYInternal, int shipSpeedX, int shipSpeedY, int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
         { // Tile animation
             animTimer++;
 
@@ -247,7 +248,7 @@ public class GameMap {
 
         background.update();
 
-        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, mapXScreen, mapYScreen, renderer);
+        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, renderer);
 
         updateDoors();
         updateSwitches();
@@ -342,13 +343,13 @@ public class GameMap {
         }
     }
 
-    private void updateEnemies(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen,
-            ShapeRenderer renderer) {
+    private void updateEnemies(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY,
+            int mapXScreen, int mapYScreen, ShapeRenderer renderer) {
         List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
         List<Enemy> newEnemies = new ArrayList<Enemy>();
 
         for (Enemy e : enemies) {
-            e.update(shipXScreenF, shipYScreenF, mapXScreen, mapYScreen, enemiesToDelete, newEnemies, renderer);
+            e.update(shipXScreenF, shipYScreenF, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, enemiesToDelete, newEnemies, renderer);
         }
 
         enemies.removeAll(enemiesToDelete);
@@ -865,6 +866,7 @@ public class GameMap {
                 mapXScreen, mapYScreen);
 
         if (renderer != null) {
+            renderer.setColor(Color.WHITE);
             CollisionDetectionUtils.drawPolygons(renderer, objectPolygons);
         }
 

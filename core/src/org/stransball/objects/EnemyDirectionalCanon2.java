@@ -1,5 +1,6 @@
 package org.stransball.objects;
 
+import java.awt.dnd.InvalidDnDOperationException;
 import java.util.List;
 
 import org.stransball.GameMap;
@@ -15,10 +16,10 @@ public class EnemyDirectionalCanon2 extends Enemy {
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
-            List<Enemy> newEnemies, ShapeRenderer renderer) {
-        // TODO Auto-generated method stub
-
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+        throw new InvalidDnDOperationException(
+                "Not imepelemted yet - there are no this sort of cannons in the initial levels pack");
     }
 
     @Override
@@ -34,8 +35,8 @@ public class EnemyDirectionalCanon2 extends Enemy {
 
     private void drawDirectionalCanon2(SpriteBatch batch, int i, int mapXScreen, int mapYScreen,
             ICollisionDetector detector) {
-        // TODO Auto-generated method stub
-        
+        throw new InvalidDnDOperationException(
+                "Not imepelemted yet - there are no this sort of cannons in the initial levels pack");
     }
 
 }

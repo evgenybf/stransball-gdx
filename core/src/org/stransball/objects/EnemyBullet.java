@@ -21,8 +21,8 @@ public class EnemyBullet extends Enemy {
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
-            List<Enemy> newEnemies, ShapeRenderer renderer) {
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         boolean collision = checkCollisionOfEnemyAndMap(mapXScreen, mapYScreen, renderer);
         if (!(updateBullet(map.getCols() * 16, map.getRows() * 16, collision))) {
             enemiesToDelete.add(this);

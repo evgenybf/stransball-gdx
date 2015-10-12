@@ -18,13 +18,14 @@ public class EnemyExplosion extends Enemy {
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
-            List<Enemy> newEnemies, ShapeRenderer renderer) {
-        // TODO Auto-generated method stub
-
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+        if (!updateExplosion()) {
+            enemiesToDelete.add(this);
+        }
     }
 
-    public boolean updateExplosion() {
+    private boolean updateExplosion() {
         state++;
         return state < 48;
     }

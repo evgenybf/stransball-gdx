@@ -18,8 +18,8 @@ public class EnemyFastCanon extends Enemy {
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
-            List<Enemy> newEnemies, ShapeRenderer renderer) {
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         if (!updateSimpleCanon(shipXScreenF, shipYScreenF, newEnemies)) {
             enemiesToDelete.add(this);
         }
@@ -114,7 +114,6 @@ public class EnemyFastCanon extends Enemy {
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
             ICollisionDetector detector) {
-        // TODO Auto-generated method stub
-
+        // No needs to draw anything here - it's been on the map already 
     }
 }

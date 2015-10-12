@@ -94,7 +94,7 @@ public class WorldController {
         shipState = ShipState.NORMAL;
         shipAnim = 0;
 
-        shipFuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: have to depend on the map settings
+        shipFuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: has to depend on the map settings
 
         {
             shipRegion = assets.graphicAssets.shipRegion;
@@ -134,7 +134,7 @@ public class WorldController {
         updateBullets(passDebugRenderer(renderer, DEBUG_SHOW_BULLET_COLLISION));
 
         updateMapCameraPosition();
-        map.update(shipXInternal, shipYInternal, mapXScreen, mapYScreen,
+        map.update(shipXInternal, shipYInternal, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen,
                 passDebugRenderer(renderer, DEBUG_SHOW_ENEMY_COLLISION));
 
         // Ship collision detection 
@@ -257,8 +257,8 @@ public class WorldController {
     }
 
     private void handleBallBouncing(ShapeRenderer renderer) {
-        int ballXScreenF = ballXInternal / FACTOR; //FIXME: ?+8 - see updateBall
-        int ballYScreenF = ballYInternal / FACTOR; //FIXME: ?+8 - see updateBall
+        int ballXScreenF = ballXInternal / FACTOR;
+        int ballYScreenF = ballYInternal / FACTOR;
 
         Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
         if (checkCollisionOfPolygonAndMap(tilePolygons[360], ballXInternal, ballYInternal, renderer)) {
@@ -646,7 +646,7 @@ public class WorldController {
 
         Sprite sprite = new Sprite(tile);
 
-        // int ballXScreen = ballXInternal / FACTOR - mapXScreen + 8; // FIXME: ball's coordinates returned by the Map are not correct!
+        // int ballXScreen = ballXInternal / FACTOR - mapXScreen + 8;
         // int ballYScreen = ballYInternal / FACTOR - mapYScreen + 8;
         // sprite.setCenter(ballXScreen, INTERNAL_SCREEN_HEIGHT - ballYScreen);
 
@@ -668,7 +668,7 @@ public class WorldController {
 
             Sprite sprite = new Sprite(tile);
 
-            // int bulletXScreen = b.x / FACTOR - mapXScreen + 8; // FIXME: bullet's coordinates are not correct!
+            // int bulletXScreen = b.x / FACTOR - mapXScreen + 8;
             // int bulletYScreen = b.y / FACTOR - mapYScreen + 8;
             // sprite.setCenter(bulletXScreen, INTERNAL_SCREEN_HEIGHT - bulletYScreen);
 
@@ -725,7 +725,6 @@ public class WorldController {
 
                 shipSprite.setRotation(360 - shipAngle);
 
-                // TODO: There is a discrepancy here as the ship is the only object which has originX and originY set
                 // I have something to do with it in the future but for now it's ok as the polygon's coordinates are correct
                 // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
 

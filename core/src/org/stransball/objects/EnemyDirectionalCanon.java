@@ -23,17 +23,17 @@ public class EnemyDirectionalCanon extends Enemy {
     }
 
     @Override
-    public void update(int shipXScreenF, int shipYScreenF, int mapXScreen, int mapYScreen, List<Enemy> enemiesToDelete,
-            List<Enemy> newEnemies, ShapeRenderer renderer) {
-        if (!cycle_directionalcanon(shipXScreenF, shipYScreenF, newEnemies)) {
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+        if (!updateDirectionalCanon(shipXScreenF, shipYScreenF, newEnemies)) {
             enemiesToDelete.add(this);
         }
     }
 
-    private boolean cycle_directionalcanon(int ship_x, int ship_y, List<Enemy> enemies) {
+    private boolean updateDirectionalCanon(int shipXScreenF, int shipYScreenF, List<Enemy> enemies) {
         // Turret's angle:
-        int dx = ship_x - (x + 8);
-        int dy = ship_y - (y + 8);
+        int dx = shipXScreenF - (x + 8);
+        int dy = shipYScreenF - (y + 8);
         float radians = (float) (MathUtils.atan2((float) dy, (float) dx));
         int desired_turretAngle;
 
