@@ -362,7 +362,7 @@ public class GameMap {
         drawEnemies(batch, mapXScreen, mapYScreen, screenWidth, screenHeight, null, null);
     }
 
-    private void drawWalls(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
+    public void drawWalls(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
             ICollisionDetector detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
@@ -857,7 +857,7 @@ public class GameMap {
 
         Polygon[] objectPolygons = CollisionDetectionUtils.tiangulate(objectPolygon);
 
-        ICollisionDetector detector = new CollisionDetector(renderer, objectPolygons, regionXScreenF, regionYScreenF,
+        CollisionDetector detector = new CollisionDetector(renderer, objectPolygons, regionXScreenF, regionYScreenF,
                 mapXScreen, mapYScreen);
 
         if (renderer != null) {

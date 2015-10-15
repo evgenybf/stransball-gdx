@@ -34,6 +34,6 @@ public class Constants {
     public static final int fuelfactor[] = { 64, 64, 96 };
     public static final int shotfuel[] = { 40, 64, 96 };
 
-    public static final String MAP_NAME = "maps/map9.map";
+    public static final String MAP_NAME = "maps/map7.map";
 
 }

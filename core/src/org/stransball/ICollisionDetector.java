@@ -8,7 +8,4 @@ public interface ICollisionDetector {
     
     void handlePolygon(Polygon poly);
 
-    boolean wasCollision();
-
-    void reset();
 }

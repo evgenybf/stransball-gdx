@@ -15,22 +15,29 @@ public class CollisionDetectionUtils {
         EarClippingTriangulator triangulator = new EarClippingTriangulator();
 
         ShortArray pointsCoords = triangulator.computeTriangles(vertices);
-        
+
         int step = 1 * 3; // skip some triangles - it should not affect on the result
         Polygon[] triangles = new Polygon[pointsCoords.size / step];
 
         for (int i = 0; i < pointsCoords.size / step; i++) {
-            Polygon newPoly = new Polygon(new float[] { 
-                    vertices[pointsCoords.get(i * step) * 2],
-                    vertices[pointsCoords.get(i * step) * 2 + 1], 
-                    vertices[pointsCoords.get(i * step + 1) * 2],
-                    vertices[pointsCoords.get(i * step + 1) * 2 + 1], 
-                    vertices[pointsCoords.get(i * step + 2) * 2],
+            Polygon newPoly = new Polygon(new float[] { vertices[pointsCoords.get(i * step) * 2],
+                    vertices[pointsCoords.get(i * step) * 2 + 1], vertices[pointsCoords.get(i * step + 1) * 2],
+                    vertices[pointsCoords.get(i * step + 1) * 2 + 1], vertices[pointsCoords.get(i * step + 2) * 2],
                     vertices[pointsCoords.get(i * step + 2) * 2 + 1], });
             triangles[i] = newPoly;
         }
 
         return triangles;
+    }
+
+    // Check if groups of polygons are overlapped
+    public static boolean overlapPolygons(Polygon shipPolygon, Polygon[] poligons) {
+        for (Polygon poly0 : poligons) {
+            if (Intersector.overlapConvexPolygons(shipPolygon, poly0)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Check if groups of polygons are overlapped

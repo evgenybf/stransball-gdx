@@ -59,17 +59,14 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
         }
     }
 
-    @Override
     public void handleCollision() {
         collision = true;
     }
 
-    @Override
     public void reset() {
         collision = false;
     }
 
-    @Override
     public boolean wasCollision() {
         return collision;
     }
