@@ -53,11 +53,20 @@ public class EnemyTank extends Enemy {
         boolean lcol = tankCollider.lcol;
         boolean rcol = tankCollider.rcol;
 
-        System.out.println(gdist1 + ", " + gdist2 + " " + lcol + ", " + rcol);
+        System.out
+                .println("gdist: " + gdist1 + ", " + gdist2 + " lrcol: " + lcol + ", " + rcol + " xy: " + x + ", " + y);
 
-        if (gdist1 == -1)
+        //        if (gdist1 < 0) {
+        //            try {
+        //                Thread.sleep(5000);
+        //            } catch (InterruptedException e) {
+        //                // TODO Auto-generated catch block
+        //                e.printStackTrace();
+        //            }
+        //        }
+        if (gdist1 == -1000)
             gdist1 = 19;
-        if (gdist2 == -1)
+        if (gdist2 == -1000)
             gdist2 = 19;
 
         updateTank(ship_x, ship_y, ship_speed_x, ship_speed_y, gdist1, gdist2, lcol, rcol, newEnemies);
@@ -306,7 +315,7 @@ public class EnemyTank extends Enemy {
         int dx = (x - map_x) - 24;
         int dy = (y - map_y) - 16;
 
-        int tankAngle_ = tankAngle;
+        int tankAngle_ = 360 - tankAngle;
         int turretAngle_ = -turretAngle;
 
         int t1idx;
@@ -492,8 +501,8 @@ public class EnemyTank extends Enemy {
             this.mapXScreen = mapXScreen;
             this.mapYScreen = mapYScreen;
 
-            gdist1 = -1;
-            gdist2 = -1;
+            gdist1 = 19;
+            gdist2 = 19;
             lcol = false;
             rcol = false;
         }
@@ -504,10 +513,6 @@ public class EnemyTank extends Enemy {
                     INTERNAL_SCREEN_HEIGHT - (regionYcreenF + poly.getY() - mapYScreen));
 
             Polygon[] polygons = CollisionDetectionUtils.tiangulate(poly);
-            if (renderer != null) {
-                renderer.setColor(Color.GOLD);
-                CollisionDetectionUtils.drawPolygons(renderer, polygons);
-            }
 
             int dx = (x - mapXScreen) - 24;
             int dy = (y - mapYScreen) - 16;
@@ -525,19 +530,26 @@ public class EnemyTank extends Enemy {
             //        if (getpixel(back_sfc, 48, 28) != 0)
             //                    rcol = true;
 
-            for (int i = 0; i < 32 && (gdist1 == -1 || gdist2 == -1); ++i) {
-                int result = drawTracks(dx, dy + i, polygons);
-                if ((result & 0x02) != 0 && gdist1 == -1) {
-                    gdist1 = i - 2; // - (45 - 43);
+            int result = 0;
+            for (int i = -19; i < 19; ++i) {
+                result = drawTracks(dx, dy + i, polygons, true, result);
+                if ((result & 0x01) != 0 && gdist1 > (i)) {
+                    gdist1 = i;
                 }
-                if ((result & 0x01) != 0 && gdist2 == -1) {
-                    gdist2 = i - 2; // - (45 - 43);
+                if ((result & 0x02) != 0 && gdist2 > (i)) {
+                    gdist2 = i;
                 }
+
+                //                if (renderer != null && result != 0) {
+                //                    renderer.setColor(Color.GOLD);
+                //                    CollisionDetectionUtils.drawPolygons(renderer, polygons);
+                //                }
+
             }
 
-            if (drawTracks(dx - 1, dy - 2, polygons) != 0)
+            if (drawTracks(dx - 1, dy - 7, polygons, false, 0x00) != 0)
                 lcol = true;
-            if (drawTracks(dx + 1, dy - 2, polygons) != 0)
+            if (drawTracks(dx + 1, dy - 7, polygons, false, 0x00) != 0)
                 rcol = true;
         }
 
@@ -553,8 +565,8 @@ public class EnemyTank extends Enemy {
             handlePolygon(poly);
         }
 
-        public int drawTracks(int dx, int dy, Polygon[] polygons) {
-            int result = 0;
+        public int drawTracks(int dx, int dy, Polygon[] polygons, boolean drawpoly, int prevResult) {
+            int result = prevResult;
 
             int tmp = 0;
 
@@ -574,38 +586,40 @@ public class EnemyTank extends Enemy {
 
             Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
 
-            {
+            if ((prevResult & 0x01) == 0) {
                 Polygon p1 = tilePolygons[t1idx];
+                p1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
                 p1.setOrigin(16, 8);
                 p1.setRotation(0);
-                p1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
 
                 Polygon[] pp1 = CollisionDetectionUtils.tiangulate(p1);
 
-                //                if (renderer != null) {
-                //                    renderer.setColor(Color.GOLD);
-                //                    CollisionDetectionUtils.drawPolygons(renderer, pp1);
-                //                }
-
-                if (CollisionDetectionUtils.overlapPolygons(pp1, polygons))
+                if (CollisionDetectionUtils.overlapPolygons(pp1, polygons)) {
                     result |= 0x01;
+                    if (renderer != null && drawpoly) {
+                        renderer.setColor(Color.GOLD);
+                        //                        CollisionDetectionUtils.drawPolygons(renderer, p1);
+                        //                        renderer.polygon(p1.getTransformedVertices());
+                    }
+                }
             }
 
-            {
+            if ((prevResult & 0x02) == 0) {
                 Polygon p2 = tilePolygons[t2idx];
+                p2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
                 p2.setOrigin(16, 8);
                 p2.setRotation(0);
-                p2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
 
                 Polygon[] pp2 = CollisionDetectionUtils.tiangulate(p2);
 
-                //                if (renderer != null) {
-                //                    renderer.setColor(Color.GOLD);
-                //                    CollisionDetectionUtils.drawPolygons(renderer, pp2);
-                //                }
-
-                if (CollisionDetectionUtils.overlapPolygons(pp2, polygons))
+                if (CollisionDetectionUtils.overlapPolygons(pp2, polygons)) {
                     result |= 0x02;
+                    if (renderer != null && drawpoly) {
+                        renderer.setColor(Color.GOLD);
+                        //                        CollisionDetectionUtils.drawPolygons(renderer, p2);
+                        //                        renderer.polygon(p2.getTransformedVertices());
+                    }
+                }
             }
 
             return result;
