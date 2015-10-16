@@ -241,8 +241,10 @@ public class GameMap {
 
         background.update();
 
-        updateEnemies(shipXInternal / FACTOR, shipYInternal / FACTOR, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen,
-                renderer);
+        int shipXScreenF = shipXInternal / FACTOR;
+        int shipYScreenF = shipYInternal / FACTOR;
+
+        updateEnemies(shipXScreenF, shipYScreenF, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen, renderer);
 
         updateDoors();
         updateSwitches();
@@ -614,8 +616,8 @@ public class GameMap {
                 ey /= FACTOR;
             }
 
-            if (e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON || e.type == EnemyType.DIRECTIONAL_CANON
-                    || e.type == EnemyType.DIRECTIONAL_CANON_2) {
+            if (e.type == EnemyType.BULLET || e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON
+                    || e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.DIRECTIONAL_CANON_2) {
                 ex += 8;
                 ey += 8;
             }

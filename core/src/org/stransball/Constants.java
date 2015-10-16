@@ -2,15 +2,14 @@ package org.stransball;
 
 import com.badlogic.gdx.Input;
 
-@SuppressWarnings("unused")
 public class Constants {
 
     public static final boolean DEBUG_GOD_MODE = true;
 
-    public static final boolean DEBUG_SHOW_SHIP_COLLISION = true;
-    public static final boolean DEBUG_SHOW_BALL_COLLISION = true;
-    public static final boolean DEBUG_SHOW_BULLET_COLLISION = true;
-    public static final boolean DEBUG_SHOW_ENEMY_COLLISION = true;
+    public static final boolean DEBUG_SHOW_SHIP_COLLISION = false;
+    public static final boolean DEBUG_SHOW_BALL_COLLISION = false;
+    public static final boolean DEBUG_SHOW_BULLET_COLLISION = false;
+    public static final boolean DEBUG_SHOW_ENEMY_COLLISION = false;
     public static final boolean DEBUG_SHOW_TANK_TRACK_COLLISION = false;
     public static final boolean DEBUG_SHOW_COLLISION_DETECTION = DEBUG_SHOW_SHIP_COLLISION || DEBUG_SHOW_BALL_COLLISION
             || DEBUG_SHOW_BULLET_COLLISION || DEBUG_SHOW_ENEMY_COLLISION || DEBUG_SHOW_TANK_TRACK_COLLISION;
