@@ -1,4 +1,2 @@
-- Rotate tank
-- Exploded tank
 - Enemy bullets sometimes do not get hit with ship's bullets
 - Wrong collision detection region for some objects

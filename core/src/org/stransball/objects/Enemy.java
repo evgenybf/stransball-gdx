@@ -64,7 +64,7 @@ public abstract class Enemy {
         enemy.state = state;
         enemy.life = life;
         enemy.x = x;
-        enemy.y = x;
+        enemy.y = y;
         enemy.direction = direction;
         enemy.turretAngle = turretAngle;
         enemy.tankAngle = tankAngle;

@@ -157,7 +157,7 @@ public class WorldController {
         }
     }
 
-    private ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
+    private static ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
         return enabled ? renderer : null;
     }
 

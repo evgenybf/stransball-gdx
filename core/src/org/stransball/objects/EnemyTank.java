@@ -8,6 +8,7 @@ import static com.badlogic.gdx.math.MathUtils.radiansToDegrees;
 import static com.badlogic.gdx.math.MathUtils.sin;
 import static java.lang.Math.abs;
 import static org.stransball.Assets.assets;
+import static org.stransball.Constants.DEBUG_SHOW_TANK_TRACK_COLLISION;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
@@ -26,9 +27,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.utils.Array;
 
-//TODO: In progress
-
 public class EnemyTank extends Enemy {
+
+    private final static Polygon trackPolygon = new Polygon(new float[] { 6f, 4f, 8f, 7f, 9f, 4f });
 
     private int state2;
 
@@ -43,8 +44,8 @@ public class EnemyTank extends Enemy {
     public void update(int ship_x, int ship_y, int ship_speed_x, int ship_speed_y, int mapXScreen, int mapYScreen,
             List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
 
-        TankAndGroundCollider tankCollider = new TankAndGroundCollider(renderer, x - 32, y - 32, mapXScreen,
-                mapYScreen);
+        TankAndGroundCollider tankCollider = new TankAndGroundCollider(
+                passDebugRenderer(renderer, DEBUG_SHOW_TANK_TRACK_COLLISION), x - 32, y - 32, mapXScreen, mapYScreen);
 
         map.drawWalls(null, x - 32, y - 32, 64, 64, tankCollider);
 
@@ -53,23 +54,11 @@ public class EnemyTank extends Enemy {
         boolean lcol = tankCollider.lcol;
         boolean rcol = tankCollider.rcol;
 
-        System.out
-                .println("gdist: " + gdist1 + ", " + gdist2 + " lrcol: " + lcol + ", " + rcol + " xy: " + x + ", " + y);
-
-        //        if (gdist1 < 0) {
-        //            try {
-        //                Thread.sleep(5000);
-        //            } catch (InterruptedException e) {
-        //                // TODO Auto-generated catch block
-        //                e.printStackTrace();
-        //            }
-        //        }
-        if (gdist1 == -1000)
-            gdist1 = 19;
-        if (gdist2 == -1000)
-            gdist2 = 19;
-
         updateTank(ship_x, ship_y, ship_speed_x, ship_speed_y, gdist1, gdist2, lcol, rcol, newEnemies);
+    }
+
+    private static ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
+        return enabled ? renderer : null;
     }
 
     private boolean updateTank(int ship_x, int ship_y, int ship_sx, int ship_sy, int gdist1, int gdist2, boolean lcol,
@@ -344,7 +333,7 @@ public class EnemyTank extends Enemy {
             {
                 //origin: draw(16,0,tank_sfc);
                 Sprite s2 = new Sprite(tiles.get(t2idx));
-                s2.setOrigin(16, 8);
+                s2.setOrigin(16 - 16, 8);
                 s2.setRotation(tankAngle_);
                 s2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
                 s2.draw(batch);
@@ -362,7 +351,7 @@ public class EnemyTank extends Enemy {
             }
             {
                 Polygon p2 = tilePolygons[t2idx];
-                p2.setOrigin(16, 8);
+                p2.setOrigin(16 - 16, 8);
                 p2.setRotation(tankAngle_);
                 p2.setPosition(dx + 16 + 8, (dy + 0 + 30));
                 detector.handlePolygon(p2);
@@ -477,7 +466,8 @@ public class EnemyTank extends Enemy {
     public EnemyDestroyedTank toDestroyedTank() {
         EnemyDestroyedTank enemy = new EnemyDestroyedTank(map);
         copyTo(enemy);
-        enemy.state2 = state2; // Do we really need to copy it?
+        enemy.state = 0;
+        enemy.state2 = state2;
         return enemy;
     }
 
@@ -517,39 +507,20 @@ public class EnemyTank extends Enemy {
             int dx = (x - mapXScreen) - 24;
             int dy = (y - mapYScreen) - 16;
 
-            // Compute the distance of the tracks to the ground:  
-            //        for (int i = 32; i < 64 && (gdist1 == -1 || gdist2 == -1); i++) {
-            //            if (getpixel(back_sfc, 24, i) != 0 && gdist1 == -1)
-            //                gdist1 = i - 45;
-            //            if (getpixel(back_sfc, 40, i) != 0 && gdist2 == -1)
-            //                gdist2 = i - 45;
-            //        }
-            //
-            //        if (getpixel(back_sfc, 16, 28) != 0)
-            //                    lcol = true;
-            //        if (getpixel(back_sfc, 48, 28) != 0)
-            //                    rcol = true;
-
             int result = 0;
             for (int i = -19; i < 19; ++i) {
                 result = drawTracks(dx, dy + i, polygons, true, result);
-                if ((result & 0x01) != 0 && gdist1 > (i)) {
+                if ((result & 0x01) != 0 && gdist1 > i) {
                     gdist1 = i;
                 }
-                if ((result & 0x02) != 0 && gdist2 > (i)) {
+                if ((result & 0x02) != 0 && gdist2 > i) {
                     gdist2 = i;
                 }
-
-                //                if (renderer != null && result != 0) {
-                //                    renderer.setColor(Color.GOLD);
-                //                    CollisionDetectionUtils.drawPolygons(renderer, polygons);
-                //                }
-
             }
 
-            if (drawTracks(dx - 1, dy - 7, polygons, false, 0x00) != 0)
+            if (drawTracks(dx - 5, dy - 11, polygons, true, 0x00) != 0)
                 lcol = true;
-            if (drawTracks(dx + 1, dy - 7, polygons, false, 0x00) != 0)
+            if (drawTracks(dx + 5, dy - 11, polygons, true, 0x00) != 0)
                 rcol = true;
         }
 
@@ -568,56 +539,28 @@ public class EnemyTank extends Enemy {
         public int drawTracks(int dx, int dy, Polygon[] polygons, boolean drawpoly, int prevResult) {
             int result = prevResult;
 
-            int tmp = 0;
-
-            if ((state2 & 0x8) == 0)
-                tmp = 2;
-
-            int t1idx;
-            int t2idx;
-
-            if (tankType < 3) {
-                t1idx = 282 + 4 * tankType + tmp;
-                t2idx = 283 + 4 * tankType + tmp;
-            } else {
-                t1idx = 461 + ((state / 2) % 4) * 2;
-                t2idx = 462 + ((state / 2) % 4) * 2;
-            }
-
-            Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
-
             if ((prevResult & 0x01) == 0) {
-                Polygon p1 = tilePolygons[t1idx];
-                p1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
-                p1.setOrigin(16, 8);
-                p1.setRotation(0);
+                trackPolygon.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
+                trackPolygon.setOrigin(16, 8);
 
-                Polygon[] pp1 = CollisionDetectionUtils.tiangulate(p1);
-
-                if (CollisionDetectionUtils.overlapPolygons(pp1, polygons)) {
+                if (CollisionDetectionUtils.overlapPolygons(trackPolygon, polygons)) {
                     result |= 0x01;
                     if (renderer != null && drawpoly) {
                         renderer.setColor(Color.GOLD);
-                        //                        CollisionDetectionUtils.drawPolygons(renderer, p1);
-                        //                        renderer.polygon(p1.getTransformedVertices());
+                        renderer.polygon(trackPolygon.getTransformedVertices());
                     }
                 }
             }
 
             if ((prevResult & 0x02) == 0) {
-                Polygon p2 = tilePolygons[t2idx];
-                p2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
-                p2.setOrigin(16, 8);
-                p2.setRotation(0);
+                trackPolygon.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
+                trackPolygon.setOrigin(16, 8);
 
-                Polygon[] pp2 = CollisionDetectionUtils.tiangulate(p2);
-
-                if (CollisionDetectionUtils.overlapPolygons(pp2, polygons)) {
+                if (CollisionDetectionUtils.overlapPolygons(trackPolygon, polygons)) {
                     result |= 0x02;
                     if (renderer != null && drawpoly) {
                         renderer.setColor(Color.GOLD);
-                        //                        CollisionDetectionUtils.drawPolygons(renderer, p2);
-                        //                        renderer.polygon(p2.getTransformedVertices());
+                        renderer.polygon(trackPolygon.getTransformedVertices());
                     }
                 }
             }
