@@ -18,6 +18,7 @@ import static org.stransball.Constants.MAX_ATRACTOR_P;
 import static org.stransball.GameKeysStatus.bLeft;
 import static org.stransball.GameKeysStatus.bRight;
 import static org.stransball.GameKeysStatus.bThrust;
+import static org.stransball.util.DebugUtils.passDebugRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -155,10 +156,6 @@ public class WorldController {
         if (map.isShipInFuelRecharge(shipXScreenF, shipYScreenF)) {
             rechargeShipFuel();
         }
-    }
-
-    private static ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
-        return enabled ? renderer : null;
     }
 
     private void rechargeShipFuel() {
@@ -545,7 +542,8 @@ public class WorldController {
 
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
-        return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, null,
+        // (+8, +8) here moves the point closer to bullet's or ball's center 
+        return map.checkCollision(objectXScreenF + 8, objectYScreenF + 8, mapXScreen, mapYScreen, objectPolygon, null,
                 renderer);
     }
 

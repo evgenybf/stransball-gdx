@@ -17,10 +17,11 @@ import com.badlogic.gdx.utils.Array;
 
 public class EnemyDestroyedTank extends Enemy {
 
-    int state2;
-
-    protected EnemyDestroyedTank(GameMap map) {
+    private int state2;
+    
+    protected EnemyDestroyedTank(GameMap map, int state2) {
         super(EnemyType.DESTROYED_TANK, map);
+        this.state2 = state2;
     }
 
     @Override
@@ -41,11 +42,6 @@ public class EnemyDestroyedTank extends Enemy {
     }
 
     private void drawDestroyedTank(SpriteBatch batch, int mapXScreen, int mapYScreen, ICollisionDetector detector) {
-        if (x > (-32 + x) && x < (mapXScreen + x + 32) && y > (-32 + y) && y < (mapYScreen + y + 32))
-            draw_destroyedtank(batch, mapXScreen, mapYScreen, detector);
-    }
-
-    private void draw_destroyedtank(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
         int tmp = 0;
 
         if ((state2 & 0x8) == 0)
@@ -54,8 +50,8 @@ public class EnemyDestroyedTank extends Enemy {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
         Polygon[] tilePolygons = Assets.assets.graphicAssets.tilePolygons;
 
-        int dx = (x - map_x) - 24;
-        int dy = (y - map_y) - 16;
+        int dx = (x - mapXScreen) - 24;
+        int dy = (y - mapYScreen) - 16;
 
         int tankAngle_ = 360 - tankAngle;
 
@@ -75,7 +71,6 @@ public class EnemyDestroyedTank extends Enemy {
 
         if (batch != null) {
             {
-                //origin: draw(0,0,tank_sfc);
                 Sprite s1 = new Sprite(tiles.get(t1idx));
                 s1.setOrigin(16, 8);
                 s1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
@@ -83,14 +78,12 @@ public class EnemyDestroyedTank extends Enemy {
                 s1.draw(batch);
             }
             {
-                //origin: draw(16,0,tank_sfc);
                 Sprite s2 = new Sprite(tiles.get(t2idx));
                 s2.setOrigin(16 - 16, 8);
                 s2.setRotation(tankAngle_);
                 s2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
                 s2.draw(batch);
             }
-            //origin: sge_transform(tank_sfc,tank_sfc2, (float)(tankAngle), 1.0F, 1.0F, 16, 8, 24, 24, 0);
         }
 
         if (detector != null) {
@@ -117,7 +110,7 @@ public class EnemyDestroyedTank extends Enemy {
             int t3idx = -1;
 
             if (state < 48) {
-                t3idx = 248 + state / 8; //.draw(16,8,tank_sfc3);
+                t3idx = 248 + state / 8;
             }
 
             if (batch != null) {
@@ -140,7 +133,7 @@ public class EnemyDestroyedTank extends Enemy {
             int t4idx = -1;
 
             if (state < 48) {
-                t4idx = 248 + state / 8; //.draw(16,6,tank_sfc3);
+                t4idx = 248 + state / 8;
             }
 
             if (batch != null) {

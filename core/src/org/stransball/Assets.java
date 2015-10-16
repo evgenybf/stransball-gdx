@@ -82,6 +82,8 @@ public class Assets {
         public final Array<AtlasRegion> shipExplosionTiles;
         private final Pixmap whiteSpotPixmap;
         public final Texture whiteSpot;
+        
+        public final Polygon tankTrackPolygon;
 
         public GraphicAssets(AssetManager assetManager, TextureAtlas atlas) {
             ContourLoader contourLoader = new ContourLoader(Gdx.files.internal("graphics/tiles.vtx"));
@@ -99,6 +101,8 @@ public class Assets {
             whiteSpotPixmap.fill();
 
             whiteSpot = new Texture(whiteSpotPixmap);
+            
+            tankTrackPolygon = new Polygon(new float[] { 6f, 4f, 8f, 7f, 9f, 4f });
         }
 
         public void dispose() {

@@ -11,6 +11,7 @@ import static org.stransball.Assets.assets;
 import static org.stransball.Constants.DEBUG_SHOW_TANK_TRACK_COLLISION;
 import static org.stransball.Constants.FACTOR;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
+import static org.stransball.util.DebugUtils.passDebugRenderer;
 
 import java.util.List;
 
@@ -29,8 +30,6 @@ import com.badlogic.gdx.utils.Array;
 
 public class EnemyTank extends Enemy {
 
-    private final static Polygon trackPolygon = new Polygon(new float[] { 6f, 4f, 8f, 7f, 9f, 4f });
-
     private int state2;
 
     public EnemyTank(GameMap map) {
@@ -41,8 +40,8 @@ public class EnemyTank extends Enemy {
     }
 
     @Override
-    public void update(int ship_x, int ship_y, int ship_speed_x, int ship_speed_y, int mapXScreen, int mapYScreen,
-            List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+    public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
 
         TankAndGroundCollider tankCollider = new TankAndGroundCollider(
                 passDebugRenderer(renderer, DEBUG_SHOW_TANK_TRACK_COLLISION), x - 32, y - 32, mapXScreen, mapYScreen);
@@ -54,11 +53,7 @@ public class EnemyTank extends Enemy {
         boolean lcol = tankCollider.lcol;
         boolean rcol = tankCollider.rcol;
 
-        updateTank(ship_x, ship_y, ship_speed_x, ship_speed_y, gdist1, gdist2, lcol, rcol, newEnemies);
-    }
-
-    private static ShapeRenderer passDebugRenderer(ShapeRenderer renderer, boolean enabled) {
-        return enabled ? renderer : null;
+        updateTank(shipXScreenF, shipYScreenF, shipSpeedX, shipSpeedY, gdist1, gdist2, lcol, rcol, newEnemies);
     }
 
     private boolean updateTank(int ship_x, int ship_y, int ship_sx, int ship_sy, int gdist1, int gdist2, boolean lcol,
@@ -288,11 +283,6 @@ public class EnemyTank extends Enemy {
     }
 
     private void drawTank(SpriteBatch batch, int mapXScreen, int mapYScreen, ICollisionDetector detector) {
-        if (x > (-32 + x) && x < (mapXScreen + x + 32) && y > (-32 + y) && y < (mapYScreen + y + 32))
-            draw_tank(batch, mapXScreen, mapYScreen, detector);
-    }
-
-    private void draw_tank(SpriteBatch batch, int map_x, int map_y, ICollisionDetector detector) {
         int tmp = 0;
 
         if ((state2 & 0x8) == 0)
@@ -301,8 +291,8 @@ public class EnemyTank extends Enemy {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
         Polygon[] tilePolygons = assets.graphicAssets.tilePolygons;
 
-        int dx = (x - map_x) - 24;
-        int dy = (y - map_y) - 16;
+        int dx = (x - mapXScreen) - 24;
+        int dy = (y - mapYScreen) - 16;
 
         int tankAngle_ = 360 - tankAngle;
         int turretAngle_ = -turretAngle;
@@ -323,7 +313,6 @@ public class EnemyTank extends Enemy {
 
         if (batch != null) {
             {
-                //origin: draw(0,0,tank_sfc);
                 Sprite s1 = new Sprite(tiles.get(t1idx));
                 s1.setOrigin(16, 8);
                 s1.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
@@ -331,14 +320,12 @@ public class EnemyTank extends Enemy {
                 s1.draw(batch);
             }
             {
-                //origin: draw(16,0,tank_sfc);
                 Sprite s2 = new Sprite(tiles.get(t2idx));
                 s2.setOrigin(16 - 16, 8);
                 s2.setRotation(tankAngle_);
                 s2.setPosition(dx + 16 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));
                 s2.draw(batch);
             }
-            //origin: sge_transform(tank_sfc,tank_sfc2, (float)(tankAngle), 1.0F, 1.0F, 16, 8, 24, 24, 0);
         }
 
         if (detector != null) {
@@ -382,7 +369,6 @@ public class EnemyTank extends Enemy {
 
                 if (batch != null) {
                     if (t3idx >= 0) {
-                        //origin: draw(16,8,tank_sfc3);
                         Sprite s3 = new Sprite(tiles.get(t3idx));
                         s3.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 8 + 14));
                         s3.draw(batch);
@@ -401,7 +387,6 @@ public class EnemyTank extends Enemy {
             {
                 int t4idx = 262 + tankType;
                 if (batch != null) {
-                    //origin: draw(16,8,tank_sfc3);
                     Sprite s4 = new Sprite(tiles.get(t4idx));
                     s4.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 8 + 14));
                     s4.draw(batch);
@@ -418,17 +403,12 @@ public class EnemyTank extends Enemy {
                 int t5idx = 334;
 
                 if (batch != null) {
-                    //origin: draw(0,0,canon_sfc);
                     Sprite s5 = new Sprite(tiles.get(t5idx));
                     s5.setOrigin(0, 4);
                     s5.setScale(0.75f);
                     s5.setRotation(turretAngle_);
                     s5.setPosition(dx + 16, INTERNAL_SCREEN_HEIGHT - (dy + 14));
                     s5.draw(batch);
-                    //origin: sge_transform(canon_sfc,canon_sfc2, (float)(-turretAngle), 0.75F, 0.75F, 0, 4, 16, 16, 0);
-                    //origin: d.x=8;
-                    //origin: d.y=0;
-                    //origin: SDL_BlitSurface(canon_sfc2,0,tank_sfc3,&d);
                 }
 
                 if (detector != null) {
@@ -456,18 +436,12 @@ public class EnemyTank extends Enemy {
                 }
             }
         }
-
-        //origin: SDL_BlitSurface(tank_sfc2,0,tank_sfc3,0);
-        //origin: int d.x=(x-map_x)-24;
-        //origin: int d.y=(y-map_y)-16;
-        //origin: SDL_BlitSurface(tank_sfc3,0,screen,&d);
     }
 
     public EnemyDestroyedTank toDestroyedTank() {
-        EnemyDestroyedTank enemy = new EnemyDestroyedTank(map);
+        EnemyDestroyedTank enemy = new EnemyDestroyedTank(map, state2);
         copyTo(enemy);
         enemy.state = 0;
-        enemy.state2 = state2;
         return enemy;
     }
 
@@ -527,7 +501,7 @@ public class EnemyTank extends Enemy {
         @Override
         public void handlePolygon(int actXScreen, int actYScreen, int tileIndex) {
             Polygon poly = Assets.assets.graphicAssets.tilePolygons[tileIndex];
-            // Some objects like bullets can do not have contours in some states like explosion ans so on
+            // Some objects like bullets can do not have contours in some states like explosion and so on
             if (poly == null)
                 return;
 
@@ -538,6 +512,8 @@ public class EnemyTank extends Enemy {
 
         public int drawTracks(int dx, int dy, Polygon[] polygons, boolean drawpoly, int prevResult) {
             int result = prevResult;
+
+            Polygon trackPolygon = Assets.assets.graphicAssets.tankTrackPolygon;
 
             if ((prevResult & 0x01) == 0) {
                 trackPolygon.setPosition(dx + 0 + 8, INTERNAL_SCREEN_HEIGHT - (dy + 0 + 30));

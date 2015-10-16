@@ -40,12 +40,13 @@ public class EnemyBullet extends Enemy {
         int objectXScreenF = x / FACTOR;
         int objectYScreenF = y / FACTOR;
 
-        int objectXScreen = x / FACTOR - mapXScreen;// - 8;
-        int objectYScreen = y / FACTOR - mapYScreen;// - 8;
+        int objectXScreen = x / FACTOR - mapXScreen;
+        int objectYScreen = y / FACTOR - mapYScreen;
 
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
-        return map.checkCollision(objectXScreenF, objectYScreenF, mapXScreen, mapYScreen, objectPolygon, this,
+        // (+8, +8) moves the point to the center of the polygon
+        return map.checkCollision(objectXScreenF + 8, objectYScreenF + 8, mapXScreen, mapYScreen, objectPolygon, this,
                 renderer);
     }
 

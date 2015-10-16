@@ -113,46 +113,48 @@ public class EnemyDirectionalCanon extends Enemy {
 
     private void drawDirectionalCanon(SpriteBatch batch, int tileIndex, int mapXScreen, int mapYScreen,
             ICollisionDetector detector) {
-        if (state >= 0) {
-            int xScreen = x - mapXScreen;
-            int yScreen = y - mapYScreen;
+        if (state < 0)
+            return;
 
-            if (batch != null) {
-                Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(254));
-                sprite.setScale(0.75f, 0.75f);
+        int xScreen = x - mapXScreen;
+        int yScreen = y - mapYScreen;
 
-                sprite.setOrigin(16, 14);
-                sprite.setRotation(180 - turretAngle);
+        if (batch != null) {
+            Sprite sprite = new Sprite(Assets.assets.graphicAssets.tiles.get(254));
+            sprite.setScale(0.75f, 0.75f);
 
-                sprite.setCenter(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + 14));
-                sprite.draw(batch);
-            }
+            sprite.setOrigin(16, 14);
+            sprite.setRotation(180 - turretAngle);
 
-            if (detector != null) {
-                Polygon objectPolygon = assets.graphicAssets.tilePolygons[254];
-
-                objectPolygon.setScale(0.75f, 0.75f);
-                objectPolygon.setOrigin(16, 14);
-                objectPolygon.setRotation(180 - turretAngle);
-
-                //TODO: sync with shipPolygon. It's not clear why we need (-8, + 8) here
-                objectPolygon.setPosition(xScreen - 8, yScreen + 14 + 8);
-
-                detector.handlePolygon(objectPolygon);
-            }
-
-            if (batch != null) {
-                Sprite sprite2 = new Sprite(Assets.assets.graphicAssets.tiles.get(tileIndex));
-                sprite2.setPosition(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + map.stepY));
-                sprite2.draw(batch);
-            }
-
-            if (detector != null) {
-                Polygon objectPolygon2 = assets.graphicAssets.tilePolygons[tileIndex];
-                objectPolygon2.setPosition(xScreen, (yScreen + map.stepY));
-                detector.handlePolygon(objectPolygon2);
-            }
+            sprite.setCenter(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + 14));
+            sprite.draw(batch);
         }
+
+        if (detector != null) {
+            Polygon objectPolygon = assets.graphicAssets.tilePolygons[254];
+
+            objectPolygon.setScale(0.75f, 0.75f);
+            objectPolygon.setOrigin(16, 14);
+            objectPolygon.setRotation(180 - turretAngle);
+
+            //TODO: sync with shipPolygon. It's not clear why we need (-8, + 8) here
+            objectPolygon.setPosition(xScreen - 8, yScreen + 14 + 8);
+
+            detector.handlePolygon(objectPolygon);
+        }
+
+        if (batch != null) {
+            Sprite sprite2 = new Sprite(Assets.assets.graphicAssets.tiles.get(tileIndex));
+            sprite2.setPosition(xScreen, INTERNAL_SCREEN_HEIGHT - (yScreen + map.stepY));
+            sprite2.draw(batch);
+        }
+
+        //Looks like we don't need to check collision with the stand...
+        //if (detector != null) {
+        //    Polygon objectPolygon2 = assets.graphicAssets.tilePolygons[tileIndex];
+        //    objectPolygon2.setPosition(xScreen, (yScreen + map.stepY));
+        //    detector.handlePolygon(objectPolygon2);
+        //}
     }
 
 }

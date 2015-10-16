@@ -4,7 +4,7 @@ import com.badlogic.gdx.Input;
 
 public class Constants {
 
-    public static final boolean DEBUG_GOD_MODE = true;
+    public static final boolean DEBUG_GOD_MODE = false;
 
     public static final boolean DEBUG_SHOW_SHIP_COLLISION = false;
     public static final boolean DEBUG_SHOW_BALL_COLLISION = false;
