@@ -29,10 +29,10 @@ public class GameMain extends Game {
         fpsLogger.log();
         super.render();
         
-        if (Gdx.input.isKeyPressed(Keys.TAB)) {
-            boolean fullScreen = !Gdx.graphics.isFullscreen();
-            Gdx.graphics.setDisplayMode(640, 480, fullScreen);
-        }
+//        if (Gdx.input.isKeyPressed(Keys.TAB)) {
+//            boolean fullScreen = !Gdx.graphics.isFullscreen();
+//            Gdx.graphics.setFullscreenMode(640, 480, fullScreen);
+//        }
         if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
             Gdx.app.exit();
         }
