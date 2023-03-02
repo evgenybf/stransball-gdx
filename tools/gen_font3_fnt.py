@@ -35,5 +35,5 @@ def main():
             write(CHARID_STR % (ch, x, y))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

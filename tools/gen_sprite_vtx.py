@@ -11,6 +11,7 @@ See: https://bitbucket.org/dermetfan/libgdx-utils
 
 """
 import re
+
 # import numpy as np
 import cv2
 
@@ -44,7 +45,6 @@ VTX_TEMPLATE = """\
 
 
 class Obj:
-
     def __init__(self, name):
         self.name = name
         self.x = None
@@ -60,10 +60,21 @@ class Obj:
             return "%s_%03d" % (self.name, self.index)
 
     def is_empty(self):
-        return self.x is None and self.y is None and self.size_x is None and self.size_y is None
+        return (
+            self.x is None
+            and self.y is None
+            and self.size_x is None
+            and self.size_y is None
+        )
 
     def __str__(self):
-        return "%s: %s:%s-%s:%s" % (self.get_full_name(), self.x, self.y, self.size_x, self.size_y)
+        return "%s: %s:%s-%s:%s" % (
+            self.get_full_name(),
+            self.x,
+            self.y,
+            self.size_x,
+            self.size_y,
+        )
 
 
 RE_ATTR_NAME_VALUE = re.compile(r"\s+([A-Za-z]+):\s*([0-9, -]+)")
@@ -84,14 +95,19 @@ def read_pack(filename):
             line = line.rstrip()
             if not line:
                 continue
-            if line[0] not in (' ', '\t'):
+            if line[0] not in (" ", "\t"):
                 if obj is not None and not obj.is_empty():
                     yield obj
                 obj = Obj(line)
             else:
                 m = RE_ATTR_NAME_VALUE.match(line)
                 if m:
-                    name, value = m.groups((1, 2,))
+                    name, value = m.groups(
+                        (
+                            1,
+                            2,
+                        )
+                    )
                     if name == "xy":
                         obj.x, obj.y = split_xy(value)
                     elif name == "size":
@@ -106,7 +122,7 @@ def read_pack(filename):
 
 
 def write_vec(out, obj, contours):
-    index = (obj.index if obj.index is not None else -1)
+    index = obj.index if obj.index is not None else -1
     if contours is not None:
         vertices = ",".join((str(x) for x in contours.flatten()))
     else:
@@ -120,43 +136,54 @@ def main():
 
     with file(VTX_FILE, "w") as fo:
         for obj in read_pack(TILES_PACK):
-            print (obj)
+            print(obj)
 
-            sim = im[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
+            sim = im[obj.y : obj.y + obj.size_y, obj.x : obj.x + obj.size_x]
             sim = cv2.copyMakeBorder(sim, 1, 1, 1, 1, cv2.BORDER_CONSTANT)
 
-            sim_color = im_color[obj.y:obj.y + obj.size_y, obj.x:obj.x + obj.size_x]
+            sim_color = im_color[obj.y : obj.y + obj.size_y, obj.x : obj.x + obj.size_x]
 
             imgray = cv2.cvtColor(sim, cv2.COLOR_BGR2GRAY)
             ret, thresh = cv2.threshold(imgray, 127, 255, 2)
 
-            contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            colors = ((0, 255, 0), (0, 0, 255), (255, 0, 0),
-                      (0, 255, 255), (255, 255, 0), (255, 0, 255))
+            contours, hierarchy = cv2.findContours(
+                thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
+            colors = (
+                (0, 255, 0),
+                (0, 0, 255),
+                (255, 0, 0),
+                (0, 255, 255),
+                (255, 255, 0),
+                (255, 0, 255),
+            )
 
             if len(contours) > 0:
                 max_vtx = contours[0]
                 for vtx in contours[1:]:
                     if len(max_vtx) < len(vtx):
                         max_vtx = vtx
-                max_vtx -= 1 # offset border around the image
+                max_vtx -= 1  # offset border around the image
                 epsilon = 0.01 * cv2.arcLength(max_vtx, True)
-                approx = cv2.approxPolyDP(max_vtx+1, epsilon, True) 
-                approx_color = cv2.approxPolyDP(max_vtx, epsilon, True) 
+                approx = cv2.approxPolyDP(max_vtx + 1, epsilon, True)
+                approx_color = cv2.approxPolyDP(max_vtx, epsilon, True)
 
                 cv2.drawContours(sim, approx, -1, colors[0], 1)
                 cv2.drawContours(sim_color, approx_color, -1, colors[0], 1)
 
                 if DEBUG_OUT:
                     import os.path
+
                     if not os.path.exists("output"):
                         os.mkdir("output")
                     cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
-                    cv2.imwrite("output/%s_color.png" % (obj.get_full_name(),), sim_color)
+                    cv2.imwrite(
+                        "output/%s_color.png" % (obj.get_full_name(),), sim_color
+                    )
 
                 write_vec(fo, obj, max_vtx)
             else:
-                print ("...skipped")
+                print("...skipped")
                 write_vec(fo, obj, None)
                 cv2.imwrite("output/%s.png" % (obj.get_full_name(),), sim)
                 cv2.imwrite("output/%s_color.png" % (obj.get_full_name(),), sim_color)
