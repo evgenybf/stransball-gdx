@@ -56,18 +56,11 @@ nbactions.xml
 nb-configuration.xml
 
 ## Gradle
-
 .gradle
 gradle-app.setting
-build/
 
 ## OS Specific
 .DS_Store
-
-## Let's install gradle by hands!
-gradle/
-gradlew
-gradlew.bat
 
 tools/output
 tools/*.vtx
