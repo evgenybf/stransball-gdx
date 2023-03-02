@@ -3,20 +3,19 @@ package org.stransball.desktop;
 import org.stransball.Constants;
 import org.stransball.GameMain;
 
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+
 
 public class DesktopLauncher {
     public static void main(String[] arg) {
-        LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+        Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         //System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
-        config.title = "Just an experiment";
-        config.foregroundFPS = 60;
-        config.backgroundFPS = 60;
-        config.width = Constants.DEFAULT_SCREEN_WIDTH;
-        config.height = Constants.DEFAULT_SCREEN_HEIGHT;
-        config.vSyncEnabled = true;
+        config.setTitle("Just an experiment");
+        config.setForegroundFPS(60);
+        config.setWindowedMode(Constants.DEFAULT_SCREEN_WIDTH, Constants.DEFAULT_SCREEN_HEIGHT);
+        config.useVsync(true);
 
-        new LwjglApplication(new GameMain(), config);
+        new Lwjgl3Application(new GameMain(), config);
     }
 }
