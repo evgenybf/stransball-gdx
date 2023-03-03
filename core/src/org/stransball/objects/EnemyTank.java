@@ -41,7 +41,7 @@ public class EnemyTank extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
 
         TankAndGroundCollider tankCollider = new TankAndGroundCollider(
                 passDebugRenderer(renderer, DEBUG_SHOW_TANK_TRACK_COLLISION), x - 32, y - 32, mapXScreen, mapYScreen);
@@ -57,7 +57,7 @@ public class EnemyTank extends Enemy {
     }
 
     private boolean updateTank(int ship_x, int ship_y, int ship_sx, int ship_sy, int gdist1, int gdist2, boolean lcol,
-            boolean rcol, List<Enemy> enemies) {
+                               boolean rcol, List<Enemy> enemies) {
         int old_tank_angle = tankAngle;
 
         // Tracks motion: angle, gravity, collision and movement 
@@ -101,26 +101,26 @@ public class EnemyTank extends Enemy {
         if (((gdist1 + gdist2) / 2) == 0) {
             if (tankType < 3) {
                 switch (state) {
-                case 1:
-                    if ((state2 & 0x03) == 0) {
-                        if (rcol) {
-                            state = -1;
-                            x--;
-                        } else {
-                            x++;
+                    case 1:
+                        if ((state2 & 0x03) == 0) {
+                            if (rcol) {
+                                state = -1;
+                                x--;
+                            } else {
+                                x++;
+                            }
                         }
-                    }
-                    break;
-                case -1:
-                    if ((state2 & 0x03) == 0) {
-                        if (lcol) {
-                            state = 1;
-                            x++;
-                        } else {
-                            x--;
+                        break;
+                    case -1:
+                        if ((state2 & 0x03) == 0) {
+                            if (lcol) {
+                                state = 1;
+                                x++;
+                            } else {
+                                x--;
+                            }
                         }
-                    }
-                    break;
+                        break;
                 }
             } else {
                 if ((state2 & 0x03) == 0) {
@@ -275,7 +275,7 @@ public class EnemyTank extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-            ICollisionDetector detector) {
+                     ICollisionDetector detector) {
         if (x > (-32 + mapXScreen) && x < (screenWidth + mapXScreen + 32) && y > (-32 + mapYScreen)
                 && y < (screenHeight + mapYScreen + 32)) {
             drawTank(batch, mapXScreen, mapYScreen, detector);
@@ -458,7 +458,7 @@ public class EnemyTank extends Enemy {
         public int gdist1;
 
         public TankAndGroundCollider(ShapeRenderer renderer, int regionXScreenF, int regionYcreenF, int mapXScreen,
-                int mapYScreen) {
+                                     int mapYScreen) {
             this.renderer = renderer;
             this.regionXScreenF = regionXScreenF;
             this.regionYcreenF = regionYcreenF;

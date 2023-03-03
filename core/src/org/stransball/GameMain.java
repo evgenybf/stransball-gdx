@@ -19,7 +19,7 @@ public class GameMain extends Game {
     @Override
     public void create() {
         assets.init();
-        
+
         mainScene = new GameScreen(this);
         setScreen(mainScene);
     }
@@ -28,7 +28,7 @@ public class GameMain extends Game {
     public void render() {
         fpsLogger.log();
         super.render();
-        
+
 //        if (Gdx.input.isKeyPressed(Keys.TAB)) {
 //            boolean fullScreen = !Gdx.graphics.isFullscreen();
 //            Gdx.graphics.setFullscreenMode(640, 480, fullScreen);

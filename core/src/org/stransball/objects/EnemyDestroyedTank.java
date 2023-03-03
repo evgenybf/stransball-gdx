@@ -18,7 +18,7 @@ import com.badlogic.gdx.utils.Array;
 public class EnemyDestroyedTank extends Enemy {
 
     private int state2;
-    
+
     protected EnemyDestroyedTank(GameMap map, int state2) {
         super(EnemyType.DESTROYED_TANK, map);
         this.state2 = state2;
@@ -26,7 +26,7 @@ public class EnemyDestroyedTank extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         if (state < 48) {
             state++;
         }
@@ -34,7 +34,7 @@ public class EnemyDestroyedTank extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-            ICollisionDetector detector) {
+                     ICollisionDetector detector) {
         if (x > (-32 + mapXScreen) && x < (screenWidth + mapXScreen + 32) && y > (-32 + mapYScreen)
                 && y < (screenHeight + mapYScreen + 32)) {
             drawDestroyedTank(batch, mapXScreen, mapYScreen, detector);

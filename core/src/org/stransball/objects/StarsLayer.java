@@ -35,7 +35,7 @@ public class StarsLayer {
     public void render(SpriteBatch batch, int map_x, int map_y) {
         if (batch == null)
             return;
-        
+
         int sx = INTERNAL_SCREEN_WIDTH;
         int sy = INTERNAL_SCREEN_HEIGHT;
 

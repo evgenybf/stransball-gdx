@@ -19,7 +19,7 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
     private int mapYScreen;
 
     public CollisionDetector(ShapeRenderer renderer, Polygon[] objectPolygons, int regionXScreenF, int regionYScreenF,
-            int mapXScreen, int mapYScreen) {
+                             int mapXScreen, int mapYScreen) {
         this.renderer = renderer;
         this.objectPolygons = objectPolygons;
         this.regionXScreenF = regionXScreenF;

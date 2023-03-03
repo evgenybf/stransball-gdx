@@ -25,7 +25,7 @@ public class EnemyDirectionalCanon extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         if (!updateDirectionalCanon(shipXScreenF, shipYScreenF, newEnemies)) {
             enemiesToDelete.add(this);
         }
@@ -45,30 +45,30 @@ public class EnemyDirectionalCanon extends Enemy {
             desired_turretAngle = turretAngle;
 
             switch (direction) {
-            case UP:
-                if (turretAngle >= 345 || turretAngle < 90)
-                    turretAngle = 345;
-                if (turretAngle < 205)
-                    turretAngle = 205;
-                break;
-            case DOWN:
-                if (turretAngle < 15 || turretAngle >= 270)
-                    turretAngle = 15;
-                if (turretAngle >= 175)
-                    turretAngle = 175;
-                break;
-            case RIGHT:
-                if (turretAngle >= 75 && turretAngle < 180)
-                    turretAngle = 75;
-                if (turretAngle >= 180 && turretAngle < 285)
-                    turretAngle = 285;
-                break;
-            case LEFT:
-                if (turretAngle < 105)
-                    turretAngle = 105;
-                if (turretAngle >= 255)
-                    turretAngle = 255;
-                break;
+                case UP:
+                    if (turretAngle >= 345 || turretAngle < 90)
+                        turretAngle = 345;
+                    if (turretAngle < 205)
+                        turretAngle = 205;
+                    break;
+                case DOWN:
+                    if (turretAngle < 15 || turretAngle >= 270)
+                        turretAngle = 15;
+                    if (turretAngle >= 175)
+                        turretAngle = 175;
+                    break;
+                case RIGHT:
+                    if (turretAngle >= 75 && turretAngle < 180)
+                        turretAngle = 75;
+                    if (turretAngle >= 180 && turretAngle < 285)
+                        turretAngle = 285;
+                    break;
+                case LEFT:
+                    if (turretAngle < 105)
+                        turretAngle = 105;
+                    if (turretAngle >= 255)
+                        turretAngle = 255;
+                    break;
             }
 
             state++;
@@ -104,7 +104,7 @@ public class EnemyDirectionalCanon extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-            ICollisionDetector detector) {
+                     ICollisionDetector detector) {
         if (x > (-16 + mapXScreen) && x < (screenWidth + mapXScreen) && y > (-16 + mapYScreen)
                 && y < (screenHeight + mapYScreen)) {
             drawDirectionalCanon(batch, map.map[(x) / 16 + (y / 16) * map.getCols()], mapXScreen, mapYScreen, detector);
@@ -112,7 +112,7 @@ public class EnemyDirectionalCanon extends Enemy {
     }
 
     private void drawDirectionalCanon(SpriteBatch batch, int tileIndex, int mapXScreen, int mapYScreen,
-            ICollisionDetector detector) {
+                                      ICollisionDetector detector) {
         if (state < 0)
             return;
 

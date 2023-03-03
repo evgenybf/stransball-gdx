@@ -533,7 +533,7 @@ public class WorldController {
     }
 
     private boolean checkCollisionOfPolygonAndMap(Polygon objectPolygon, int xInternal, int yInternal,
-            ShapeRenderer renderer) {
+                                                  ShapeRenderer renderer) {
         int objectXScreenF = xInternal / FACTOR;
         int objectYScreenF = yInternal / FACTOR;
 

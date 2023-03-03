@@ -22,7 +22,7 @@ public class EnemyBullet extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         boolean collision = checkCollisionOfEnemyAndMap(mapXScreen, mapYScreen, renderer);
         if (!(updateBullet(map.getCols() * 16, map.getRows() * 16, collision))) {
             enemiesToDelete.add(this);
@@ -72,7 +72,7 @@ public class EnemyBullet extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-            ICollisionDetector detector) {
+                     ICollisionDetector detector) {
         if (x > (-16 + mapXScreen) * FACTOR && x < (screenWidth + mapXScreen) * FACTOR
                 && y > (-16 + mapYScreen) * FACTOR && y < (screenHeight + mapYScreen) * FACTOR) {
             drawBullet(batch, mapXScreen, mapYScreen, detector);

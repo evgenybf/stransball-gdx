@@ -49,37 +49,37 @@ public class BackgroundLayer {
                 for (int i = 0, act_x = -(int) (x * 0.75F); i < sx; i++, act_x += step_x) {
                     if (act_x > -step_x && act_x < ww) {
                         switch (background_type) {
-                        case 0:
-                            if (j == 10)
-                                batch.draw(tiles.get(294), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                            if (j > 10)
-                                batch.draw(tiles.get(314), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                            break;
-                        case 1:
-                            if (j == 10)
-                                batch.draw(tiles.get(295), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                            if (j > 10)
-                                batch.draw(tiles.get(315), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                            break;
-                        case 2:
-                            if (j == 10)
-                                batch.draw(tiles.get(335), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
-                            if (j > 10) {
-                                if (((j >> 1) & 0x03) == 0) {
-                                    if (animflag < 2) {
-                                        int t[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
-                                        int step = (animtimer + animflag * 24) / 4;
-                                        if (step > 11)
-                                            step = 11;
-                                        batch.draw(tiles.get(t[step]), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                            case 0:
+                                if (j == 10)
+                                    batch.draw(tiles.get(294), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                if (j > 10)
+                                    batch.draw(tiles.get(314), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                break;
+                            case 1:
+                                if (j == 10)
+                                    batch.draw(tiles.get(295), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                if (j > 10)
+                                    batch.draw(tiles.get(315), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                break;
+                            case 2:
+                                if (j == 10)
+                                    batch.draw(tiles.get(335), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                if (j > 10) {
+                                    if (((j >> 1) & 0x03) == 0) {
+                                        if (animflag < 2) {
+                                            int t[] = {316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379};
+                                            int step = (animtimer + animflag * 24) / 4;
+                                            if (step > 11)
+                                                step = 11;
+                                            batch.draw(tiles.get(t[step]), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                        } else {
+                                            batch.draw(tiles.get(316), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                        }
                                     } else {
-                                        batch.draw(tiles.get(316), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                        batch.draw(tiles.get(275), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                     }
-                                } else {
-                                    batch.draw(tiles.get(275), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                 }
-                            }
-                            break;
+                                break;
                         }
                     }
                 }

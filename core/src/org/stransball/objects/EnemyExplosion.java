@@ -19,7 +19,7 @@ public class EnemyExplosion extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         if (!updateExplosion()) {
             enemiesToDelete.add(this);
         }
@@ -32,7 +32,7 @@ public class EnemyExplosion extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-            ICollisionDetector detector) {
+                     ICollisionDetector detector) {
         if (x > (-16 + mapXScreen) && x < (screenWidth + mapXScreen) && y > (-16 + mapYScreen)
                 && y < (screenHeight + mapYScreen)) {
             drawExplosion(batch, mapXScreen, mapYScreen, detector);
@@ -40,7 +40,7 @@ public class EnemyExplosion extends Enemy {
     }
 
     private void drawExplosion(SpriteBatch batch, int mapXScreen, int mapYScreen, ICollisionDetector detector) {
-        int frames[] = { 240, 241, 260, 261, 280, 281 };
+        int frames[] = {240, 241, 260, 261, 280, 281};
 
         if (state <= 47) {
             batch.draw(Assets.assets.graphicAssets.tiles.get(frames[state / 8]), x - mapXScreen,
