@@ -85,7 +85,7 @@ def split_xy(s):
 
 
 def read_pack(filename):
-    with file(filename, "r") as fi:
+    with open(filename, "r") as fi:
         fi.readline()
         obj = None
         while True:
@@ -134,7 +134,7 @@ def main():
     im = cv2.imread(TILES_PNG)
     im_color = cv2.imread(TILES_PNG_COLOR)
 
-    with file(VTX_FILE, "w") as fo:
+    with open(VTX_FILE, "w") as fo:
         for obj in read_pack(TILES_PACK):
             print(obj)
 

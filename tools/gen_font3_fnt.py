@@ -24,12 +24,12 @@ char id=%d   x=%d    y=%d     width=6    height=8 xoffset=0     yoffset=0     xa
 
 
 def main():
-    with file(FNT_FILE_NAME, "w") as fi:
+    with open(FNT_FILE_NAME, "w") as fi:
         write = fi.write
         write(HEADER_STR)
         count = 125 + 1 - 32
         write(CHARSCOUNT_STR % (count,))
-        for ch in xrange(32, 125 + 1):
+        for ch in range(32, 125 + 1):
             x = ch % 45 * 7 + 1
             y = ch // 45 * 9 + 1
             write(CHARID_STR % (ch, x, y))

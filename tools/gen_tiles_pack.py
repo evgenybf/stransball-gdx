@@ -12,8 +12,8 @@ tile
 
 
 def main():
-    with file(TILES_PACK, "w") as fo:
-        for i in xrange(500):
+    with open(TILES_PACK, "w") as fo:
+        for i in range(500):
             x = (i % 20) * 16
             y = (i / 20) * 16
             fo.write(TITLE_TEMPLATE % (x, y, i))

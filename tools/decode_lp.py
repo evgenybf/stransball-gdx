@@ -10,7 +10,7 @@ import sys
 
 def openFile(fileName, params, default):
     if fileName:
-        return file(fileName, params)
+        return open(fileName, params)
     else:
         return default
 
