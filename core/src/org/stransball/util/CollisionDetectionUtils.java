@@ -20,10 +20,10 @@ public class CollisionDetectionUtils {
         Polygon[] triangles = new Polygon[pointsCoords.size / step];
 
         for (int i = 0; i < pointsCoords.size / step; i++) {
-            Polygon newPoly = new Polygon(new float[]{vertices[pointsCoords.get(i * step) * 2],
+            Polygon newPoly = new Polygon(new float[] { vertices[pointsCoords.get(i * step) * 2],
                     vertices[pointsCoords.get(i * step) * 2 + 1], vertices[pointsCoords.get(i * step + 1) * 2],
                     vertices[pointsCoords.get(i * step + 1) * 2 + 1], vertices[pointsCoords.get(i * step + 2) * 2],
-                    vertices[pointsCoords.get(i * step + 2) * 2 + 1],});
+                    vertices[pointsCoords.get(i * step + 2) * 2 + 1], });
             triangles[i] = newPoly;
         }
 

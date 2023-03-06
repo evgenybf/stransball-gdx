@@ -34,7 +34,8 @@ public abstract class Enemy {
     public final EnemyType type;
     public int state;
     public int life;
-    public int x; //TODO: for several types of enemies (explosion) it's not in internal coordinates
+    public int x; // TODO: for several types of enemies (explosion) it's not in internal
+                  // coordinates
     public int y;
     public CanonDirection direction;
     protected int turretAngle;
@@ -55,10 +56,10 @@ public abstract class Enemy {
     }
 
     public abstract void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-                              ICollisionDetector detector);
+            ICollisionDetector detector);
 
     public abstract void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-                                int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer);
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer);
 
     public void copyTo(Enemy enemy) {
         enemy.state = state;

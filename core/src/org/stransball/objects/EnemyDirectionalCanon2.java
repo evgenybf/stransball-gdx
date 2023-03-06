@@ -19,14 +19,14 @@ public class EnemyDirectionalCanon2 extends Enemy {
 
     @Override
     public void update(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-                       int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
+            int mapYScreen, List<Enemy> enemiesToDelete, List<Enemy> newEnemies, ShapeRenderer renderer) {
         throw new InvalidDnDOperationException(
                 "Not imepelemted yet - there are no this sort of cannons in the initial levels pack");
     }
 
     @Override
     public void draw(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-                     ICollisionDetector detector) {
+            ICollisionDetector detector) {
         if (x > (-16 + mapXScreen) && x < (screenWidth + mapXScreen) && y > (-16 + mapYScreen)
                 && y < (screenHeight + mapYScreen)) {
             drawDirectionalCanon2(batch, map.map[(x) / 16 + (y / 16) * map.getCols()], mapXScreen, mapYScreen,
@@ -36,7 +36,7 @@ public class EnemyDirectionalCanon2 extends Enemy {
     }
 
     private void drawDirectionalCanon2(SpriteBatch batch, int i, int mapXScreen, int mapYScreen,
-                                       ICollisionDetector detector) {
+            ICollisionDetector detector) {
         throw new InvalidDnDOperationException(
                 "Not imepelemted yet - there are no this sort of cannons in the initial levels pack");
     }

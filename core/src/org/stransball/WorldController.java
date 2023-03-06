@@ -95,7 +95,7 @@ public class WorldController {
         shipState = ShipState.NORMAL;
         shipAnim = 0;
 
-        shipFuel = /*fuelv*/50 * Constants.fuelfactor[0]; //TODO: has to depend on the map settings
+        shipFuel = /* fuelv */50 * Constants.fuelfactor[0]; // TODO: has to depend on the map settings
 
         {
             shipRegion = assets.graphicAssets.shipRegion;
@@ -138,7 +138,7 @@ public class WorldController {
         map.update(shipXInternal, shipYInternal, shipSpeedX, shipSpeedY, mapXScreen, mapYScreen,
                 passDebugRenderer(renderer, DEBUG_SHOW_ENEMY_COLLISION));
 
-        // Ship collision detection 
+        // Ship collision detection
         if (shipState == ShipState.NORMAL
                 && checkCollisionOfShipAndMap(passDebugRenderer(renderer, DEBUG_SHOW_SHIP_COLLISION))) {
             if (!Constants.DEBUG_GOD_MODE) {
@@ -533,7 +533,7 @@ public class WorldController {
     }
 
     private boolean checkCollisionOfPolygonAndMap(Polygon objectPolygon, int xInternal, int yInternal,
-                                                  ShapeRenderer renderer) {
+            ShapeRenderer renderer) {
         int objectXScreenF = xInternal / FACTOR;
         int objectYScreenF = yInternal / FACTOR;
 
@@ -542,7 +542,7 @@ public class WorldController {
 
         objectPolygon.setPosition(objectXScreen, INTERNAL_SCREEN_HEIGHT - (objectYScreen + map.stepY));
 
-        // (+8, +8) here moves the point closer to bullet's or ball's center 
+        // (+8, +8) here moves the point closer to bullet's or ball's center
         return map.checkCollision(objectXScreenF + 8, objectYScreenF + 8, mapXScreen, mapYScreen, objectPolygon, null,
                 renderer);
     }
@@ -582,7 +582,7 @@ public class WorldController {
     }
 
     private void drawFuelStatus(SpriteBatch batch) {
-        Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); //Assets.assets.graphicAssets.tiles.get(498));
+        Sprite sprite = new Sprite(Assets.assets.graphicAssets.whiteSpot); // Assets.assets.graphicAssets.tiles.get(498));
 
         sprite.setPosition(2, INTERNAL_SCREEN_HEIGHT - 2);
         sprite.setSize(52, 1);
@@ -723,10 +723,13 @@ public class WorldController {
 
                 shipSprite.setRotation(360 - shipAngle);
 
-                // I have something to do with it in the future but for now it's ok as the polygon's coordinates are correct
-                // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
+                // I have something to do with it in the future but for now it's ok as the
+                // polygon's coordinates are correct
+                // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT -
+                // (shipYScreen + map.stepY));
 
-                //shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT - (shipYScreen + map.stepY));
+                // shipSprite.setPosition(shipXScreen - map.stepY, INTERNAL_SCREEN_HEIGHT -
+                // (shipYScreen + map.stepY));
                 shipSprite.setCenter(shipXScreen, INTERNAL_SCREEN_HEIGHT - shipYScreen);
 
                 shipSprite.draw(batch);

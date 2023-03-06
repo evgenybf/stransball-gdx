@@ -19,7 +19,7 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
     private int mapYScreen;
 
     public CollisionDetector(ShapeRenderer renderer, Polygon[] objectPolygons, int regionXScreenF, int regionYScreenF,
-                             int mapXScreen, int mapYScreen) {
+            int mapXScreen, int mapYScreen) {
         this.renderer = renderer;
         this.objectPolygons = objectPolygons;
         this.regionXScreenF = regionXScreenF;
@@ -31,7 +31,8 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
     @Override
     public void handlePolygon(int actXScreen, int actYScreen, int tileIndex) {
         Polygon poly = Assets.assets.graphicAssets.tilePolygons[tileIndex];
-        // Some objects like bullets can do not have contours in some states like explosion ans so on
+        // Some objects like bullets can do not have contours in some states like
+        // explosion ans so on
         if (poly == null)
             return;
 

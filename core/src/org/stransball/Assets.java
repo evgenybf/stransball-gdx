@@ -102,7 +102,7 @@ public class Assets {
 
             whiteSpot = new Texture(whiteSpotPixmap);
 
-            tankTrackPolygon = new Polygon(new float[]{6f, 4f, 8f, 7f, 9f, 4f});
+            tankTrackPolygon = new Polygon(new float[] { 6f, 4f, 8f, 7f, 9f, 4f });
         }
 
         public void dispose() {

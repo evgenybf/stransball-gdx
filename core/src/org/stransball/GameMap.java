@@ -58,7 +58,8 @@ public class GameMap {
     private List<Smoke> smokes;
 
     @Deprecated
-    //It has to be tile.height instead. Complete formula: screen.height - tile.height - y
+    // It has to be tile.height instead. Complete formula: screen.height -
+    // tile.height - y
     public int stepY;
 
     public void load(Reader input) {
@@ -224,7 +225,7 @@ public class GameMap {
     }
 
     public void update(int shipXInternal, int shipYInternal, int shipSpeedX, int shipSpeedY, int mapXScreen,
-                       int mapYScreen, ShapeRenderer renderer) {
+            int mapYScreen, ShapeRenderer renderer) {
         { // Tile animation
             animTimer++;
 
@@ -340,7 +341,7 @@ public class GameMap {
     }
 
     private void updateEnemies(int shipXScreenF, int shipYScreenF, int shipSpeedX, int shipSpeedY, int mapXScreen,
-                               int mapYScreen, ShapeRenderer renderer) {
+            int mapYScreen, ShapeRenderer renderer) {
         List<Enemy> enemiesToDelete = new ArrayList<Enemy>();
         List<Enemy> newEnemies = new ArrayList<Enemy>();
 
@@ -365,7 +366,7 @@ public class GameMap {
     }
 
     public void drawWalls(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-                          ICollisionDetector detector) {
+            ICollisionDetector detector) {
         Array<AtlasRegion> tiles = Assets.assets.graphicAssets.tiles;
 
         int stepX = tiles.get(0).originalWidth;
@@ -436,7 +437,7 @@ public class GameMap {
     }
 
     private void drawWithOffset(int actXScreen, int actYScreen, int offset, SpriteBatch batch, int tileIndex,
-                                ICollisionDetector detector, int stepY) {
+            ICollisionDetector detector, int stepY) {
         if (batch != null) {
             AtlasRegion tile = Assets.assets.graphicAssets.tiles.get(tileIndex);
 
@@ -459,7 +460,7 @@ public class GameMap {
     }
 
     private void drawEnemies(SpriteBatch batch, int mapXScreen, int mapYScreen, int screenWidth, int screenHeight,
-                             Enemy enemy, ICollisionDetector detector) {
+            Enemy enemy, ICollisionDetector detector) {
         for (Enemy e : enemies) {
             if (e != enemy) {
                 e.draw(batch, mapXScreen, mapYScreen, screenWidth, screenHeight, detector);
@@ -633,8 +634,8 @@ public class GameMap {
 
             if (((mindistance == -1 && distance < tolerance) || distance < mindistance)
                     && (e.type == EnemyType.BULLET || e.type == EnemyType.CANON || e.type == EnemyType.FAST_CANON
-                    || e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.TANK
-                    || e.type == EnemyType.DIRECTIONAL_CANON_2)) {
+                            || e.type == EnemyType.DIRECTIONAL_CANON || e.type == EnemyType.TANK
+                            || e.type == EnemyType.DIRECTIONAL_CANON_2)) {
                 selected = e;
                 mindistance = distance;
             }
@@ -795,7 +796,7 @@ public class GameMap {
 
     public void takeBall() {
         for (Door d : doors) {
-            // The doors with event==0 are activated when the ball is taken 
+            // The doors with event==0 are activated when the ball is taken
             if (d.event == 0) {
                 d.activate();
             }
@@ -842,7 +843,7 @@ public class GameMap {
     }
 
     public boolean checkCollision(int objectXScreenF, int objectYScreenF, int mapXScreen, int mapYScreen,
-                                  Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
+            Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
         int regionWidth = 32;
         int regionHeight = 32;
         int regionXScreenF = objectXScreenF - regionWidth / 2;
@@ -853,7 +854,7 @@ public class GameMap {
     }
 
     private boolean checkCollisionInRegion(int regionXScreenF, int regionYScreenF, int regionWidth, int regionHeight,
-                                           int mapXScreen, int mapYScreen, Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
+            int mapXScreen, int mapYScreen, Polygon objectPolygon, Enemy enemy, ShapeRenderer renderer) {
         if (objectPolygon == null)
             return false;
 
