@@ -3,6 +3,7 @@ package org.stransball;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
 import org.stransball.util.CollisionDetectionUtils;
+import org.stransball.util.Triangulator;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -10,22 +11,24 @@ import com.badlogic.gdx.math.Polygon;
 
 public final class CollisionDetector implements ICollisionDetector, ICollisionHandler {
 
+    private final Triangulator triangulator;
     private final ShapeRenderer renderer;
-    private final Polygon[] objectPolygons;
+    private final Iterable<Polygon> objectPolygons;
     private boolean collision;
     private int regionXScreenF;
     private int regionYScreenF;
     private int mapXScreen;
     private int mapYScreen;
 
-    public CollisionDetector(ShapeRenderer renderer, Polygon[] objectPolygons, int regionXScreenF, int regionYScreenF,
-            int mapXScreen, int mapYScreen) {
+    public CollisionDetector(ShapeRenderer renderer, Iterable<Polygon> objectPolygons, int regionXScreenF,
+            int regionYScreenF, int mapXScreen, int mapYScreen) {
         this.renderer = renderer;
         this.objectPolygons = objectPolygons;
         this.regionXScreenF = regionXScreenF;
         this.regionYScreenF = regionYScreenF;
         this.mapXScreen = mapXScreen;
         this.mapYScreen = mapYScreen;
+        this.triangulator = new Triangulator();
     }
 
     @Override
@@ -46,7 +49,7 @@ public final class CollisionDetector implements ICollisionDetector, ICollisionHa
         poly.setPosition(regionXScreenF + poly.getX() - mapXScreen,
                 INTERNAL_SCREEN_HEIGHT - (regionYScreenF + poly.getY() - mapYScreen));
 
-        Polygon[] polygons = CollisionDetectionUtils.tiangulate(poly);
+        Iterable<Polygon> polygons = triangulator.tiangulate(poly);
 
         boolean wasCollision = CollisionDetectionUtils.overlapPolygons(objectPolygons, polygons);
         if (wasCollision) {

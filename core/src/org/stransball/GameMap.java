@@ -26,6 +26,7 @@ import org.stransball.objects.SmokeSource;
 import org.stransball.objects.StarsLayer;
 import org.stransball.objects.Switch;
 import org.stransball.util.CollisionDetectionUtils;
+import org.stransball.util.Triangulator;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -57,10 +58,16 @@ public class GameMap {
     private List<SmokeSource> smokeSources;
     private List<Smoke> smokes;
 
+    private final Triangulator triangulator;
+
     @Deprecated
     // It has to be tile.height instead. Complete formula: screen.height -
     // tile.height - y
     public int stepY;
+
+    public GameMap() {
+        this.triangulator = new Triangulator();
+    }
 
     public void load(Reader input) {
         Scanner scanner = new Scanner(input);
@@ -858,7 +865,7 @@ public class GameMap {
         if (objectPolygon == null)
             return false;
 
-        Polygon[] objectPolygons = CollisionDetectionUtils.tiangulate(objectPolygon);
+        Iterable<Polygon> objectPolygons = triangulator.tiangulate(objectPolygon);
 
         CollisionDetector detector = new CollisionDetector(renderer, objectPolygons, regionXScreenF, regionYScreenF,
                 mapXScreen, mapYScreen);

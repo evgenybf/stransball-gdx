@@ -19,6 +19,7 @@ import org.stransball.Assets;
 import org.stransball.GameMap;
 import org.stransball.ICollisionDetector;
 import org.stransball.util.CollisionDetectionUtils;
+import org.stransball.util.Triangulator;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -456,6 +457,7 @@ public class EnemyTank extends Enemy {
         public boolean lcol;
         public int gdist2;
         public int gdist1;
+        private final Triangulator triangulator;
 
         public TankAndGroundCollider(ShapeRenderer renderer, int regionXScreenF, int regionYcreenF, int mapXScreen,
                 int mapYScreen) {
@@ -464,6 +466,7 @@ public class EnemyTank extends Enemy {
             this.regionYcreenF = regionYcreenF;
             this.mapXScreen = mapXScreen;
             this.mapYScreen = mapYScreen;
+            this.triangulator = new Triangulator();
 
             gdist1 = 19;
             gdist2 = 19;
@@ -476,7 +479,7 @@ public class EnemyTank extends Enemy {
             poly.setPosition(regionXScreenF + poly.getX() - mapXScreen,
                     INTERNAL_SCREEN_HEIGHT - (regionYcreenF + poly.getY() - mapYScreen));
 
-            Polygon[] polygons = CollisionDetectionUtils.tiangulate(poly);
+            Iterable<Polygon> polygons = triangulator.tiangulate(poly);
 
             int dx = (x - mapXScreen) - 24;
             int dy = (y - mapYScreen) - 16;
@@ -511,7 +514,7 @@ public class EnemyTank extends Enemy {
             handlePolygon(poly);
         }
 
-        public int drawTracks(int dx, int dy, Polygon[] polygons, boolean drawpoly, int prevResult) {
+        public int drawTracks(int dx, int dy, Iterable<Polygon> polygons, boolean drawpoly, int prevResult) {
             int result = prevResult;
 
             Polygon trackPolygon = Assets.assets.graphicAssets.tankTrackPolygon;
