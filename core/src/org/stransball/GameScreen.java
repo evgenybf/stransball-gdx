@@ -17,12 +17,13 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen extends ScreenAdapter {
 
     @SuppressWarnings("unused")
     private GameMain game;
-    private final FitViewport viewport;
+    private final Viewport viewport;
     private SpriteBatch batch;
     private BitmapFont font;
     private float time;
@@ -102,8 +103,8 @@ public class GameScreen extends ScreenAdapter {
             time += delta;
             int sec = (int) (time % 60);
             int min = (int) (time / 60);
-            font.draw(batch, format("%02d:%02d", min, sec), viewport.getWorldWidth(), viewport.getWorldHeight(), 0,
-                    Align.right, true);
+            font.draw(batch, format("%02d:%02d", min, sec), viewport.getWorldWidth() - 64,
+                    viewport.getWorldHeight() - 1, 64, Align.topRight, true);
         }
     }
 
