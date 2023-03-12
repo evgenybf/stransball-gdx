@@ -419,7 +419,7 @@ public class WorldController {
                 }
             }
 
-            if (GameKeysStatus.isFire()) {
+            if (GameKeysStatus.bFire) {
                 float radianAngle = (shipAngle - 90) * degreesToRadians;
 
                 shipShotsCount++;
