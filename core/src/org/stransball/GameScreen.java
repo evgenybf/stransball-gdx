@@ -5,12 +5,8 @@ import static org.stransball.Assets.assets;
 import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 import static org.stransball.Constants.INTERNAL_SCREEN_WIDTH;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -31,33 +27,20 @@ public class GameScreen extends ScreenAdapter {
     private ShapeRenderer renderer;
     private boolean paused;
 
-    public GameScreen(GameMain game) {
+    public GameScreen(GameMain game, GameMap map) {
         this.game = game;
-
         viewport = new FitViewport(INTERNAL_SCREEN_WIDTH, INTERNAL_SCREEN_HEIGHT);
-        create();
-    }
-
-    public void create() {
-        time = 0;
 
         batch = new SpriteBatch();
         batch.enableBlending();
 
         renderer = new ShapeRenderer();
+        renderer.setAutoShapeType(true);
 
         font = assets.fontAssets.defaultFont;
 
-        GameMap map = loadMap();
-        worldController = new WorldController(map);
-    }
-
-    private GameMap loadMap() {
-        GameMap map = new GameMap();
-        FileHandle fileHandle = Gdx.files.internal(Constants.MAP_NAME);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fileHandle.read()), 64);
-        map.load(reader);
-        return map;
+        time = 0;
+        worldController = new WorldController(game, map);
     }
 
     @Override
@@ -108,10 +91,10 @@ public class GameScreen extends ScreenAdapter {
         }
     }
 
+    @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         batch.setProjectionMatrix(viewport.getCamera().combined);
-        renderer.setAutoShapeType(true);
         renderer.setProjectionMatrix(viewport.getCamera().combined);
     }
 
@@ -129,5 +112,4 @@ public class GameScreen extends ScreenAdapter {
     public void dispose() {
         batch.dispose();
     }
-
 }

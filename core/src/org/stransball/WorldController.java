@@ -80,7 +80,10 @@ public class WorldController {
     @SuppressWarnings("unused")
     private int fadingState;
 
-    public WorldController(GameMap map) {
+    private final GameMain game;
+
+    public WorldController(GameMain game, GameMap map) {
+        this.game = game;
         this.map = map;
 
         bullets = new ArrayList<ShipBullet>();
@@ -321,7 +324,7 @@ public class WorldController {
             ballSpeedY = -FACTOR;
             ballMagnetisationLevel++;
             if (ballMagnetisationLevel >= 32) {
-                throw new RuntimeException("You win!");
+                game.winLevel();
             }
         }
 
@@ -451,7 +454,7 @@ public class WorldController {
                 fadingState = 2;
 
             if (shipAnim >= 96) {
-                throw new RuntimeException("You failed");
+                game.failLevel();
             }
         }
     }

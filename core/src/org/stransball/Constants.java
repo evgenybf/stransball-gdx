@@ -34,6 +34,25 @@ public class Constants {
     public static final int fuelfactor[] = { 64, 64, 96 };
     public static final int shotfuel[] = { 40, 64, 96 };
 
-    public static final String MAP_NAME = "maps/map7.map";
+    public static final int START_LEVEL = 0;
 
+    // @formatter:off
+    public static final Level[] LEVELS = {
+        new Level("maps/map1.map", "You and the ball", 50, "U1RBUlQh"),
+        new Level("maps/map2.map", "A small passage", 50),
+        new Level("maps/map3.map", "Introducing lasers", 50),
+        new Level("maps/map4.map", "The first cannon", 50),
+        new Level("maps/canons.map", "More cannons for you", 50),
+        new Level("maps/map5.map", "Doors and switches", 50),
+        new Level("maps/map6.map", "The first ability challenge", 50),
+        new Level("maps/map7.map", "The tanks, your knightmare...", 50),
+        new Level("maps/map8.map", "Fuel recharge", 10),
+        new Level("maps/map9.map", "Directional cannons", 50),
+        new Level("maps/map10.map", "The first big level", 50),
+        new Level("maps/map11.map", "Things begin to be difficult", 50),
+        new Level("maps/map12.map", "Death in the snow", 50),
+        new Level("maps/map13.map", "Many choices...", 50),
+        new Level("maps/map14.map", "The head quarters", 50)
+    };
+    // @formatter:on
 }
