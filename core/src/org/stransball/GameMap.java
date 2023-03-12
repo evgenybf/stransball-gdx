@@ -6,19 +6,13 @@ import static org.stransball.Constants.INTERNAL_SCREEN_HEIGHT;
 
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 import org.stransball.objects.BackgroundLayer;
 import org.stransball.objects.Door;
 import org.stransball.objects.Enemy;
 import org.stransball.objects.Enemy.EnemyType;
 import org.stransball.objects.EnemyBullet;
-import org.stransball.objects.EnemyCanon;
-import org.stransball.objects.EnemyDirectionalCanon;
-import org.stransball.objects.EnemyDirectionalCanon2;
-import org.stransball.objects.EnemyFastCanon;
 import org.stransball.objects.EnemyTank;
 import org.stransball.objects.FuelRecharge;
 import org.stransball.objects.Smoke;
@@ -39,8 +33,6 @@ import com.badlogic.gdx.utils.Array;
 
 public class GameMap {
 
-    private static final int EMPTY_ROWS = 8;
-
     public int[] map;
     private int cols;
     private int rows;
@@ -58,175 +50,38 @@ public class GameMap {
     private List<SmokeSource> smokeSources;
     private List<Smoke> smokes;
 
-    private final Triangulator triangulator;
-
     @Deprecated
     // It has to be tile.height instead. Complete formula: screen.height -
     // tile.height - y
     public int stepY;
 
+    private final Triangulator triangulator;;
+    private final MapLoader mapLoader;
+
     public GameMap() {
-        this.triangulator = new Triangulator();
+        triangulator = new Triangulator();
+        mapLoader = new MapLoader(this);
     }
 
     public void load(Reader input) {
-        Scanner scanner = new Scanner(input);
-        try {
-            load(scanner);
-        } finally {
-            scanner.close();
-        }
-    }
+        MapData mapData = mapLoader.load(input);
 
-    private void load(Scanner scanner) {
-        int switchNumber = 1;
+        map = mapData.map;
+        cols = mapData.cols;
+        rows = mapData.rows;
+        animTimer = mapData.animTimer;
+        animFlag = mapData.animFlag;
 
-        enemies = new ArrayList<Enemy>();
-        doors = new ArrayList<Door>();
-        switches = new ArrayList<Switch>();
-        fuelRecharges = new ArrayList<FuelRecharge>();
-        smokeSources = new ArrayList<SmokeSource>();
-        smokes = new ArrayList<Smoke>();
+        background = mapData.background;
+        stars = mapData.stars;
 
-        cols = scanner.nextInt();
-        rows = scanner.nextInt();
-        rows += EMPTY_ROWS;
+        enemies = mapData.enemies;
+        doors = mapData.doors;
+        switches = mapData.switches;
+        fuelRecharges = mapData.fuelRecharges;
 
-        map = new int[cols * rows];
-        Arrays.fill(map, -1);
-
-        for (int i = cols * EMPTY_ROWS; i < cols * rows; i++) {
-            map[i] = scanner.nextInt();
-            map[i]--;
-        }
-
-        // Look for enemies, doors, etc.:
-        for (int i = 0; i < cols * rows; i++) {
-            // ENEMIES:
-            if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 196 && map[i] < 200) || (map[i] >= 216 && map[i] < 220)
-                    || (map[i] >= 236 && map[i] < 240)
-                    || (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175)
-                    || (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407)) {
-
-                int direction = 0;
-                int x = (i % cols) * 16;
-                int y = (i / cols) * 16;
-
-                if (map[i] == 176 || map[i] == 216 || map[i] == 236 || map[i] == 196 || map[i] == 154 || map[i] == 386)
-                    direction = 0;
-                if (map[i] == 177 || map[i] == 217 || map[i] == 237 || map[i] == 197 || map[i] == 155 || map[i] == 387)
-                    direction = 1;
-                if (map[i] == 178 || map[i] == 218 || map[i] == 238 || map[i] == 198 || map[i] == 174 || map[i] == 406)
-                    direction = 2;
-                if (map[i] == 179 || map[i] == 219 || map[i] == 239 || map[i] == 199 || map[i] == 175 || map[i] == 407)
-                    direction = 3;
-
-                if ((map[i] >= 176 && map[i] < 180) || (map[i] >= 216 && map[i] < 220)
-                        || (map[i] >= 236 && map[i] < 240)) {
-                    // CANON:
-                    Enemy e = new EnemyCanon(this);
-                    e.state = 0;
-                    e.life = 4;
-                    e.x = x;
-                    e.y = y;
-                    e.direction = Enemy.CanonDirection.fromInt(direction);
-                    enemies.add(e);
-                }
-
-                if (map[i] >= 196 && map[i] < 200) {
-                    // FAST CANON:
-                    Enemy e = new EnemyFastCanon(this);
-                    e.state = 0;
-                    e.life = 8;
-                    e.x = x;
-                    e.y = y;
-                    e.direction = Enemy.CanonDirection.fromInt(direction);
-                    enemies.add(e);
-                }
-
-                if (map[i] == 154 || map[i] == 155 || map[i] == 174 || map[i] == 175) {
-                    // DIRECTIONAL CANON:
-                    Enemy e = new EnemyDirectionalCanon(this);
-                    e.state = i % 128;
-                    e.life = 12;
-                    e.x = x;
-                    e.y = y;
-                    e.direction = Enemy.CanonDirection.fromInt(direction);
-
-                    enemies.add(e);
-                }
-                if (map[i] == 386 || map[i] == 387 || map[i] == 406 || map[i] == 407) {
-                    // DIRECTIONAL CANON 2:
-                    Enemy e = new EnemyDirectionalCanon2(this);
-                    e.state = i % 128;
-                    e.life = 12;
-                    e.x = x;
-                    e.y = y;
-                    e.direction = Enemy.CanonDirection.fromInt(direction);
-                    enemies.add(e);
-                }
-            }
-
-            // DOORS:
-            if (map[i] == 113) {
-                Door d = new Door();
-
-                d.col = i % cols;
-                d.row = i / cols;
-                d.action = 0;
-
-                d.state = scanner.nextInt();
-                d.event = scanner.nextInt();
-                doors.add(d);
-            }
-
-            // SWITCHES:
-            if ((map[i] >= 116 && map[i] < 120) || (map[i] >= 136 && map[i] < 140) || (map[i] >= 156 && map[i] < 160)) {
-                Switch s = new Switch();
-                s.col = i % cols;
-                s.row = i / cols;
-                s.number = switchNumber++;
-                s.state = 0;
-                switches.add(s);
-            }
-
-            // FUEL RECHARGES:
-            if (map[i] == 132) {
-                FuelRecharge f = new FuelRecharge();
-                f.col = i % cols;
-                f.row = i / cols;
-                fuelRecharges.add(f);
-            }
-        }
-
-        // Tanks:
-        {
-            int ntanks;
-
-            ntanks = scanner.nextInt();
-            for (int i = 0; i < ntanks; i++) {
-                Enemy e = new EnemyTank(this);
-
-                int col = scanner.nextInt();
-                int row = scanner.nextInt();
-                int type = scanner.nextInt();
-
-                e.state = 1;
-                e.x = col * 16;
-                e.y = row * 16;
-                e.life = 10;
-                e.tankType = type;
-                enemies.add(e);
-            }
-        }
-
-        int background_type = scanner.nextInt();
-        background = new BackgroundLayer(background_type, cols, rows);
-
-        animTimer = 0;
-        animFlag = 0;
-
-        stars = new StarsLayer(cols);
+        smokeSources = mapData.smokeSources;
+        smokes = mapData.smokes;
 
         stepY = Assets.assets.graphicAssets.tiles.get(0).originalHeight;
     }

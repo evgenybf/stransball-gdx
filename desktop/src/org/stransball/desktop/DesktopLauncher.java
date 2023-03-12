@@ -15,7 +15,7 @@ public class DesktopLauncher {
         config.setTitle("SuperTransball GDX");
         config.setForegroundFPS(200);
 
-        config.setWindowedMode(Constants.DEFAULT_SCREEN_WIDTH, Constants.DEFAULT_SCREEN_HEIGHT / 2);
+        config.setWindowedMode(Constants.DEFAULT_SCREEN_WIDTH, Constants.DEFAULT_SCREEN_HEIGHT);
 
         config.setResizable(true);
         config.useVsync(true);

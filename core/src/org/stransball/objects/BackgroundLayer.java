@@ -10,14 +10,16 @@ import com.badlogic.gdx.utils.Array;
 
 public class BackgroundLayer {
 
-    private final int background_type;
+    private static final int ANYMATION_TYPE_2[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
+
+    private final int backgroundType;
     private final int sx;
     private final int sy;
     private int animtimer;
     private int animflag;
 
-    public BackgroundLayer(int background_type, int sx, int sy) {
-        this.background_type = background_type;
+    public BackgroundLayer(int backgroundType, int sx, int sy) {
+        this.backgroundType = backgroundType;
         this.sx = sx;
         this.sy = sy;
         animtimer = 0;
@@ -48,7 +50,7 @@ public class BackgroundLayer {
             if (act_y > -step_y && act_y < wh) {
                 for (int i = 0, act_x = -(int) (x * 0.75F); i < sx; i++, act_x += step_x) {
                     if (act_x > -step_x && act_x < ww) {
-                        switch (background_type) {
+                        switch (backgroundType) {
                         case 0:
                             if (j == 10)
                                 batch.draw(tiles.get(294), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
@@ -67,11 +69,11 @@ public class BackgroundLayer {
                             if (j > 10) {
                                 if (((j >> 1) & 0x03) == 0) {
                                     if (animflag < 2) {
-                                        int t[] = { 316, 317, 318, 319, 336, 337, 338, 339, 358, 359, 378, 379 };
                                         int step = (animtimer + animflag * 24) / 4;
                                         if (step > 11)
                                             step = 11;
-                                        batch.draw(tiles.get(t[step]), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
+                                        batch.draw(tiles.get(ANYMATION_TYPE_2[step]), act_x,
+                                                INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                     } else {
                                         batch.draw(tiles.get(316), act_x, INTERNAL_SCREEN_HEIGHT - act_y - step_y);
                                     }
